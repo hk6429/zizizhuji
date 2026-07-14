@@ -240,12 +240,44 @@ saveMeta(ctx.meta);
 | 頁 | 資料 API | 備註 |
 |---|---|---|
 | 圖鑑頁 `#collection-page` | `collection.getCollection(meta)`＋兩個題庫的完整 id 清單 | 兩卷：字音字形 250 格＋成語 435 格；未煉成＝墨影剪影＋「？」（`.pearl-cell--silhouette`）；品階發光 `.pearl-cell--grade-{0..3}`；蒙塵 `.pearl-cell--dusty` |
+| 成就冊頁 `#achievements-page` | `ACHIEVEMENTS`（`./meta/achievements.js`）對照 `ctx.meta.ach.unlocked` | 17 格印章牆；隱藏成就未解鎖顯「？？？」剪影；詳見下方小節 |
 | 擂台頁 `#arena-page` | `arena.getDailyQuestionIds(allIds, today)`（全班同 10 題）→ 打完 `arena.submitEntry(meta, {name, avatar, correct, timeMs, bestCombo}, today)` → `arena.getBoard(meta)` 前 10、`arena.getHistory(meta)` 歷代珠王、`arena.buildBroadcast(meta)` 投影戰報（`heraldLines` 逐行大字） | 道號 2–4 字＋12 頭像（`arena.AVATARS`）；榜首結算卡 `summary.seal='zhuwang'` 蓋金印 |
 | 裝備商店頁 | §3 戰前 | |
 
+### 成就冊頁 `#achievements-page`（詳細掛載規格）
+
+**入口**：主畫面頂欄新增 `#achievements-entry`（印章圖示，建議放 `#rank-badge` 旁）；結算卷軸 `#summary-scroll` 上的 `newAchievements` 區塊點擊也跳轉此頁。純讀頁：只讀 `ctx.meta`，不寫、不 saveMeta。
+
+**資料 API**（渲染 17 格，順序照 `ACHIEVEMENTS` 陣列原序，不重排）：
+
+```js
+import { ACHIEVEMENTS } from './meta/achievements.js';
+
+const unlocked = ctx.meta.ach.unlocked;   // { [id]: ISO 解鎖時間戳 }；未解鎖＝無此 key
+for (const a of ACHIEVEMENTS) {           // 17 項：{ id, name, desc, pearls, hidden, title? }
+  const at = unlocked[a.id];              // undefined＝未解鎖；字串＝解鎖時間（unlock() 寫入的 ISO）
+  // 已解鎖：印章實色 .ach-cell--unlocked ＋ name ＋ desc ＋「+{pearls} 珠」
+  //         ＋解鎖日期 new Date(at).toLocaleDateString()
+  // 未解鎖且 hidden=false：灰印章 .ach-cell--locked，仍顯示 name＋desc（渴望牆：看得到、搆不到）
+  // 未解鎖且 hidden=true：見下方隱藏成就規則
+}
+// 頁首進度列：「已解鎖 {Object.keys(unlocked).length} / {ACHIEVEMENTS.length}」
+```
+
+**隱藏成就顯示規則**（目前僅 `combo-10`〈十連珠・文曲星降臨〉一枚；規則寫成通用，日後新增隱藏成就免改 UI）：
+
+- 未解鎖且 `a.hidden === true` → 「？？？」剪影格 `.ach-cell--silhouette`：名稱／描述／稱號／珠數一律不露出，只顯示「？？？」＋小字「隱藏成就」（呼應圖鑑渴望牆的墨影剪影）。
+- 解鎖後與一般成就同樣呈現，另加「隱藏」小角標 `.ach-cell--hidden-revealed`（炫耀點：全班只有打出 10 連對的人看得到內容）。
+
+**稱號（`title` 欄位）呈現**：
+
+- 成就冊：`a.title` 非空且已解鎖 → 格內加金色稱號徽帶 `.ach-cell__title`（文字＝`a.title`，如「文曲星降臨」）；未解鎖的隱藏成就依上一條完全不露稱號。
+- 分享卡（§4）：道號旁加稱號小字。取法（純讀、免新增 API）：`ACHIEVEMENTS.filter(a => a.title && unlocked[a.id])` 依 `unlocked[id]` 時間戳取最新一筆的 `title`；一筆都沒有則不顯示稱號列。
+- 守燈里程碑稱號（`daily.js` 的 `lanternMilestone.title`）與羈絆稱號「墨靈之友」走各自事件演出，不佔成就冊 17 格。
+
 ## 8. CSS class 命名建議（給視覺組）
 
-`--` modifier 風格：`.event-toast`, `.event-modal`, `.pearl-cell`, `.pearl-cell--dusty`, `.gear-card--owned`, `.gear-card--equipped`, `.option--eliminated`, `.combo--hot`, `.lantern--tier-0..3`, `.lantern--out`, `.summary-card--gold-frame`, `.ink-gauge__fill`, `.arena-board__row--top1`。動畫 keyframes 直接用 fx 代號命名（如 `@keyframes ink-stamp`）。
+`--` modifier 風格：`.event-toast`, `.event-modal`, `.pearl-cell`, `.pearl-cell--dusty`, `.gear-card--owned`, `.gear-card--equipped`, `.option--eliminated`, `.combo--hot`, `.lantern--tier-0..3`, `.lantern--out`, `.summary-card--gold-frame`, `.ink-gauge__fill`, `.arena-board__row--top1`, `.ach-cell--unlocked`, `.ach-cell--locked`, `.ach-cell--silhouette`, `.ach-cell--hidden-revealed`, `.ach-cell__title`。動畫 keyframes 直接用 fx 代號命名（如 `@keyframes ink-stamp`）。
 
 ## 9. 鐵律與注意事項
 
