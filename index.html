@@ -2,20 +2,129 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="字字珠璣——台灣國小字音字形與成語答題對戰遊戲">
   <title>字字珠璣</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <main id="app">
-    <h1>字字珠璣</h1>
-    <div id="mode-select">
-      <button id="btn-practice">練習模式</button>
-      <button id="btn-battle">對戰模式</button>
+  <!-- 遠景：潑墨山水（固定滿屏） -->
+  <div class="ink-bg" aria-hidden="true"></div>
+
+  <!-- 桌機答題時的兩側立繪（純裝飾） -->
+  <div class="side-fig side-fig--player" aria-hidden="true"></div>
+  <div class="side-fig side-fig--rival" aria-hidden="true"></div>
+
+  <!-- 掛軸本體 -->
+  <main id="app" class="scroll-frame">
+
+    <!-- 上卷軸桿 -->
+    <div class="scroll-rod scroll-rod--top" aria-hidden="true">
+      <span class="rod-cap"></span><span class="rod-bar"></span><span class="rod-cap"></span>
     </div>
-    <section id="quiz-area" hidden>
-      <p id="question-text"></p>
-      <div id="options"></div>
-    </section>
+
+    <!-- 宣紙卷面 -->
+    <div class="scroll-paper">
+
+      <!-- 題名：徽章 + 書法標題 + 印章 -->
+      <header class="brand">
+        <img class="brand-emblem" src="assets/web/emblem.jpg" alt="字字珠璣徽章">
+        <div class="brand-titlebox">
+          <h1 class="brand-title" aria-label="字字珠璣">
+            <span>字</span><span>字</span><span>珠</span><span>璣</span>
+          </h1>
+          <span class="brand-seal" aria-hidden="true">珠璣</span>
+        </div>
+        <p class="brand-sub">字音字形 × 成語 ── 答題對戰</p>
+      </header>
+
+      <!-- 首頁（進入答題後由 body.in-quiz 隱藏） -->
+      <section id="screen-home">
+
+        <!-- 角色對峙 VS -->
+        <div class="vs-stage" aria-label="小書生對決墨靈少女">
+          <figure class="fighter fighter--player">
+            <img src="assets/web/char-player.jpg" alt="小書生">
+            <figcaption>小書生</figcaption>
+          </figure>
+          <div class="vs-badge" aria-hidden="true"><span>對</span><span>決</span></div>
+          <figure class="fighter fighter--rival">
+            <img src="assets/web/char-rival.jpg" alt="墨靈少女">
+            <figcaption>墨靈少女</figcaption>
+          </figure>
+        </div>
+
+        <!-- 題庫切換 -->
+        <h2 class="section-title"><i aria-hidden="true"></i>選擇題庫<i aria-hidden="true"></i></h2>
+        <div class="bank-grid" role="group" aria-label="題庫切換">
+          <button id="bank-ziyin" class="bank-card is-active" type="button" aria-pressed="true">
+            <span class="bank-icon"><img src="assets/web/icon-ziyin.jpg" alt=""></span>
+            <span class="bank-name">字音字形</span>
+            <span class="bank-count">250 題</span>
+          </button>
+          <button id="bank-chengyu" class="bank-card" type="button" aria-pressed="false">
+            <span class="bank-icon"><img src="assets/web/icon-chengyu.jpg" alt=""></span>
+            <span class="bank-name">成語</span>
+            <span class="bank-count">435 題</span>
+          </button>
+          <button id="bank-mixed" class="bank-card" type="button" aria-pressed="false">
+            <span class="bank-icon"><img src="assets/web/icon-mixed.jpg" alt=""></span>
+            <span class="bank-name">混合挑戰</span>
+            <span class="bank-count">685 題</span>
+          </button>
+        </div>
+
+        <!-- 模式選擇 -->
+        <h2 class="section-title"><i aria-hidden="true"></i>選擇模式<i aria-hidden="true"></i></h2>
+        <div id="mode-select">
+          <button id="btn-practice" class="mode-btn mode-btn--practice" type="button">
+            <span class="mode-name">練習修行</span>
+            <span class="mode-desc">單人闖關．錯的題目會再出現</span>
+          </button>
+          <button id="btn-battle" class="mode-btn mode-btn--battle" type="button">
+            <span class="mode-name">墨靈對戰</span>
+            <span class="mode-desc">答對出招．連對三題威力加倍</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- 對戰狀態列（僅對戰模式顯示） -->
+      <section id="battle-hud" hidden aria-label="對戰狀態">
+        <div class="hp-side hp-side--a">
+          <img class="hp-avatar hp-avatar--a" src="assets/web/char-player.jpg" alt="小書生">
+          <div class="hp-meta">
+            <span class="hp-name">小書生 <b id="hp-num-a" class="hp-num">100</b></span>
+            <div class="hp-track"><div id="hp-a" class="hp-fill" style="width:100%"></div></div>
+          </div>
+        </div>
+        <div id="combo" class="combo" hidden>連對 0</div>
+        <div class="hp-side hp-side--b">
+          <img class="hp-avatar hp-avatar--b" src="assets/web/char-rival.jpg" alt="墨靈少女">
+          <div class="hp-meta">
+            <span class="hp-name"><b id="hp-num-b" class="hp-num">100</b> 墨靈少女</span>
+            <div class="hp-track"><div id="hp-b" class="hp-fill" style="width:100%"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 答題區：灑金箋 -->
+      <section id="quiz-area" hidden>
+        <div class="quiz-card">
+          <img class="card-seal" src="assets/web/emblem.jpg" alt="" aria-hidden="true">
+          <span id="mode-tag" class="mode-tag" aria-hidden="true"></span>
+          <p id="question-text"></p>
+          <div id="options"></div>
+        </div>
+        <button id="btn-back" class="back-btn" type="button">⟲ 收卷回首頁</button>
+      </section>
+
+    </div><!-- /.scroll-paper -->
+
+    <!-- 下卷軸桿 -->
+    <div class="scroll-rod scroll-rod--bottom" aria-hidden="true">
+      <span class="rod-cap"></span><span class="rod-bar"></span><span class="rod-cap"></span>
+    </div>
+
   </main>
   <script type="module" src="js/app.js"></script>
 </body>

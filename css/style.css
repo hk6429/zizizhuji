@@ -1,2 +1,842 @@
-body { font-family: -apple-system, "PingFang TC", sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; }
-#options button { display: block; width: 100%; margin: 8px 0; padding: 12px; font-size: 1.1rem; }
+/* =========================================================
+   字字珠璣 — 畫卷式版面
+   酒精潑墨 × Q版國風｜宣紙 #f0e9d8｜青碧/黛藍/胭脂紅/鎏金
+   手機直向優先（390px）；零外部資源
+   ========================================================= */
+
+:root {
+  /* 依素材實際紙色微調（略暖於原稿 #f2ecdc） */
+  --paper:      #f0e9d8;
+  --paper-hi:   #f8f3e6;
+  --paper-dim:  #e7ddc6;
+  --ink:        #2b3a4a;   /* 黛藍墨 */
+  --ink-soft:   #55636f;
+  --teal:       #2e8f8a;   /* 青碧 */
+  --teal-deep:  #1f6f74;
+  --navy:       #274b63;
+  --rouge:      #c14b4b;   /* 胭脂紅 */
+  --rouge-deep: #9d3232;
+  --gold:       #c9a227;   /* 鎏金 */
+  --gold-hi:    #e6c96a;
+  --serif: "Songti TC", "Noto Serif TC", "LiSong Pro", "PMingLiU", serif;
+  --kai:   "Kaiti TC", "BiauKai", "DFKai-SB", "TW-Kai", "Songti TC", "Noto Serif TC", serif;
+  --sans:  -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--sans);
+  color: var(--ink);
+  background: var(--paper);
+}
+
+/* ---------- 遠景潑墨山水 ---------- */
+/* 用 mask 往下淡出（而非蓋色塊），消除素材紙色與 CSS 底色的微差色帶 */
+.ink-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: url("../assets/web/bg-ink.jpg") no-repeat center top / cover;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 42%, rgba(0,0,0,.45) 70%, transparent 100%);
+          mask-image: linear-gradient(180deg, #000 0%, #000 42%, rgba(0,0,0,.45) 70%, transparent 100%);
+}
+
+/* ---------- 桌機答題兩側立繪（裝飾） ---------- */
+.side-fig { display: none; }
+
+/* ---------- 掛軸骨架 ---------- */
+.scroll-frame {
+  position: relative;
+  z-index: 1;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 14px 10px 40px;
+}
+
+/* 卷軸桿：黑漆桿身 + 鎏金軸頭 */
+.scroll-rod {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 26px;
+  position: relative;
+  z-index: 2;
+}
+.rod-bar {
+  flex: 1;
+  height: 16px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #4a4139 0%, #241f1a 45%, #45392c 100%);
+  box-shadow: 0 3px 8px rgba(36,31,26,.45),
+              inset 0 1px 0 rgba(230,201,106,.35);
+}
+.rod-cap {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  flex: none;
+  margin: 0 -4px;
+  background: radial-gradient(circle at 34% 30%, var(--gold-hi), var(--gold) 55%, #8a6d14 100%);
+  box-shadow: 0 2px 5px rgba(36,31,26,.5);
+  z-index: 1;
+}
+.scroll-rod--top    { margin-bottom: -8px; }
+.scroll-rod--bottom { margin-top: -8px; }
+
+/* 宣紙卷面 */
+.scroll-paper {
+  position: relative;
+  padding: 26px 16px 30px;
+  background:
+    /* 宣紙纖維微紋 */
+    repeating-linear-gradient(0deg,
+      rgba(43,58,74,.016) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, var(--paper-hi) 0%, var(--paper) 38%, var(--paper) 82%, var(--paper-dim) 100%);
+  border-left:  1px solid rgba(201,162,39,.45);
+  border-right: 1px solid rgba(201,162,39,.45);
+  box-shadow: 0 10px 34px rgba(39,75,99,.28);
+}
+/* 卷面左右內側淡淡的捲曲陰影 */
+.scroll-paper::before,
+.scroll-paper::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 14px;
+  pointer-events: none;
+}
+.scroll-paper::before { left: 0;  background: linear-gradient(90deg,  rgba(43,58,74,.08), transparent); }
+.scroll-paper::after  { right: 0; background: linear-gradient(-90deg, rgba(43,58,74,.08), transparent); }
+
+/* ---------- 題名 ---------- */
+.brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+/* 滿版素材圖：inset box-shadow 蓋不到 <img> 內容，一律改用 radial mask 柔邊 */
+.brand-emblem {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  object-fit: cover;
+  -webkit-mask-image: radial-gradient(circle, #000 58%, transparent 97%);
+          mask-image: radial-gradient(circle, #000 58%, transparent 97%);
+}
+.brand-titlebox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.brand-title {
+  margin: 0;
+  display: flex;
+  gap: 6px;
+  font-family: var(--serif);
+  font-size: 2.6rem;
+  font-weight: 900;
+  letter-spacing: .04em;
+  color: var(--ink);
+  text-shadow: 0 2px 0 rgba(240,233,216,.9),
+               2px 3px 6px rgba(39,75,99,.35);
+}
+/* 四字微錯位，做手寫落款感 */
+.brand-title span:nth-child(1) { transform: rotate(-3deg) translateY(2px); }
+.brand-title span:nth-child(2) { transform: rotate(2deg)  translateY(-2px); color: var(--teal-deep); }
+.brand-title span:nth-child(3) { transform: rotate(-2deg) translateY(1px); }
+.brand-title span:nth-child(4) { transform: rotate(3deg)  translateY(-1px); color: var(--rouge); }
+/* 直排胭脂印章 */
+.brand-seal {
+  writing-mode: vertical-rl;
+  font-family: var(--serif);
+  font-size: .95rem;
+  font-weight: 700;
+  letter-spacing: .3em;
+  color: var(--paper-hi);
+  background: linear-gradient(160deg, var(--rouge) 0%, var(--rouge-deep) 100%);
+  border: 1px solid rgba(248,243,230,.55);
+  outline: 2px solid var(--rouge-deep);
+  border-radius: 4px;
+  padding: 8px 4px 5px;
+  transform: rotate(4deg);
+  box-shadow: 1px 2px 4px rgba(157,50,50,.4);
+}
+.brand-sub {
+  margin: 0;
+  font-size: .85rem;
+  letter-spacing: .35em;
+  text-indent: .35em;
+  color: var(--ink-soft);
+}
+
+/* 進入答題後：收起首頁、題名縮小 */
+body.in-quiz #screen-home { display: none; }
+body.in-quiz .brand { flex-direction: row; justify-content: center; margin-bottom: 12px; }
+body.in-quiz .brand-emblem { width: 40px; height: 40px; }
+body.in-quiz .brand-title { font-size: 1.5rem; }
+body.in-quiz .brand-seal,
+body.in-quiz .brand-sub { display: none; }
+
+/* ---------- 角色對峙 VS ---------- */
+.vs-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 4px 0 20px;
+}
+.fighter {
+  margin: 0;
+  flex: 1;
+  max-width: 158px;
+  text-align: center;
+}
+.fighter img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 42% 42% 30% 30% / 30% 30% 22% 22%;
+  /* 滿版圖用 radial mask 柔進卷面（inset shadow 蓋不到 img 內容） */
+  -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 60%, transparent 98%);
+          mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 60%, transparent 98%);
+}
+.fighter--rival img { transform: scaleX(-1); }
+/* 舞台地板橢圓光影 */
+.fighter::after {
+  content: "";
+  display: block;
+  height: 12px;
+  width: 68%;
+  margin: -8px auto 0;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(43,58,74,.18), transparent 68%);
+}
+.fighter figcaption {
+  margin-top: 4px;
+  font-family: var(--serif);
+  font-size: .95rem;
+  font-weight: 700;
+  letter-spacing: .2em;
+  color: var(--ink-soft);
+}
+.fighter--player figcaption { color: var(--teal-deep); }
+.fighter--rival  figcaption { color: var(--navy); }
+
+.vs-badge {
+  flex: none;
+  width: 62px;
+  height: 62px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.05;
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: var(--paper-hi);
+  background: radial-gradient(circle at 32% 28%, #d96a5f, var(--rouge) 55%, var(--rouge-deep) 100%);
+  border-radius: 50%;
+  transform: rotate(-6deg);
+  box-shadow: 0 3px 10px rgba(157,50,50,.4);
+  position: relative;
+}
+.vs-badge::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 2px dashed var(--gold);
+  opacity: .8;
+}
+
+/* ---------- 小節標題 ---------- */
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 20px 0 12px;
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: .3em;
+  text-indent: .3em;
+  color: var(--ink);
+}
+.section-title i {
+  flex: 1;
+  max-width: 90px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold) 45%, var(--rouge) 100%);
+}
+.section-title i:last-child {
+  background: linear-gradient(-90deg, transparent, var(--gold) 45%, var(--rouge) 100%);
+}
+
+/* ---------- 題庫卡 ---------- */
+.bank-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.bank-card {
+  appearance: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 6px 10px;
+  font-family: var(--sans);
+  background: linear-gradient(180deg, var(--paper-hi), var(--paper));
+  border: 1px solid rgba(43,58,74,.18);
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(39,75,99,.1);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  position: relative;
+}
+/* 圓形裁切 + mask 柔邊；內層 img 放大 1.18 裁掉素材外圈留白聚焦主體 */
+.bank-icon {
+  display: block;
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  overflow: hidden;
+  -webkit-mask-image: radial-gradient(circle, #000 58%, transparent 97%);
+          mask-image: radial-gradient(circle, #000 58%, transparent 97%);
+}
+.bank-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.18);
+}
+.bank-name {
+  font-weight: 700;
+  font-size: .92rem;
+  color: var(--ink);
+  letter-spacing: .08em;
+}
+.bank-count {
+  font-size: .74rem;
+  color: var(--ink-soft);
+}
+.bank-card:hover { transform: translateY(-2px); }
+.bank-card.is-active {
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 0 1px rgba(201,162,39,.3),
+              0 4px 12px rgba(201,162,39,.28);
+}
+/* 選中卡右上角落一枚小紅印 */
+.bank-card.is-active::after {
+  content: "選";
+  position: absolute;
+  top: -8px;
+  right: -6px;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  font-family: var(--serif);
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--paper-hi);
+  background: var(--rouge);
+  border-radius: 5px;
+  transform: rotate(8deg);
+  box-shadow: 1px 1px 3px rgba(157,50,50,.4);
+}
+
+/* ---------- 模式按鈕 ---------- */
+#mode-select {
+  display: grid;
+  gap: 12px;
+}
+.mode-btn {
+  appearance: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 14px 12px;
+  color: var(--paper-hi);
+  /* 手繪筆觸感的不規則圓角 */
+  border-radius: 255px 18px 225px 18px / 18px 225px 18px 255px;
+  border: 2px solid rgba(248,243,230,.4);
+  box-shadow: 0 5px 14px rgba(39,75,99,.28),
+              inset 0 1px 0 rgba(248,243,230,.35);
+  transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+.mode-btn:active { transform: scale(.97); }
+.mode-btn:hover  { filter: brightness(1.06); }
+.mode-btn--practice {
+  background: linear-gradient(135deg, var(--teal) 0%, var(--teal-deep) 60%, var(--navy) 100%);
+}
+.mode-btn--battle {
+  background: linear-gradient(135deg, #d96a5f 0%, var(--rouge) 55%, var(--rouge-deep) 100%);
+}
+.mode-name {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  font-weight: 900;
+  letter-spacing: .35em;
+  text-indent: .35em;
+  text-shadow: 0 1px 3px rgba(39,75,99,.4);
+}
+.mode-desc {
+  font-size: .8rem;
+  opacity: .88;
+  letter-spacing: .06em;
+}
+
+/* ---------- 對戰狀態列 ---------- */
+#battle-hud {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 10px 8px;
+  background: linear-gradient(180deg, rgba(248,243,230,.85), rgba(240,233,216,.6));
+  border: 1px solid rgba(201,162,39,.4);
+  border-radius: 12px;
+}
+#battle-hud[hidden] { display: none; }
+.hp-side {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+.hp-side--b { flex-direction: row-reverse; text-align: right; }
+.hp-avatar {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0 0 2px var(--gold);
+}
+/* 逐角色校準取臉位置（rival 髮飾高、臉再往下） */
+.hp-avatar--a { object-position: 50% 30%; }
+.hp-avatar--b { object-position: 50% 36%; transform: scaleX(-1); }
+.hp-meta { flex: 1; min-width: 0; }
+.hp-name {
+  display: block;
+  font-size: .74rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  color: var(--ink-soft);
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hp-num {
+  font-family: var(--serif);
+  font-size: .85rem;
+  color: var(--rouge-deep);
+}
+.hp-track {
+  position: relative;
+  height: 12px;
+  border-radius: 7px;
+  background: rgba(43,58,74,.14);
+  box-shadow: inset 0 1px 3px rgba(43,58,74,.25);
+  display: flex;
+}
+/* 綢帶兩端鎏金結釦 */
+.hp-track::before,
+.hp-track::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  background: radial-gradient(circle at 35% 30%, var(--gold-hi), var(--gold) 60%, #8a6d14 100%);
+  box-shadow: 0 1px 2px rgba(36,31,26,.35);
+  z-index: 1;
+}
+.hp-track::before { left: -4px; }
+.hp-track::after  { right: -4px; }
+/* B 側血條錨定外緣，雙方皆向中央消退 */
+.hp-side--b .hp-track { justify-content: flex-end; }
+.hp-fill {
+  height: 100%;
+  border-radius: 7px;
+  /* 潑墨血條：青碧 → 鎏金 → 胭脂 */
+  background: linear-gradient(90deg, var(--teal) 0%, var(--gold-hi) 55%, var(--rouge) 100%);
+  box-shadow: inset 0 1px 0 rgba(248,243,230,.5);
+  transition: width .45s cubic-bezier(.22,1,.36,1);
+}
+.hp-side--b .hp-fill {
+  background: linear-gradient(-90deg, var(--navy) 0%, var(--gold-hi) 55%, var(--rouge) 100%);
+}
+/* 血量告急（app.js 於 HP≤30 加 .is-low） */
+.hp-fill.is-low { animation: hpFlash 1s ease-in-out infinite; }
+@keyframes hpFlash {
+  0%, 100% { filter: none; }
+  50%       { filter: brightness(1.35) saturate(1.4); }
+}
+
+/* 連對數（連對 <2 時由 app.js 隱藏） */
+.combo {
+  flex: none;
+  min-width: 64px;
+  padding: 6px 4px;
+  text-align: center;
+  font-family: var(--serif);
+  font-size: .82rem;
+  font-weight: 800;
+  letter-spacing: .05em;
+  color: var(--ink);
+  background: var(--paper-hi);
+  border: 1px dashed rgba(201,162,39,.6);
+  border-radius: 50%;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  line-height: 1.2;
+}
+.combo[hidden] { display: none; }
+/* 連對更新時的印章跳出動畫（app.js 重播 .pop） */
+.combo.pop { animation: comboPop .35s ease; }
+@keyframes comboPop {
+  0%   { transform: scale(.4) rotate(-10deg); opacity: 0; }
+  70%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); }
+}
+/* 連對 3 以上（app.js 加 .is-hot）：鎏金燃燒 */
+.combo.is-hot {
+  color: var(--rouge-deep);
+  border-style: solid;
+  border-color: var(--gold);
+  background: radial-gradient(circle, var(--paper-hi) 40%, var(--gold-hi) 100%);
+  animation: comboGlow .9s ease-in-out infinite;
+}
+.combo.is-hot.pop {
+  animation: comboPop .35s ease, comboGlow .9s ease-in-out .35s infinite;
+}
+@keyframes comboGlow {
+  0%, 100% { box-shadow: 0 0 4px 1px rgba(230,201,106,.5); transform: scale(1); }
+  50%       { box-shadow: 0 0 16px 5px rgba(230,201,106,.85); transform: scale(1.06); }
+}
+
+/* ---------- 答題區：灑金箋 ---------- */
+#quiz-area[hidden] { display: none; }
+.quiz-card {
+  position: relative;
+  padding: 26px 16px 18px;
+  border: 1px solid rgba(193,75,75,.4);
+  border-radius: 10px;
+  background-image:
+    /* 灑金：三層錯位金點 */
+    radial-gradient(circle at 18% 24%, rgba(201,162,39,.3) 0 1.6px, transparent 2.4px),
+    radial-gradient(circle at 72% 58%, rgba(230,201,106,.34) 0 1.2px, transparent 2px),
+    radial-gradient(circle at 44% 86%, rgba(201,162,39,.22) 0 1.8px, transparent 2.6px),
+    linear-gradient(180deg, var(--paper-hi) 0%, var(--paper) 100%);
+  background-size: 130px 130px, 90px 90px, 170px 170px, 100% 100%;
+  box-shadow: 0 6px 18px rgba(39,75,99,.15);
+}
+/* 鎏金角花 */
+.quiz-card::before,
+.quiz-card::after {
+  content: "";
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--gold);
+  pointer-events: none;
+}
+.quiz-card::before {
+  top: -2px; left: -2px;
+  border-right: 0; border-bottom: 0;
+  border-top-left-radius: 10px;
+}
+.quiz-card::after {
+  bottom: -2px; right: -2px;
+  border-left: 0; border-top: 0;
+  border-bottom-right-radius: 10px;
+}
+
+/* 徽章騎在題目卡頂端 */
+.card-seal {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  transform: translateX(-50%) rotate(-6deg);
+  border-radius: 50%;
+  object-fit: cover;
+  -webkit-mask-image: radial-gradient(circle, #000 55%, transparent 96%);
+          mask-image: radial-gradient(circle, #000 55%, transparent 96%);
+}
+
+/* 練習/對戰 模式偽印章 */
+.mode-tag {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  writing-mode: vertical-rl;
+  font-family: var(--serif);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .25em;
+  color: var(--paper-hi);
+  padding: 6px 3px 4px;
+  border-radius: 4px;
+  transform: rotate(3deg);
+  box-shadow: 1px 1px 3px rgba(43,58,74,.3);
+}
+body.mode-practice .mode-tag { background: var(--teal-deep); }
+body.mode-battle   .mode-tag { background: var(--rouge); }
+
+/* 題目文字用楷體（國小課本字體，降低認字負擔） */
+#question-text {
+  margin: 0 0 18px;
+  padding: 0 24px; /* 避開右上角模式印章 */
+  font-family: var(--kai);
+  font-size: clamp(1.25rem, 5vw, 1.7rem);
+  font-weight: 700;
+  line-height: 1.7;
+  color: var(--ink);
+  text-align: center;
+  min-height: 2.4em;
+}
+
+/* 選項：自動編甲乙丙丁 */
+#options { counter-reset: opt; display: grid; gap: 10px; }
+#options button {
+  counter-increment: opt;
+  appearance: none;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  display: block;
+  width: 100%;
+  padding: 13px 14px 13px 46px;
+  text-align: left;
+  font-family: var(--sans);
+  font-size: 1.08rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--ink);
+  background: linear-gradient(180deg, var(--paper-hi), var(--paper));
+  border: 1.5px solid rgba(43,58,74,.28);
+  border-radius: 160px 12px 160px 12px / 12px 120px 12px 120px;
+  box-shadow: 0 2px 6px rgba(39,75,99,.1);
+  transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease;
+}
+#options button::before {
+  content: counter(opt, cjk-heavenly-stem);
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  font-family: var(--serif);
+  font-size: .82rem;
+  font-weight: 800;
+  color: var(--paper-hi);
+  background: var(--navy);
+  border-radius: 6px;
+}
+#options button:hover {
+  transform: translateX(3px);
+  border-color: var(--teal);
+  box-shadow: 0 3px 10px rgba(46,143,138,.25);
+}
+#options button:active { transform: scale(.985); }
+
+/* 對戰模式選項：墨玉籤（與練習灑金箋視覺分家） */
+body.mode-battle #options button {
+  border-color: rgba(39,75,99,.5);
+  background: linear-gradient(180deg, #eef0e9, var(--paper));
+}
+body.mode-battle #options button::before { background: var(--rouge-deep); }
+
+/* --- 答對：墨暈擴散 + 金光（青碧淡染保持墨染感） --- */
+#options button.correct {
+  border-color: var(--gold);
+  background:
+    linear-gradient(180deg, rgba(46,143,138,.1), rgba(46,143,138,.18)),
+    linear-gradient(180deg, var(--paper-hi), var(--paper));
+  animation: goldGlow .8s ease forwards;
+}
+#options button.correct::before { background: var(--teal-deep); }
+#options button.correct::after {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+              rgba(46,143,138,.4) 0%,
+              rgba(201,162,39,.25) 45%,
+              transparent 70%);
+  animation: inkBloom .8s ease forwards;
+  pointer-events: none;
+}
+@keyframes inkBloom {
+  0%   { transform: scale(.15); opacity: .95; }
+  70%  { opacity: .5; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+@keyframes goldGlow {
+  0%   { box-shadow: 0 0 0 0 rgba(230,201,106,0); }
+  40%  { box-shadow: 0 0 20px 5px rgba(230,201,106,.85); }
+  100% { box-shadow: 0 0 8px 2px rgba(230,201,106,.4); }
+}
+
+/* --- 答錯：紅墨潑濺 + 顫抖 --- */
+#options button.wrong {
+  border-color: var(--rouge);
+  background: linear-gradient(180deg, #f7e8e4, #f2dcd6);
+  animation: inkShake .45s ease;
+}
+#options button.wrong::before { background: var(--rouge-deep); }
+#options button.wrong::after {
+  content: "";
+  position: absolute;
+  right: -8%;
+  top: -30%;
+  width: 60%;
+  height: 160%;
+  background:
+    radial-gradient(circle at 60% 45%, rgba(193,75,75,.4) 0 22%, transparent 40%),
+    radial-gradient(circle at 30% 70%, rgba(157,50,50,.3) 0 10%, transparent 24%),
+    radial-gradient(circle at 78% 76%, rgba(193,75,75,.32) 0 8%, transparent 20%);
+  animation: splashIn .5s ease forwards;
+  pointer-events: none;
+}
+@keyframes splashIn {
+  0%   { transform: scale(.2) rotate(-14deg); opacity: 0; }
+  55%  { opacity: 1; }
+  100% { transform: scale(1) rotate(0deg);   opacity: .8; }
+}
+@keyframes inkShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-5px) rotate(-.5deg); }
+  45% { transform: translateX(4px)  rotate(.4deg); }
+  70% { transform: translateX(-3px); }
+  85% { transform: translateX(2px); }
+}
+
+/* 答錯時揭示正解（app.js 加 .reveal）：青碧淡染＋金框 */
+#options button.reveal {
+  border: 2px dashed var(--gold);
+  background:
+    linear-gradient(180deg, rgba(46,143,138,.1), rgba(46,143,138,.16)),
+    linear-gradient(180deg, var(--paper-hi), var(--paper));
+}
+#options button.reveal::before { background: var(--teal-deep); }
+
+/* 對戰結束的徽章 */
+.result-emblem {
+  display: block;
+  width: 110px;
+  height: 110px;
+  margin: 6px auto;
+  border-radius: 50%;
+  object-fit: cover;
+  -webkit-mask-image: radial-gradient(circle, #000 55%, transparent 96%);
+          mask-image: radial-gradient(circle, #000 55%, transparent 96%);
+  animation: comboPop .5s ease;
+}
+
+/* ---------- 回首頁 ---------- */
+.back-btn {
+  appearance: none;
+  cursor: pointer;
+  display: block;
+  margin: 16px auto 0;
+  padding: 8px 22px;
+  font-family: var(--sans);
+  font-size: .88rem;
+  letter-spacing: .1em;
+  color: var(--ink-soft);
+  background: transparent;
+  border: 1px solid rgba(43,58,74,.3);
+  border-radius: 999px;
+  transition: color .15s ease, border-color .15s ease;
+}
+.back-btn:hover { color: var(--rouge); border-color: var(--rouge); }
+
+/* ---------- 桌機：卷面加寬、山水兩側露出 ---------- */
+@media (min-width: 768px) {
+  .scroll-frame { max-width: 840px; padding-top: 28px; }
+  .scroll-paper { padding: 36px 48px 44px; }
+  .brand-emblem { width: 92px; height: 92px; }
+  .brand-title  { font-size: 3.4rem; }
+  .fighter      { max-width: 218px; }
+  .vs-stage     { gap: 24px; }
+  .vs-badge     { width: 78px; height: 78px; font-size: 1.4rem; }
+  .bank-grid    { gap: 16px; }
+  .bank-icon    { width: 78px; height: 78px; }
+  #mode-select  { grid-template-columns: 1fr 1fr; gap: 18px; }
+  #options      { gap: 12px; }
+  #options button { font-size: 1.16rem; padding: 15px 18px 15px 52px; }
+  .hp-avatar    { width: 54px; height: 54px; }
+  .hp-track     { height: 14px; }
+  .combo        { min-width: 76px; font-size: .95rem; }
+}
+
+/* 超寬桌機答題中：兩側立繪站上戰場（柔邊＋呼吸浮動） */
+@media (min-width: 1100px) {
+  body.in-quiz .side-fig {
+    display: block;
+    position: fixed;
+    bottom: 0;
+    z-index: 0;
+    width: 250px;
+    aspect-ratio: 2 / 3;
+    background-size: cover;
+    background-position: center;
+    pointer-events: none;
+    opacity: .92;
+    -webkit-mask-image: radial-gradient(ellipse 52% 52% at 50% 48%, #000 55%, transparent 82%);
+            mask-image: radial-gradient(ellipse 52% 52% at 50% 48%, #000 55%, transparent 82%);
+    animation: figBob 4.5s ease-in-out infinite;
+  }
+  .side-fig--player {
+    left: 16px;
+    background-image: url("../assets/web/char-player.jpg");
+  }
+  .side-fig--rival {
+    right: 16px;
+    background-image: url("../assets/web/char-rival.jpg");
+    transform: scaleX(-1);
+    animation-delay: -2.2s;
+  }
+}
+@keyframes figBob {
+  0%, 100% { translate: 0 0; }
+  50%      { translate: 0 -10px; }
+}
+
+/* ---------- 動效減量 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
