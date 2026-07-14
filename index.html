@@ -117,6 +117,27 @@
           </span>
           <span class="pet-entry__arrow" aria-hidden="true">›</span>
         </button>
+
+        <!-- 自學・墨池 ＆ 積分競技 -->
+        <h2 class="section-title"><i aria-hidden="true"></i>自學與競技<i aria-hidden="true"></i></h2>
+        <div class="extra-grid">
+          <button id="btn-selfstudy" class="extra-entry extra-entry--study" type="button">
+            <span class="extra-entry__icon" aria-hidden="true">墨</span>
+            <span class="extra-entry__body">
+              <span class="extra-entry__title">自學・墨池</span>
+              <span class="extra-entry__sub">記憶牌・閃卡・連連看</span>
+            </span>
+            <span class="pet-entry__arrow" aria-hidden="true">›</span>
+          </button>
+          <button id="btn-scoregame" class="extra-entry extra-entry--score" type="button">
+            <span class="extra-entry__icon" aria-hidden="true">積</span>
+            <span class="extra-entry__body">
+              <span class="extra-entry__title">積分競技</span>
+              <span class="extra-entry__sub">衝分・對電腦・兩人對戰</span>
+            </span>
+            <span class="pet-entry__arrow" aria-hidden="true">›</span>
+          </button>
+        </div>
       </section>
 
       <!-- 對戰狀態列（僅對戰模式顯示） -->
@@ -203,6 +224,43 @@
         <div id="pet-equip-grid" class="pet-equip-grid"></div>
       </div>
       <button id="pet-close" class="overlay-ghost-btn" type="button">收起</button>
+    </div>
+  </div>
+
+  <!-- 自學・墨池：記憶牌／閃卡／連連看 -->
+  <div id="selfstudy-overlay" class="meta-overlay" hidden>
+    <div class="meta-overlay__card ss-card">
+      <h2 class="overlay-title">自學・墨池</h2>
+      <div id="ss-menu" class="ss-menu"></div>
+      <div id="ss-game" class="ss-game" hidden>
+        <div class="ss-game__bar">
+          <button id="ss-back" class="ss-barbtn" type="button">‹ 換遊戲</button>
+          <span id="ss-status" class="ss-status"></span>
+          <button id="ss-restart" class="ss-barbtn" type="button">重來</button>
+        </div>
+        <div id="ss-board" class="ss-board"></div>
+        <div id="ss-foot" class="ss-foot"></div>
+      </div>
+      <button id="ss-close" class="overlay-ghost-btn" type="button">收起</button>
+    </div>
+  </div>
+
+  <!-- 積分競技：衝分／對電腦／兩人對戰 -->
+  <div id="scoregame-overlay" class="meta-overlay" hidden>
+    <div class="meta-overlay__card sg-card">
+      <h2 class="overlay-title">積分競技</h2>
+      <div id="sg-menu" class="sg-menu"></div>
+      <div id="sg-play" class="sg-play" hidden>
+        <div id="sg-hud" class="sg-hud"></div>
+        <div id="sg-ctrl" class="sg-ctrl"></div>
+        <div class="sg-quiz">
+          <p id="sg-question" class="sg-question"></p>
+          <div id="sg-options" class="sg-options"></div>
+        </div>
+        <div id="sg-turn" class="sg-turn" aria-live="polite"></div>
+        <button id="sg-quit" class="overlay-ghost-btn" type="button">提前結束</button>
+      </div>
+      <button id="sg-close" class="overlay-ghost-btn" type="button">收起</button>
     </div>
   </div>
 

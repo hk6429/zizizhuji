@@ -1,5 +1,5 @@
 // zizizhuji/js/app.js
-import { loadQuizBank } from './quiz-loader.js';
+import { BANK_SOURCES, fetchBank, loadBank } from './bank.js';
 import { nextQuestionId } from './leitner.js';
 import * as kernel from './meta/kernel.js';
 import {
@@ -8,17 +8,10 @@ import {
   beginBattle, battleOver, applyEliminate, hideMolingBubble,
 } from './integration.js';
 import { initPetUI } from './pet-ui.js';
+import { initSelfStudy } from './selfstudy-ui.js';
+import { initScoreGame } from './scoregame-ui.js';
 
 const FEEDBACK_DELAY = 650; // 等墨暈／潑濺動畫播完再進下一題
-
-const BANK_SOURCES = {
-  ziyin:   [{ path: 'data/ziyin-zixing-elementary.json', kind: 'ziyin' }],
-  chengyu: [{ path: 'data/chengyu-elementary.json', kind: 'chengyu' }],
-  mixed: [
-    { path: 'data/ziyin-zixing-elementary.json', kind: 'ziyin' },
-    { path: 'data/chengyu-elementary.json', kind: 'chengyu' },
-  ],
-};
 
 let currentBank = 'ziyin';
 let session = 0; // 收卷／重新開局時 +1，讓舊回合的 setTimeout 失效
@@ -37,26 +30,7 @@ function shuffle(arr) {
   return a;
 }
 
-const bankCache = new Map(); // path → usable[]（兩份題庫各抓一次，開站與模式共用）
-
-async function fetchBank(path, kind) {
-  if (bankCache.has(path)) return bankCache.get(path);
-  const res = await fetch(path);
-  const raw = await res.json();
-  const { usable, rejected } = loadQuizBank(raw, kind);
-  if (rejected.length) {
-    console.warn(`[字字珠璣] ${path} 有 ${rejected.length} 筆題目未通過驗證，已排除`, rejected);
-  }
-  bankCache.set(path, usable);
-  return usable;
-}
-
-async function loadCurrentBank() {
-  const parts = await Promise.all(
-    BANK_SOURCES[currentBank].map((src) => fetchBank(src.path, src.kind))
-  );
-  return parts.flat();
-}
+const loadCurrentBank = () => loadBank(currentBank);
 
 // 兩份題庫齊備後初始化機制層（八角 meta）。失敗（離線）不擋原有遊玩入口。
 async function initMetaLayer() {
@@ -325,6 +299,9 @@ $('btn-practice').addEventListener('click', startPractice);
 $('btn-battle').addEventListener('click', startBattle);
 
 /* ---------- 開站 ---------- */
+const ensureCtx = async () => { await initMetaLayer(); return getCtx(); };
 bindDailyBox();
 initPetUI({ getMeta: () => getCtx()?.meta, onChange: refreshWidgets });
+initSelfStudy({ loadBank, ensureCtx });
+initScoreGame({ loadBank, ensureCtx, onChange: refreshWidgets });
 initMetaLayer();
