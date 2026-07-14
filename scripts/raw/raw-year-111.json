@@ -1,0 +1,22 @@
+[
+  {"id":"zy-111-001","level":"國小","year":111,"source":"111年全國語文競賽國語-國小組（官方解答，視覺核對pdftoppm 400dpi）","type":"字音","question":"「煮豆燃萁」的「萁」正確讀音是？","options":[],"answer":"ㄑㄧˊ","note":""},
+  {"id":"zy-111-002","level":"國小","year":111,"source":"111年全國語文競賽國語-國小組（官方解答，視覺核對pdftoppm 400dpi）","type":"字音","question":"「自古迄今」的「迄」正確讀音是？","options":[],"answer":"ㄑㄧˋ","note":""},
+  {"id":"zy-111-003","level":"國小","year":111,"source":"111年全國語文競賽國語-國小組（官方解答，視覺核對pdftoppm 400dpi）","type":"字音","question":"「慰問弔喪」的「弔」正確讀音是？","options":[],"answer":"ㄉㄧㄠˋ","note":""},
+  {"id":"zy-111-004","level":"國小","year":111,"source":"111年全國語文競賽國語-國小組（官方解答，視覺核對pdftoppm 400dpi）","type":"字音","question":"「炊爨飲食」的「爨」正確讀音是？","options":[],"answer":"ㄘㄨㄢˋ","note":""},
+  {"id":"zy-111-005","level":"國小","year":111,"source":"111年全國語文競賽國語-國小組（官方解答，視覺核對pdftoppm 400dpi）","type":"字音","question":"「車胤囊螢」的「胤」正確讀音是？","options":[],"answer":"ㄧㄣˋ","note":""},
+  {"id":"zy-111-006","level":"國小","year":111,"source":"111年全國語文競賽國語-國小組（官方解答，視覺核對pdftoppm 400dpi）","type":"字音","question":"「海上喋血」的「喋」正確讀音是？","options":[],"answer":"ㄉㄧㄝˊ","note":""},
+  {"id":"zy-111-007","level":"國小","year":111,"source":"111年全國語文競賽國語-國小組（官方解答，視覺核對pdftoppm 400dpi）","type":"字音","question":"「剎那之間」的「剎」正確讀音是？","options":[],"answer":"ㄔㄚˋ","note":""},
+  {"id":"zy-111-008","level":"國小","year":111,"source":"111年全國語文競賽國語-國小組（官方解答，視覺核對pdftoppm 400dpi）","type":"字音","question":"「大義凜然」的「凜」正確讀音是？","options":[],"answer":"ㄌㄧㄣˇ","note":""},
+  {"id":"zy-111-009","level":"國小","year":111,"source":"111年全國語文競賽國語-國小組（官方解答，視覺核對pdftoppm 400dpi）","type":"字音","question":"「快篩試劑」的「篩」正確讀音是？","options":[],"answer":"ㄕㄞ","note":""},
+  {"id":"zy-111-010","level":"國小","year":111,"source":"111年全國語文競賽國語-國小組（官方解答，視覺核對pdftoppm 400dpi）","type":"字音","question":"「天生異稟」的「稟」正確讀音是？","options":[],"answer":"ㄅㄧㄥˇ","note":""},
+  {"id":"zy-111-011","level":"國小","year":111,"source":"111年全國語文競賽國語-國小組（官方解答，視覺核對pdftoppm 400dpi）","type":"字形","question":"「超前＿署」讀音ㄅㄨˋ，正確的字是？","options":[],"answer":"部","note":"超前部署"},
+  {"id":"zy-111-012","level":"國小","year":111,"source":"111年全國語文競賽國語-國小組（官方解答，視覺核對pdftoppm 400dpi）","type":"字形","question":"「店＿」讀音ㄆㄨˋ，正確的字是？","options":[],"answer":"鋪","note":"店鋪"},
+  {"id":"zy-111-013","level":"國小","year":111,"source":"111年全國語文競賽國語-國小組（官方解答，視覺核對pdftoppm 400dpi）","type":"字形","question":"「＿衛疆土」讀音ㄏㄢˋ，正確的字是？","options":[],"answer":"捍","note":"捍衛疆土"},
+  {"id":"zy-111-014","level":"國小","year":111,"source":"111年全國語文競賽國語-國小組（官方解答，視覺核對pdftoppm 400dpi）","type":"字形","question":"「處心積＿」讀音ㄌㄩˋ，正確的字是？","options":[],"answer":"慮","note":"處心積慮"},
+  {"id":"zy-111-015","level":"國小","year":111,"source":"111年全國語文競賽國語-國小組（官方解答，視覺核對pdftoppm 400dpi）","type":"字形","question":"「歲＿年豐」讀音ㄖㄣˇ，正確的字是？","options":[],"answer":"稔","note":"歲稔年豐"},
+  {"id":"zy-111-016","level":"國小","year":111,"source":"111年全國語文競賽國語-國小組（官方解答，視覺核對pdftoppm 400dpi）","type":"字形","question":"「＿志成城」讀音ㄓㄨㄥˋ，正確的字是？","options":[],"answer":"眾","note":"眾志成城"},
+  {"id":"zy-111-017","level":"國小","year":111,"source":"111年全國語文競賽國語-國小組（官方解答，視覺核對pdftoppm 400dpi）","type":"字形","question":"「歌臺舞＿」讀音ㄒㄧㄝˋ，正確的字是？","options":[],"answer":"榭","note":"歌臺舞榭"},
+  {"id":"zy-111-018","level":"國小","year":111,"source":"111年全國語文競賽國語-國小組（官方解答，視覺核對pdftoppm 400dpi）","type":"字形","question":"「＿遠流長」讀音ㄩㄢ，正確的字是？","options":[],"answer":"淵","note":"淵遠流長"},
+  {"id":"zy-111-019","level":"國小","year":111,"source":"111年全國語文競賽國語-國小組（官方解答，視覺核對pdftoppm 400dpi）","type":"字形","question":"「堅若＿石」讀音ㄆㄢˊ，正確的字是？","options":[],"answer":"磐","note":"堅若磐石"},
+  {"id":"zy-111-020","level":"國小","year":111,"source":"111年全國語文競賽國語-國小組（官方解答，視覺核對pdftoppm 400dpi）","type":"字形","question":"「笑＿江湖」讀音ㄠˋ，正確的字是？","options":[],"answer":"傲","note":"笑傲江湖"}
+]
