@@ -28,6 +28,9 @@ page.on('pageerror', err => errors.push(err.message));
 page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
 
 await page.goto('http://localhost:4173');
+// 首訪會先跳「開卷誓言」攔截層，先跳過才點得到模式按鈕
+await page.waitForSelector('#oath-overlay:not([hidden])');
+await page.click('#oath-skip');
 await page.click('#btn-practice');
 await page.waitForSelector('#options button');
 const practiceOptionCount = await page.$$eval('#options button', els => els.length);

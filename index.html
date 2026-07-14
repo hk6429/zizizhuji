@@ -41,6 +41,26 @@
       <!-- 首頁（進入答題後由 body.in-quiz 隱藏） -->
       <section id="screen-home">
 
+        <!-- 八角面板：字珠／境界／長明燈（機制層） -->
+        <section id="meta-bar" aria-label="修行狀態">
+          <div class="meta-chip meta-chip--pearl">
+            <span class="meta-chip__label">字珠</span>
+            <b id="pearl-balance">0</b>
+          </div>
+          <div id="rank-badge" class="meta-chip meta-chip--rank">
+            <span id="rank-name" class="meta-chip__rank">蒙童</span>
+            <span class="rank-track"><span id="rank-fill" class="rank-fill"></span></span>
+            <span id="rank-xp" class="meta-chip__sub">文氣 0 / 100</span>
+          </div>
+          <div id="lantern-widget" class="meta-chip meta-chip--lantern">
+            <span class="lantern-flame" aria-hidden="true"></span>
+            <span id="lantern-text" class="meta-chip__sub">油燈・守燈 0 天</span>
+            <button id="daily-box" class="box-btn" type="button" hidden>開墨匣</button>
+          </div>
+        </section>
+        <p id="oath-line" class="oath-line" hidden></p>
+        <p id="omen-line" class="omen-line" hidden></p>
+
         <!-- 角色對峙 VS -->
         <div class="vs-stage" aria-label="小書生對決墨靈少女">
           <figure class="fighter fighter--player">
@@ -105,6 +125,7 @@
             <div class="hp-track"><div id="hp-b" class="hp-fill" style="width:100%"></div></div>
           </div>
         </div>
+        <div id="moling-bubble" class="moling-bubble" hidden></div>
       </section>
 
       <!-- 答題區：灑金箋 -->
@@ -126,6 +147,34 @@
     </div>
 
   </main>
+
+  <!-- 事件 toast（八角機制層演出） -->
+  <div id="event-toasts" aria-live="polite"></div>
+
+  <!-- 首訪開卷誓言 -->
+  <div id="oath-overlay" class="meta-overlay" hidden>
+    <div class="meta-overlay__card oath-card">
+      <h2 class="overlay-title">開卷・立誓</h2>
+      <div id="oath-story"></div>
+      <p class="oath-prompt">立下你的誓言：</p>
+      <div id="oath-list"></div>
+      <button id="oath-skip" class="overlay-ghost-btn" type="button">先看看再說</button>
+    </div>
+  </div>
+
+  <!-- 戰報卷軸（結算卡） -->
+  <div id="summary-scroll" class="meta-overlay" hidden>
+    <div id="summary-card" class="meta-overlay__card summary-card scroll-unroll">
+      <h2 id="summary-title" class="overlay-title">戰報</h2>
+      <div id="summary-rows"></div>
+      <p id="summary-moling" class="summary-moling"></p>
+      <div class="summary-actions">
+        <button id="summary-copy" class="summary-btn" type="button">複製分享文字</button>
+        <button id="summary-close" class="summary-btn summary-btn--ghost" type="button">收起戰報</button>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
