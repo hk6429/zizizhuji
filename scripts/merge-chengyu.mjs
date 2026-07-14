@@ -6,7 +6,13 @@ import { validateChengyuEntry } from '../js/schema.js';
 //   (國中基測/會考), raw output in scripts/raw/chengyu-real-anchors.json
 // - 自編補足: idioms authored per 教育部《成語典》 to reach elementary-level
 //   scale, raw output in scripts/raw/chengyu-authored-0{1,2,3}.json
-// See scripts/chengyu-fetch-notes.md for full sourcing method and caveats.
+// See scripts/fetch-notes.md (成語國小題庫 section) for full sourcing method and caveats.
+//
+// Distractors: authored entries use hand-written options rather than
+// js/distractor.js's pickChengyuDistractors — a deliberate deviation, not an
+// oversight (see fetch-notes.md for why generic random-pool sampling doesn't
+// fit 錯別字/近似成語 question design). Real-anchor entries are original
+// multiple-choice questions and never needed generated distractors.
 
 const real = JSON.parse(readFileSync('scripts/raw/chengyu-real-anchors.json', 'utf8'));
 const authored = [1, 2, 3].flatMap((n) =>
