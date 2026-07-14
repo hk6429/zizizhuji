@@ -206,8 +206,8 @@ export function hideMolingBubble() {
 
 /* ---------- 事件渲染 ---------- */
 
-const TOAST_MS = 2400;
-const TOAST_GAP = 450;
+const TOAST_MS = 3600;
+const TOAST_GAP = 500;
 let toastQueue = [];
 let toastPumping = false;
 
@@ -237,7 +237,7 @@ function floatText(text, kind) {
   el.className = `meta-float meta-float--${kind}`;
   el.textContent = text;
   host.appendChild(el);
-  setTimeout(() => el.remove(), 1300);
+  setTimeout(() => el.remove(), 2000);
 }
 
 export function renderEvents(events) {

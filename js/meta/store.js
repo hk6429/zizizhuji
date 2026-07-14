@@ -59,7 +59,8 @@ export function defaultMeta() {
     arena: { week: '', entries: [], history: [] },
     challenges: [],
     pet: { seen: {}, active: null, ownedEquip: [], equipped: {} },
-    selfstudy: { flash: {}, scoreBest: {} }, // 閃卡 Leitner 盒位；積分競技各庫最高分
+    // 閃卡 Leitner 盒位；積分競技各庫最高分；班級排行榜代碼與暱稱
+    selfstudy: { flash: {}, scoreBest: {}, classCode: '', nick: '' },
   };
 }
 

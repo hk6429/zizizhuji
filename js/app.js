@@ -163,9 +163,9 @@ function renderHpSide(fillEl, numEl, hp, maxHp = 100) {
   numEl.textContent = hp;
 }
 
-function renderBattleHud(state, maxHpA = 100) {
+function renderBattleHud(state, maxHpA = 100, maxHpB = 100) {
   renderHpSide($('hp-a'), $('hp-num-a'), state.hpA, maxHpA);
-  renderHpSide($('hp-b'), $('hp-num-b'), state.hpB);
+  renderHpSide($('hp-b'), $('hp-num-b'), state.hpB, maxHpB);
   const combo = $('combo');
   // 答對打斷對手連擊、答錯歸零自己連擊，兩者互斥，共用同一枚印章
   const rivalStreak = state.comboA === 0 && state.comboB >= 2;
@@ -237,9 +237,14 @@ async function startBattle() {
 
   battleDone = false;
   let state = beginBattle(); // adapter 產 state（法寶/天機修正）＋墨靈開場白
+  // 對戰題數加倍：雙方血量 ×2，傷害不變 → 一回合題數約翻倍，輸贏成就感更強
+  const HP_SCALE = 2;
+  const baseHpB = state.hpB;
+  state = { ...state, hpA: state.hpA * HP_SCALE, hpB: state.hpB * HP_SCALE };
   battleState = state;
-  const maxHpA = ctx.battle.mods.maxHp;
-  renderBattleHud(state, maxHpA);
+  const maxHpA = ctx.battle.mods.maxHp * HP_SCALE;
+  const maxHpB = baseHpB * HP_SCALE;
+  renderBattleHud(state, maxHpA, maxHpB);
   const queue = shuffle(bank);
   let idx = 0;
 
@@ -288,7 +293,7 @@ async function startBattle() {
       syncPets(); // 精通題數可能剛跨過解鎖門檻
       state = rB.state;
       battleState = state;
-      renderBattleHud(state, maxHpA);
+      renderBattleHud(state, maxHpA, maxHpB);
       nextRound();
     });
   }

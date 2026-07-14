@@ -8,6 +8,11 @@ import {
   createScoreState, answer, promote, canPromote, comboMultiplier,
   buyInsurance, TIERS, INSURANCE_COST,
 } from './scoreEngine.js';
+import { submitScore, fetchTop } from './leaderboard.js';
+
+const CLASS_RE = /^[\w一-鿿]{1,20}$/;
+const NICK_MAX = 12;
+let metaRef = null; // 開站後由 ensureCtx 灌入，供班級設定讀寫
 
 const $ = (id) => document.getElementById(id);
 function el(tag, cls, txt) {
@@ -23,6 +28,11 @@ function shuffle(a) {
     [b[i], b[j]] = [b[j], b[i]];
   }
   return b;
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
 }
 
 const ROUNDS = 10;        // 對電腦／兩人：每位真人各答 10 題
@@ -51,14 +61,20 @@ export function initScoreGame(opts) {
 function clearTimers() { timers.forEach(clearTimeout); timers = []; }
 function later(fn, ms) { const t = setTimeout(fn, ms); timers.push(t); return t; }
 
-function open() { showMenu(); $('scoregame-overlay').hidden = false; }
+async function open() {
+  $('scoregame-overlay').hidden = false;
+  try { const ctx = await deps.ensureCtx(); metaRef = ctx ? ctx.meta : null; } catch { metaRef = null; }
+  showMenu();
+}
 function close() { clearTimers(); state = null; $('scoregame-overlay').hidden = true; }
 
 function showMenu() {
   clearTimers();
   state = null;
   $('sg-play').hidden = true;
+  $('sg-lb').hidden = true;
   $('sg-menu').hidden = false;
+  renderClassbar();
   const menu = $('sg-menu');
   menu.innerHTML = '';
   for (const m of MODES) {
@@ -173,6 +189,81 @@ function floatMsg(text, kind) {
   later(() => s.remove(), 1200);
 }
 
+/* ---------- 班級排行榜（M3） ---------- */
+function classInfo() {
+  const ss = metaRef && metaRef.selfstudy;
+  return { code: (ss && ss.classCode) || '', nick: (ss && ss.nick) || '' };
+}
+
+function renderClassbar() {
+  const bar = $('sg-classbar');
+  bar.innerHTML = '';
+  const { code, nick } = classInfo();
+  if (code && nick) {
+    const info = el('span', 'sg-classbar__info');
+    info.innerHTML = `班級 <b>${escapeHtml(code)}</b>・${escapeHtml(nick)}`;
+    const view = el('button', 'sg-classbar__btn', '看班級榜'); view.type = 'button';
+    view.addEventListener('click', () => showLeaderboard(code));
+    const edit = el('button', 'sg-classbar__btn sg-classbar__btn--ghost', '改'); edit.type = 'button';
+    edit.addEventListener('click', renderClassForm);
+    bar.append(info, view, edit);
+  } else {
+    const set = el('button', 'sg-classbar__btn', '設定班級・參加排行榜'); set.type = 'button';
+    set.addEventListener('click', renderClassForm);
+    bar.appendChild(set);
+  }
+}
+
+function renderClassForm() {
+  const bar = $('sg-classbar');
+  bar.innerHTML = '';
+  const { code, nick } = classInfo();
+  const codeIn = el('input', 'sg-classbar__in'); codeIn.placeholder = '班級代碼(如601)'; codeIn.maxLength = 20; codeIn.value = code;
+  const nickIn = el('input', 'sg-classbar__in'); nickIn.placeholder = '暱稱'; nickIn.maxLength = NICK_MAX; nickIn.value = nick;
+  const save = el('button', 'sg-classbar__btn', '儲存'); save.type = 'button';
+  const err = el('span', 'sg-classbar__err', '');
+  save.addEventListener('click', () => {
+    const c = codeIn.value.trim(), n = nickIn.value.trim().slice(0, NICK_MAX);
+    if (!CLASS_RE.test(c)) { err.textContent = '班級代碼只能中英數、1–20 字'; return; }
+    if (!n) { err.textContent = '請填暱稱'; return; }
+    if (metaRef) { metaRef.selfstudy.classCode = c; metaRef.selfstudy.nick = n; saveMeta(metaRef); }
+    renderClassbar();
+  });
+  bar.append(codeIn, nickIn, save, err);
+}
+
+async function showLeaderboard(code) {
+  $('sg-menu').hidden = true;
+  const lb = $('sg-lb');
+  lb.hidden = false;
+  lb.innerHTML = '<p class="sg-lb__load">排行榜載入中…</p>';
+  const r = await fetchTop(code);
+  renderLeaderboard(lb, code, r, () => { lb.hidden = true; $('sg-menu').hidden = false; });
+}
+
+function renderLeaderboard(host, code, r, onClose) {
+  host.innerHTML = '';
+  host.appendChild(el('div', 'sg-lb__title', `班級榜・${code}`));
+  if (!r.ok) {
+    host.appendChild(el('p', 'sg-lb__load', '排行榜暫時無法連線，稍後再試。'));
+  } else if (!r.top.length) {
+    host.appendChild(el('p', 'sg-lb__load', '還沒有人上榜，快去衝分！'));
+  } else {
+    const ol = el('ol', 'sg-lb__list');
+    r.top.forEach((row) => {
+      const li = el('li', 'sg-lb__row');
+      li.innerHTML = `<span class="sg-lb__name">${escapeHtml(row.name)}</span><span class="sg-lb__score">${row.score}</span>`;
+      ol.appendChild(li);
+    });
+    host.appendChild(ol);
+  }
+  if (onClose) {
+    const back = el('button', 'ss-again', '關閉班級榜'); back.type = 'button';
+    back.addEventListener('click', onClose);
+    host.appendChild(back);
+  }
+}
+
 /* ---------- 電腦回合 ---------- */
 function aiTurn(p) {
   $('sg-question').textContent = `${p.name}作答中…`;
@@ -224,7 +315,7 @@ function humanTurn(p) {
 }
 
 /* ---------- 成績 ---------- */
-function results(early) {
+async function results(early) {
   clearTimers();
   const optionsEl = $('sg-options');
   optionsEl.onclick = null;
@@ -261,4 +352,16 @@ function results(early) {
   again.addEventListener('click', showMenu);
   panel.appendChild(again);
   optionsEl.appendChild(panel);
+
+  // 班級排行榜：非同機兩人（單一裝置身分）時，上傳本人分數並顯示班級榜
+  const { code, nick } = classInfo();
+  if (code && nick && state.mode !== 'hotseat') {
+    const human = state.players.find((p) => !p.ai);
+    const lbBox = el('div', 'sg-lb sg-lb--inline');
+    lbBox.innerHTML = '<p class="sg-lb__load">上傳班級榜…</p>';
+    panel.appendChild(lbBox);
+    const sub = await submitScore(code, nick, human.score.score);
+    const data = sub.ok ? { ok: true, top: sub.top } : await fetchTop(code);
+    renderLeaderboard(lbBox, code, data, null);
+  }
 }

@@ -969,8 +969,9 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 }
 .event-toast {
   max-width: 100%;
-  padding: 8px 14px;
-  font-size: .82rem;
+  padding: 12px 20px;
+  font-size: 1.06rem;
+  font-weight: 700;
   color: var(--ink);
   background: linear-gradient(180deg, var(--paper-hi), var(--paper));
   border: 1px solid rgba(201,162,39,.5);
@@ -1012,9 +1013,11 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
   top: 6px;
   right: 12px;
   font-family: var(--kai);
-  font-size: .85rem;
+  font-size: 1.28rem;
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(240,233,216,.9);
   pointer-events: none;
-  animation: xp-rise 1.2s ease both;
+  animation: xp-rise 2s ease both;
 }
 .meta-float--xp { color: var(--teal-deep); }
 .meta-float--pearl { color: var(--gold); top: 26px; }
@@ -1042,9 +1045,26 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
   animation: toast-in .25s ease both;
 }
 #options button.option--eliminated {
-  opacity: .38;
-  text-decoration: line-through;
-  filter: grayscale(1);
+  opacity: .7;
+  filter: grayscale(.5);
+  color: #7a8794;
+  cursor: not-allowed;
+}
+#options button.option--eliminated::after {
+  content: '已排除';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--serif);
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  color: var(--rouge);
+  border: 1.5px solid var(--rouge);
+  border-radius: 999px;
+  padding: 2px 9px;
+  background: rgba(193,75,75,.1);
 }
 
 /* ---------- 覆蓋層（誓言 / 戰報卷軸） ---------- */
@@ -1454,3 +1474,52 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 .sg-result__score { font-family: var(--serif); font-weight: 800; color: var(--navy); }
 .sg-result__meta { grid-column: 1 / -1; font-size: .74rem; color: var(--ink-soft); }
 .sg-result__best { text-align: center; font-size: .82rem; color: var(--gold); font-family: var(--kai); margin-top: 2px; }
+
+/* ---------- M3 班級共享排行榜 ---------- */
+.sg-classbar {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  padding: 8px 12px; margin-bottom: 10px;
+  border-radius: 10px; background: var(--paper-hi);
+  border: 1px solid rgba(46,143,138,.35);
+}
+.sg-classbar__info { font-size: .92rem; color: var(--ink); }
+.sg-classbar__info b { font-family: var(--serif); color: var(--teal-deep); }
+.sg-classbar__btn {
+  appearance: none; cursor: pointer; font-family: var(--kai); font-weight: 700;
+  font-size: .86rem; padding: 6px 14px; border-radius: 999px;
+  color: var(--paper-hi); background: var(--teal); border: 1px solid var(--teal-deep);
+}
+.sg-classbar__btn:active { transform: translateY(1px); }
+.sg-classbar__btn--ghost {
+  color: var(--teal-deep); background: transparent; padding: 6px 10px;
+}
+.sg-classbar__in {
+  font-family: var(--sans); font-size: .9rem; padding: 6px 10px;
+  border-radius: 8px; border: 1px solid rgba(39,75,99,.4); background: var(--paper);
+  color: var(--ink); min-width: 0; flex: 1 1 96px;
+}
+.sg-classbar__err { flex-basis: 100%; font-size: .8rem; color: var(--rouge-deep); }
+
+.sg-lb {
+  padding: 12px; border-radius: 12px; background: var(--paper-hi);
+  border: 1px solid rgba(201,162,39,.4);
+}
+.sg-lb__title {
+  font-family: var(--kai); font-weight: 800; font-size: 1.1rem;
+  color: var(--navy); text-align: center; margin-bottom: 10px;
+}
+.sg-lb__load { text-align: center; color: var(--ink-soft); font-size: .9rem; padding: 12px 0; }
+.sg-lb__list { list-style: none; margin: 0; padding: 0; counter-reset: rank; }
+.sg-lb__row {
+  counter-increment: rank;
+  display: grid; grid-template-columns: 2.2em 1fr auto; gap: 8px; align-items: baseline;
+  padding: 8px 10px; border-radius: 8px;
+}
+.sg-lb__row:nth-child(odd) { background: rgba(46,143,138,.06); }
+.sg-lb__row::before {
+  content: counter(rank); font-family: var(--serif); font-weight: 800;
+  color: var(--gold); text-align: center;
+}
+.sg-lb__row:nth-child(1)::before { color: var(--rouge); }
+.sg-lb__name { font-family: var(--kai); font-weight: 700; color: var(--ink); }
+.sg-lb__score { font-family: var(--serif); font-weight: 800; color: var(--navy); }
