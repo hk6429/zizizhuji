@@ -183,7 +183,16 @@ function processAnswer(ctx, id, correct, mode) {
     for (const ev of cr.events) {
       events.push(ev);
       if (ev.payload && ev.payload.setBox) ctx.leitner.set(id, ev.payload.setBox); // 蒙塵→3 / 擦亮→5
-      if (ev.type === 'pearlForged') grantPearls(ctx, PEARL_FORGE, 'forge', events);
+      if (ev.type === 'pearlForged') {
+        grantPearls(ctx, PEARL_FORGE, 'forge', events);
+        // 收藏里程碑統計：總煉成數＋分域計數（成語域 / 字音字形域），供 M3 徽章判定
+        const isChengyu = ctx.zoneOfId.get(id) === 'chengyu';
+        ach.recordStats(meta, {
+          forgedCount: 1,
+          forgedZiyin: isChengyu ? 0 : 1,
+          forgedChengyu: isChengyu ? 1 : 0,
+        });
+      }
       if (ev.type === 'pearlPolished') grantPearls(ctx, PEARL_POLISH, 'polish', events);
     }
     collection.persistLeitner(meta, ctx.leitner);

@@ -44,6 +44,7 @@ export function defaultMeta() {
       stats: {
         wins: 0, battles: 0, bestCombo: 0, perfectGames: 0,
         totalAnswered: 0, totalCorrect: 0, lanternBest: 0,
+        forgedCount: 0, forgedZiyin: 0, forgedChengyu: 0,
       },
     },
     gear: { owned: [], loadout: [] },

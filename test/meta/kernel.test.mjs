@@ -84,6 +84,39 @@ test('4 straight corrects forge a gold pearl (+3 pearls) through the kernel', ()
   assert.equal(loadMeta().leitner['zy-1'], 5);
 });
 
+test('forging the 10th pearl unlocks 初綴 through the kernel, with per-domain stats', () => {
+  const ids = Array.from({ length: 10 }, (_, i) => `zy-f${i}`);
+  const banks = { ziyin: ids.map(id => ({ id, type: '字音' })), chengyu: [] };
+  const { ctx } = initSession(D, banks, { rng: NO_ENCOUNTER });
+  let all = [];
+  for (const id of ids) {
+    for (let i = 0; i < 4; i++) {
+      const { events } = onPracticeAnswer(ctx, id, true);
+      all = all.concat(events);
+    }
+  }
+  const forges = all.filter(e => e.type === 'pearlForged');
+  assert.equal(forges.length, 10);
+  const achEv = all.find(e => e.type === 'achievement' && e.payload.id === 'forge-10');
+  assert.ok(achEv);
+  assert.equal(achEv.payload.name, '初綴');
+  // 成就要在第 10 顆煉成當下（含）之後才蓋章，不可提早
+  assert.ok(all.indexOf(achEv) > all.indexOf(forges[9]));
+  const saved = loadMeta();
+  assert.equal(saved.ach.stats.forgedCount, 10);
+  assert.equal(saved.ach.stats.forgedZiyin, 10);
+  assert.equal(saved.ach.stats.forgedChengyu, 0);
+});
+
+test('forging a chengyu pearl counts into the forgedChengyu domain', () => {
+  const { ctx } = initSession(D, BANKS, { rng: NO_ENCOUNTER });
+  for (let i = 0; i < 4; i++) onPracticeAnswer(ctx, 'cy-1', true);
+  const saved = loadMeta();
+  assert.equal(saved.ach.stats.forgedCount, 1);
+  assert.equal(saved.ach.stats.forgedZiyin, 0);
+  assert.equal(saved.ach.stats.forgedChengyu, 1);
+});
+
 test('combo achievements unlock mid-session with pearls (cap-exempt reason)', () => {
   const { ctx } = initSession(D, BANKS, { rng: NO_ENCOUNTER });
   let events;

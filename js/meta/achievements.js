@@ -13,6 +13,13 @@ export const ACHIEVEMENTS = [
   { id: 'lantern-3', name: '守燈三日', desc: '連續守燈 3 天', pearls: 5, hidden: false },
   { id: 'lantern-7', name: '守燈七日', desc: '連續守燈 7 天', pearls: 10, hidden: false },
   { id: 'lantern-30', name: '守燈三十日', desc: '連續守燈 30 天', pearls: 30, hidden: false },
+  // M3 收藏里程碑：煉成（升滿第 5 盒）顆數；圓滿類走分域計數（字音字形 250／成語 435）
+  { id: 'forge-10', name: '初綴', desc: '煉成 10 顆字珠', pearls: 5, hidden: false },
+  { id: 'forge-50', name: '串珠', desc: '煉成 50 顆字珠', pearls: 10, hidden: false },
+  { id: 'forge-100', name: '珠簾', desc: '煉成 100 顆字珠', pearls: 20, hidden: false },
+  { id: 'forge-ziyin-250', name: '字音圓滿', desc: '字音字形 250 顆字珠全數煉成', pearls: 40, hidden: false },
+  { id: 'forge-chengyu-435', name: '成語圓滿', desc: '成語 435 顆字珠全數煉成', pearls: 60, hidden: false },
+  { id: 'forge-685', name: '字字珠璣・大成', desc: '685 顆字珠全數煉成，寶典圓滿', pearls: 100, hidden: false },
 ];
 
 const CONDITIONS = {
@@ -27,10 +34,19 @@ const CONDITIONS = {
   'lantern-3': s => s.lanternBest >= 3,
   'lantern-7': s => s.lanternBest >= 7,
   'lantern-30': s => s.lanternBest >= 30,
+  'forge-10': s => s.forgedCount >= 10,
+  'forge-50': s => s.forgedCount >= 50,
+  'forge-100': s => s.forgedCount >= 100,
+  'forge-ziyin-250': s => s.forgedZiyin >= 250,
+  'forge-chengyu-435': s => s.forgedChengyu >= 435,
+  'forge-685': s => s.forgedCount >= 685,
 };
 
 // 累計統計：計數欄位相加，bestCombo / lanternBest 取最大值。
-const ADDITIVE = new Set(['wins', 'battles', 'perfectGames', 'totalAnswered', 'totalCorrect']);
+const ADDITIVE = new Set([
+  'wins', 'battles', 'perfectGames', 'totalAnswered', 'totalCorrect',
+  'forgedCount', 'forgedZiyin', 'forgedChengyu',
+]);
 const MAXIMAL = new Set(['bestCombo', 'lanternBest']);
 
 export function recordStats(meta, patch) {
