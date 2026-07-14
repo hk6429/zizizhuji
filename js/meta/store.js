@@ -58,6 +58,7 @@ export function defaultMeta() {
     encounter: { sinceLast: 0, lastEventId: null, totalCount: 0 },
     arena: { week: '', entries: [], history: [] },
     challenges: [],
+    pet: { seen: {}, active: null, ownedEquip: [], equipped: {} },
   };
 }
 

@@ -39,3 +39,40 @@ test('validateChengyuEntry requires source to be 真題 or 自編', () => {
   assert.equal(result.valid, false);
   assert.ok(result.errors.includes('source must be "真題" or "自編"'));
 });
+
+test('validateZiyinEntry accepts 國中／選手 level', () => {
+  for (const level of ['國中', '選手']) {
+    const entry = {
+      id: `zy-jh-${level}`, level, origin: '自編',
+      source: '教育部常用字表・自編', type: '字音',
+      question: '「參差」的「差」正確讀音是？',
+      options: ['ㄔㄚ', 'ㄘ', 'ㄔㄞ', 'ㄔㄚˋ'], answer: 'ㄘ', note: ''
+    };
+    const result = validateZiyinEntry(entry);
+    assert.equal(result.valid, true, `${level} should be valid: ${result.errors}`);
+  }
+});
+
+test('validateZiyinEntry: 自編 exempt from year, 真題 still requires it', () => {
+  const selfMade = {
+    id: 'zy-e-001', level: '選手', origin: '自編',
+    source: '教育部次常用字表・自編', type: '字形',
+    question: '下列何者用字完全正確？',
+    options: ['甲', '乙', '丙', '丁'], answer: '甲'
+  };
+  assert.equal(validateZiyinEntry(selfMade).valid, true);
+  const realNoYear = { ...selfMade, id: 'zy-e-002', origin: undefined };
+  assert.ok(validateZiyinEntry(realNoYear).errors.includes('year is required for 真題'));
+});
+
+test('validateChengyuEntry rejects unknown level', () => {
+  const entry = {
+    id: 'cy-bad', level: '高中', type: '意義', source: '自編',
+    question: '「一鳴驚人」的意思是？',
+    options: ['一開口就震驚眾人', '從不開口', '沉默寡言', '一直哭鬧'],
+    answer: '一開口就震驚眾人'
+  };
+  const result = validateChengyuEntry(entry);
+  assert.equal(result.valid, false);
+  assert.ok(result.errors.some((e) => e.includes('level must be')));
+});
