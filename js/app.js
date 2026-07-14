@@ -45,6 +45,14 @@ async function loadCurrentBank() {
   return parts.flat();
 }
 
+// 題庫載入失敗（離線/路徑錯）時進答題頁顯示訊息，玩家可按「收卷」返回
+function showLoadError(mode) {
+  enterQuiz(mode);
+  $('battle-hud').hidden = true;
+  $('question-text').textContent = '題庫載入失敗了，請檢查網路後收卷再試一次。';
+  $('options').innerHTML = '';
+}
+
 /* ---------- 題庫切換 ---------- */
 const bankCards = {
   ziyin: $('bank-ziyin'),
@@ -132,9 +140,12 @@ function renderBattleHud(state) {
   renderHpSide($('hp-a'), $('hp-num-a'), state.hpA);
   renderHpSide($('hp-b'), $('hp-num-b'), state.hpB);
   const combo = $('combo');
-  combo.textContent = `連對 ${state.comboA}`;
-  combo.hidden = state.comboA < 2; // 連對 0/1 不佔版面
-  combo.classList.toggle('is-hot', state.comboA >= 3);
+  // 答對打斷對手連擊、答錯歸零自己連擊，兩者互斥，共用同一枚印章
+  const rivalStreak = state.comboA === 0 && state.comboB >= 2;
+  combo.textContent = rivalStreak ? `對手連擊 ${state.comboB}` : `連對 ${state.comboA}`;
+  combo.hidden = state.comboA < 2 && !rivalStreak; // 連對 0/1 不佔版面
+  combo.classList.toggle('is-rival', rivalStreak);
+  combo.classList.toggle('is-hot', state.comboA >= 3 || state.comboB >= 3);
   if (!combo.hidden) {
     combo.classList.remove('pop');
     void combo.offsetWidth; // 重播印章跳出動畫
@@ -144,23 +155,31 @@ function renderBattleHud(state) {
 
 /* ---------- 練習修行（Leitner） ---------- */
 async function startPractice() {
-  const bank = await loadCurrentBank();
+  let bank;
+  try {
+    bank = await loadCurrentBank();
+  } catch (err) {
+    console.error('[字字珠璣] 題庫載入失敗', err);
+    showLoadError('practice');
+    return;
+  }
   if (!bank.length) return;
   const mySession = enterQuiz('practice');
 
-  let ids = shuffle(bank.map((e) => e.id)); // 洗牌，避免近似成語同組連續出現
+  const ids = shuffle(bank.map((e) => e.id)); // 洗牌，避免近似成語同組連續出現
   const state = createLeitnerState(ids);
   const byId = new Map(bank.map((e) => [e.id, e]));
+  let lastId = null;
 
   function nextRound() {
-    const id = nextQuestionId(state, ids);
+    // 排除剛答過的那題再選，避免它是唯一低盒題時立刻重複
+    const pool = ids.length > 1 ? ids.filter((x) => x !== lastId) : ids;
+    const id = nextQuestionId(state, pool);
     const entry = byId.get(id);
     renderQuestion(entry);
     bindAnswer(entry, mySession, (correct) => {
       recordAnswer(state, id, correct);
-      // 剛答過的題移到隊尾，避免答錯後同題立刻重複
-      ids = ids.filter((x) => x !== id);
-      ids.push(id);
+      lastId = id;
       nextRound();
     });
   }
@@ -169,7 +188,14 @@ async function startPractice() {
 
 /* ---------- 墨靈對戰 ---------- */
 async function startBattle() {
-  const bank = await loadCurrentBank();
+  let bank;
+  try {
+    bank = await loadCurrentBank();
+  } catch (err) {
+    console.error('[字字珠璣] 題庫載入失敗', err);
+    showLoadError('battle');
+    return;
+  }
   if (!bank.length) return;
   const mySession = enterQuiz('battle');
 
@@ -179,10 +205,16 @@ async function startBattle() {
   let idx = 0;
 
   function showResult() {
-    const playerWins = state.hpB <= 0;
-    $('question-text').textContent = playerWins
-      ? '小書生獲勝！墨靈少女甘拜下風～'
-      : '墨靈少女獲勝！收卷再修行一回吧！';
+    // 題目耗盡而雙方未倒時，以剩餘血量判定；同血平手
+    let text;
+    if (state.hpB <= 0 || state.hpA > state.hpB) {
+      text = '小書生獲勝！墨靈少女甘拜下風～';
+    } else if (state.hpA <= 0 || state.hpB > state.hpA) {
+      text = '墨靈少女獲勝！收卷再修行一回吧！';
+    } else {
+      text = '勢均力敵，平分秋色！再戰一回分高下！';
+    }
+    $('question-text').textContent = text;
     const optionsEl = $('options');
     optionsEl.onclick = null;
     optionsEl.innerHTML = '';
@@ -202,7 +234,11 @@ async function startBattle() {
     renderQuestion(entry);
     bindAnswer(entry, mySession, (correct) => {
       state = applyAnswer(state, 'A', correct);
-      if (!correct) state = applyAnswer(state, 'B', true); // 答錯換對手出招
+      if (correct) {
+        state = applyAnswer(state, 'B', false); // 答對同時打斷對手連擊
+      } else {
+        state = applyAnswer(state, 'B', true); // 答錯換對手出招
+      }
       renderBattleHud(state);
       nextRound();
     });

@@ -514,6 +514,12 @@ body.in-quiz .brand-sub { display: none; }
   line-height: 1.2;
 }
 .combo[hidden] { display: none; }
+/* 對手連擊（app.js 加 .is-rival）：黛藍警示 */
+.combo.is-rival {
+  color: var(--paper-hi);
+  background: radial-gradient(circle, #3b5b73 40%, #22384a 100%);
+  border-color: rgba(59,91,115,.7);
+}
 /* 連對更新時的印章跳出動畫（app.js 重播 .pop） */
 .combo.pop { animation: comboPop .35s ease; }
 @keyframes comboPop {
@@ -797,6 +803,12 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
   .hp-avatar    { width: 54px; height: 54px; }
   .hp-track     { height: 14px; }
   .combo        { min-width: 76px; font-size: .95rem; }
+}
+
+/* 窄手機：連對章出現時避免角色名被截斷 */
+@media (max-width: 420px) {
+  .hp-name { letter-spacing: .02em; font-size: .7rem; }
+  .combo   { min-width: 56px; font-size: .76rem; }
 }
 
 /* 超寬桌機答題中：兩側立繪站上戰場（柔邊＋呼吸浮動） */
