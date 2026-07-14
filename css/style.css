@@ -1256,3 +1256,8 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 .pet-equip-btn.is-installed { background: var(--rouge-deep); }
 
 @media (max-width: 360px) { .pet-grid { grid-template-columns: 1fr; } }
+
+.pet-equip-item__icon {
+  width: 46px; height: 46px; flex: none; object-fit: cover; border-radius: 8px;
+  background: var(--paper-dim);
+}

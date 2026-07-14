@@ -112,6 +112,11 @@ function renderEquip() {
   for (const e of PET_EQUIP) {
     const row = document.createElement('div');
     row.className = 'pet-equip-item';
+    const icon = document.createElement('img');
+    icon.className = 'pet-equip-item__icon';
+    icon.src = `assets/web/pet-equip-${e.id}.jpg`;
+    icon.alt = '';
+    icon.loading = 'lazy';
     const info = document.createElement('div');
     info.className = 'pet-equip-item__info';
     info.innerHTML = `<b>${e.name}</b><span>${e.desc}</span>`;
@@ -142,7 +147,7 @@ function renderEquip() {
       });
     }
     action.appendChild(btn);
-    row.append(info, action);
+    row.append(icon, info, action);
     grid.appendChild(row);
   }
 }

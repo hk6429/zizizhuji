@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 """
 字字珠璣 — 山海經寵物 12 獸 + 4 設備圖示 批次生圖（沿用 gen_assets 產線）
-用法：python3 scripts/gen_pets.py 1   # lane 1（前 8 張）
-      python3 scripts/gen_pets.py 2   # lane 2（後 8 張）
+用法：python3 scripts/gen_pets.py <laneIndex> <laneCount>
+      例：4 線 → 各開一個 terminal 跑 `gen_pets.py 1 4` … `gen_pets.py 4 4`
+      全部 16 張 round-robin 分給各線；已存在（>100KB）的即時 SKIP，可安全重跑補齊。
 """
 import os, sys, glob, time, shutil, signal, subprocess
 
 LANE = sys.argv[1] if len(sys.argv) > 1 else '1'
+LANE_COUNT = int(sys.argv[2]) if len(sys.argv) > 2 else 2
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ASSETS = os.path.join(ROOT, 'assets')
 CODEX_HOME = os.path.expanduser(f'~/.codex-zzj-lane{LANE}')
@@ -63,10 +65,10 @@ EQUIP = [
     ("pet-equip-zhulong.png","一顆發光的龍睛寶珠（燭龍之睛）：紅金光暈的圓珠、墨紋環繞、飛白，如發光法寶。"),
 ]
 
-LANE1 = [(n, True, MON_FMT, s) for (n, s) in MONSTERS[:8]]
-LANE2 = ([(n, True, MON_FMT, s) for (n, s) in MONSTERS[8:]]
-         + [(n, False, ICON_FMT, s) for (n, s) in EQUIP])
-ITEMS = LANE1 if LANE == '1' else LANE2
+ALL_ITEMS = ([(n, True, MON_FMT, s) for (n, s) in MONSTERS]
+             + [(n, False, ICON_FMT, s) for (n, s) in EQUIP])
+# round-robin 分工：第 k 線（1-based）取 ALL_ITEMS[k-1::LANE_COUNT]
+ITEMS = ALL_ITEMS[int(LANE) - 1::LANE_COUNT]
 
 
 def build_prompt(is_creature, fmt, subject):
