@@ -1169,3 +1169,90 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
   color: var(--ink);
   background: var(--paper-dim);
 }
+
+/* =========================================================
+   山海寵物：首頁入口 + 寵物閣 overlay
+   ========================================================= */
+
+/* ---- 首頁入口卡 ---- */
+.pet-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid rgba(201,162,39,.5);
+  border-radius: 14px;
+  background: linear-gradient(120deg, rgba(46,143,138,.12), rgba(201,162,39,.10));
+  cursor: pointer;
+  font-family: var(--sans);
+  color: var(--ink);
+}
+.pet-entry:active { transform: scale(.99); }
+.pet-entry__img {
+  width: 52px; height: 52px; flex: none;
+  object-fit: cover; border-radius: 50%;
+  background: var(--paper-dim);
+  -webkit-mask-image: radial-gradient(circle, #000 60%, transparent 98%);
+          mask-image: radial-gradient(circle, #000 60%, transparent 98%);
+}
+.pet-entry__body { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; flex: 1; }
+.pet-entry__title { font-family: var(--serif); font-weight: 800; font-size: 1.1rem; letter-spacing: .1em; }
+.pet-entry__sub { font-size: .82rem; color: var(--ink-soft); }
+.pet-entry__arrow { font-size: 1.6rem; color: var(--gold); font-weight: 700; }
+
+/* ---- overlay 卡 ---- */
+.pet-card { max-width: 560px; width: 92vw; max-height: 88vh; display: flex; flex-direction: column; }
+.pet-hint { margin: 2px 0 12px; font-size: .82rem; color: var(--ink-soft); line-height: 1.5; }
+
+.pet-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.pet-tab {
+  flex: 1; padding: 8px 0; border: 1px solid rgba(43,58,74,.2); border-radius: 10px;
+  background: var(--paper-dim); color: var(--ink-soft); font-family: var(--serif);
+  font-weight: 700; letter-spacing: .1em; cursor: pointer;
+}
+.pet-tab.is-active { background: var(--teal-deep); color: var(--paper-hi); border-color: var(--teal-deep); }
+
+.pet-panel { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+/* ---- 神獸格 ---- */
+.pet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pet-card-item {
+  display: flex; gap: 10px; align-items: center; text-align: left;
+  padding: 8px; border: 1px solid rgba(201,162,39,.4); border-radius: 12px;
+  background: var(--paper-hi); cursor: pointer; font-family: var(--sans); color: var(--ink);
+}
+.pet-card-item.is-active { border-color: var(--rouge); box-shadow: 0 0 0 2px rgba(193,75,75,.35); }
+.pet-card-item.is-locked { opacity: .55; cursor: default; filter: grayscale(.6); }
+.pet-card-item__img {
+  width: 56px; height: 56px; flex: none; object-fit: cover; border-radius: 10px;
+  background: var(--paper-dim);
+}
+.pet-card-item__body { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+.pet-card-item__name { font-family: var(--serif); font-weight: 800; font-size: .98rem; display: flex; align-items: baseline; gap: 5px; }
+.pet-card-item__cat { font-size: .68rem; color: var(--teal-deep); font-weight: 700; }
+.pet-card-item__status { font-size: .72rem; color: var(--ink-soft); }
+.pet-track { display: block; height: 5px; border-radius: 3px; background: var(--paper-dim); overflow: hidden; }
+.pet-track__fill { display: block; height: 100%; background: linear-gradient(90deg, var(--teal), var(--gold)); }
+.pet-card-item__badge { font-size: .7rem; color: var(--rouge-deep); font-weight: 800; }
+.pet-card-item__hint { font-size: .7rem; color: var(--gold); }
+
+/* ---- 寵物設備 ---- */
+.pet-equip-balance { font-size: .84rem; color: var(--ink-soft); margin: 0 0 10px; }
+.pet-equip-balance b { color: var(--gold); font-size: 1rem; }
+.pet-equip-grid { display: flex; flex-direction: column; gap: 8px; }
+.pet-equip-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border: 1px solid rgba(43,58,74,.16); border-radius: 10px; background: var(--paper-hi);
+}
+.pet-equip-item__info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.pet-equip-item__info b { font-family: var(--serif); font-size: .95rem; }
+.pet-equip-item__info span { font-size: .76rem; color: var(--ink-soft); }
+.pet-equip-btn {
+  flex: none; padding: 7px 12px; border: none; border-radius: 8px;
+  background: var(--teal-deep); color: var(--paper-hi); font-weight: 700; font-size: .82rem; cursor: pointer;
+}
+.pet-equip-btn:disabled { background: var(--paper-dim); color: var(--ink-soft); cursor: default; }
+.pet-equip-btn.is-installed { background: var(--rouge-deep); }
+
+@media (max-width: 360px) { .pet-grid { grid-template-columns: 1fr; } }

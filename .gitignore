@@ -7,4 +7,5 @@ node_modules/
 .netlify
 
 # 生圖產線 log
-scripts/gen_assets_lane*.log
+scripts/gen_*.log
+scripts/gen_*_stderr.log

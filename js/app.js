@@ -4,9 +4,10 @@ import { nextQuestionId } from './leitner.js';
 import * as kernel from './meta/kernel.js';
 import {
   ensureMeta, getCtx, refreshWidgets, bindDailyBox,
-  renderEvents, renderSummary,
+  renderEvents, renderSummary, syncPets,
   beginBattle, battleOver, applyEliminate, hideMolingBubble,
 } from './integration.js';
+import { initPetUI } from './pet-ui.js';
 
 const FEEDBACK_DELAY = 650; // 等墨暈／潑濺動畫播完再進下一題
 
@@ -236,6 +237,7 @@ async function startPractice() {
       // kernel 內部已呼叫 leitner.recordAnswer ＋持久化，此處不可再 recordAnswer
       const { events } = kernel.onPracticeAnswer(ctx, id, correct);
       renderEvents(events);
+      syncPets(); // 精通題數可能剛跨過解鎖門檻
       lastId = id;
       nextRound();
     });
@@ -309,6 +311,7 @@ async function startBattle() {
       // 答對打斷對手連擊；答錯換對手出招（沿用原版節奏）
       const rB = kernel.onBattleAnswer(ctx, rA.state, 'B', !correct);
       renderEvents(rB.events);
+      syncPets(); // 精通題數可能剛跨過解鎖門檻
       state = rB.state;
       battleState = state;
       renderBattleHud(state, maxHpA);
@@ -323,4 +326,5 @@ $('btn-battle').addEventListener('click', startBattle);
 
 /* ---------- 開站 ---------- */
 bindDailyBox();
+initPetUI({ getMeta: () => getCtx()?.meta, onChange: refreshWidgets });
 initMetaLayer();

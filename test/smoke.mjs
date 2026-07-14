@@ -25,12 +25,22 @@ const errors = [];
 const browser = await chromium.launch();
 const page = await browser.newPage();
 page.on('pageerror', err => errors.push(err.message));
-page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
+// 資源 404（尚未生成的美術圖）不算程式錯誤；真正的 JS 例外由 pageerror 捕捉
+page.on('console', msg => {
+  if (msg.type() === 'error' && !/Failed to load resource/.test(msg.text())) errors.push(msg.text());
+});
 
 await page.goto('http://localhost:4173');
 // 首訪會先跳「開卷誓言」攔截層，先跳過才點得到模式按鈕
 await page.waitForSelector('#oath-overlay:not([hidden])');
 await page.click('#oath-skip');
+
+// 寵物閣：開啟後應渲染 12 隻神獸格
+await page.click('#btn-pet');
+await page.waitForSelector('#pet-overlay:not([hidden])');
+const petCount = await page.$$eval('#pet-grid .pet-card-item', els => els.length);
+await page.click('#pet-close');
+
 await page.click('#btn-practice');
 await page.waitForSelector('#options button');
 const practiceOptionCount = await page.$$eval('#options button', els => els.length);
@@ -46,6 +56,7 @@ const hudVisible = await page.$eval('#battle-hud', el => !el.hidden);
 await browser.close();
 server.close();
 
+if (petCount !== 12) throw new Error(`寵物閣應有 12 隻神獸，實際 ${petCount}`);
 if (practiceOptionCount !== 4) throw new Error(`練習模式選項數應為4，實際 ${practiceOptionCount}`);
 if (battleOptionCount !== 4) throw new Error(`對戰模式選項數應為4，實際 ${battleOptionCount}`);
 if (!hudVisible) throw new Error('對戰模式狀態列 #battle-hud 應顯示');

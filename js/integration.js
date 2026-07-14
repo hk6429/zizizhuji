@@ -13,6 +13,7 @@ import { getBond, pickLine } from './meta/bond.js';
 import {
   createBattleContext, createBattleStateEx, takeEliminate, isOverEx,
 } from './meta/battle-adapter.js';
+import { getPetBattleMods, syncUnlocks as syncPetUnlocks, listPets } from './meta/pet.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -116,6 +117,34 @@ export function refreshWidgets() {
   } else {
     oathLine.hidden = true;
   }
+
+  refreshPetEntry();
+}
+
+// 首頁「寵物閣」入口：顯示主寵頭像、名號與境界；未選主寵則提示去挑。
+export function refreshPetEntry() {
+  if (!ctx) return;
+  const sub = $('pet-entry-sub');
+  const img = $('pet-entry-img');
+  if (!sub) return;
+  const active = listPets(ctx.meta).find((p) => p.active);
+  if (active) {
+    sub.textContent = `${active.name}・${active.level} 級出戰中`;
+    if (img) img.src = `assets/web/pet-${active.id}.jpg`;
+  } else {
+    sub.textContent = '選一隻山海神獸出戰';
+    if (img) img.src = 'assets/web/pet-baize.jpg';
+  }
+}
+
+// 答題後掃描新解鎖的神獸，發現身 toast 並存檔。
+export function syncPets() {
+  if (!ctx) return;
+  const r = syncPetUnlocks(ctx.meta);
+  if (r.events.length) {
+    saveMeta(ctx.meta);
+    renderEvents(r.events);
+  }
 }
 
 export function bindDailyBox() {
@@ -134,9 +163,10 @@ export function bindDailyBox() {
 
 export function beginBattle() {
   const eff = ctx.omen ? ctx.omen.effect : {};
+  const pet = getPetBattleMods(ctx.meta); // 主寵等級＋設備加成
   ctx.battle = createBattleContext(ctx.meta, {
-    damageBonus: eff.type === 'damageBonus' ? eff.value : 0,
-    freeEliminate: eff.type === 'freeEliminate' ? 1 : 0,
+    damageBonus: (eff.type === 'damageBonus' ? eff.value : 0) + pet.damageBonus,
+    freeEliminate: (eff.type === 'freeEliminate' ? 1 : 0) + pet.freeEliminate,
   });
   const state = createBattleStateEx(ctx.battle);
   showMolingLine(pickLine(getBond(ctx.meta).stage, 'open'));
@@ -250,6 +280,7 @@ export function renderEvents(events) {
       case 'bondStageUp':      toast(`羈絆升階——「${p.stageName}」`, 'bond'); break;
       case 'gift':             toast(`墨靈贈禮：${p.desc}`, 'bond'); break;
       case 'artUnlocked':      toast(`新訣解鎖「${p.name}」：${p.desc}`, 'levelup'); break;
+      case 'petUnlocked':      toast(`山海神獸「${p.name}」現身入閣！去寵物閣選牠出戰`, 'pet'); break;
       default: break;
     }
   }

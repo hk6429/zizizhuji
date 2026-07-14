@@ -106,6 +106,17 @@
             <span class="mode-desc">答對出招．連對三題威力加倍</span>
           </button>
         </div>
+
+        <!-- 山海寵物入口 -->
+        <h2 class="section-title"><i aria-hidden="true"></i>山海寵物<i aria-hidden="true"></i></h2>
+        <button id="btn-pet" class="pet-entry" type="button">
+          <img id="pet-entry-img" class="pet-entry__img" src="assets/web/pet-baize.jpg" alt="" loading="lazy">
+          <span class="pet-entry__body">
+            <span class="pet-entry__title">寵物閣</span>
+            <span id="pet-entry-sub" class="pet-entry__sub">選一隻山海神獸出戰</span>
+          </span>
+          <span class="pet-entry__arrow" aria-hidden="true">›</span>
+        </button>
       </section>
 
       <!-- 對戰狀態列（僅對戰模式顯示） -->
@@ -172,6 +183,26 @@
         <button id="summary-copy" class="summary-btn" type="button">複製分享文字</button>
         <button id="summary-close" class="summary-btn summary-btn--ghost" type="button">收起戰報</button>
       </div>
+    </div>
+  </div>
+
+  <!-- 寵物閣：山海神獸 × 寵物設備 -->
+  <div id="pet-overlay" class="meta-overlay" hidden>
+    <div class="meta-overlay__card pet-card">
+      <h2 class="overlay-title">寵物閣・山海神獸</h2>
+      <p class="pet-hint">精通字音／成語題目愈多，神獸境界愈高；主寵與設備的加成會帶進墨靈對戰。</p>
+      <div class="pet-tabs" role="tablist">
+        <button class="pet-tab is-active" data-tab="pets" type="button">神獸</button>
+        <button class="pet-tab" data-tab="equip" type="button">寵物設備</button>
+      </div>
+      <div id="pet-panel-pets" class="pet-panel">
+        <div id="pet-grid" class="pet-grid"></div>
+      </div>
+      <div id="pet-panel-equip" class="pet-panel" hidden>
+        <p class="pet-equip-balance">字珠 <b id="pet-equip-pearls">0</b>｜主寵裝備欄：<span id="pet-equip-active">未選主寵</span></p>
+        <div id="pet-equip-grid" class="pet-equip-grid"></div>
+      </div>
+      <button id="pet-close" class="overlay-ghost-btn" type="button">收起</button>
     </div>
   </div>
 
