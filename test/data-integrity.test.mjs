@@ -23,7 +23,7 @@ test('ids are unique within each bank', () => {
 
 test('自編 字音 entries: answer is a real reading of the character per the CNS11643 anchor', () => {
   const anchor = JSON.parse(readFileSync(new URL('../tools/anchors/ziyin-anchor.json', import.meta.url)));
-  const selfMade = ziyin.filter((e) => e.origin === '自編');
+  const selfMade = ziyin.filter((e) => e.origin === '自編' && e.type === '字音');
   assert.ok(selfMade.length > 0, 'expected at least one 自編 entry to exist');
   for (const e of selfMade) {
     const m = e.question.match(/「[^」]+」的「([^」]+)」正確讀音是？/);
@@ -32,5 +32,17 @@ test('自編 字音 entries: answer is a real reading of the character per the C
     const a = anchor[char];
     assert.ok(a, `char not in anchor: ${e.id} / ${char}`);
     assert.ok(a.zhuyin.includes(e.answer), `answer not a real reading: ${e.id} / ${char} / ${e.answer}`);
+  }
+});
+
+test('自編 字形 entries: all options are real characters and answer is among them', () => {
+  const anchor = JSON.parse(readFileSync(new URL('../tools/anchors/ziyin-anchor.json', import.meta.url)));
+  const selfMade = ziyin.filter((e) => e.origin === '自編' && e.type === '字形');
+  assert.ok(selfMade.length > 0, 'expected at least one 自編 字形 entry to exist');
+  for (const e of selfMade) {
+    assert.ok(e.options.includes(e.answer), `answer not among options: ${e.id}`);
+    for (const opt of e.options) {
+      assert.ok(anchor[opt], `option not a real character: ${e.id} / ${opt}`);
+    }
   }
 });

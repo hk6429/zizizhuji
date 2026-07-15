@@ -21146,5 +21146,1773 @@
     "answer": "ㄒㄧㄝˊ",
     "note": "",
     "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0001",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「擁○」正確用字是？",
+    "options": [
+      "泡",
+      "抱",
+      "炮",
+      "跑"
+    ],
+    "answer": "抱",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0002",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○步」正確用字是？",
+    "options": [
+      "泡",
+      "跑",
+      "炮",
+      "抱"
+    ],
+    "answer": "跑",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0003",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○沫」正確用字是？",
+    "options": [
+      "跑",
+      "炮",
+      "泡",
+      "抱"
+    ],
+    "answer": "泡",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0004",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○澈」正確用字是？",
+    "options": [
+      "請",
+      "情",
+      "清",
+      "晴"
+    ],
+    "answer": "清",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0005",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○天」正確用字是？",
+    "options": [
+      "晴",
+      "情",
+      "請",
+      "清"
+    ],
+    "answer": "晴",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0006",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「邀○」正確用字是？",
+    "options": [
+      "情",
+      "請",
+      "晴",
+      "清"
+    ],
+    "answer": "請",
+    "note": "",
+    "difficulty": "難"
+  },
+  {
+    "id": "zx-編-0007",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「感○」正確用字是？",
+    "options": [
+      "晴",
+      "情",
+      "請",
+      "清"
+    ],
+    "answer": "情",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0008",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「比○」正確用字是？",
+    "options": [
+      "較",
+      "絞",
+      "校",
+      "郊"
+    ],
+    "answer": "較",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0009",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「學○」正確用字是？",
+    "options": [
+      "絞",
+      "較",
+      "校",
+      "郊"
+    ],
+    "answer": "校",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0010",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○外」正確用字是？",
+    "options": [
+      "絞",
+      "較",
+      "郊",
+      "校"
+    ],
+    "answer": "郊",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0011",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「一○」正確用字是？",
+    "options": [
+      "紛",
+      "份",
+      "扮",
+      "粉"
+    ],
+    "answer": "份",
+    "note": "",
+    "difficulty": "易"
+  },
+  {
+    "id": "zx-編-0012",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○爭」正確用字是？",
+    "options": [
+      "份",
+      "紛",
+      "扮",
+      "粉"
+    ],
+    "answer": "紛",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0013",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「麵○」正確用字是？",
+    "options": [
+      "粉",
+      "扮",
+      "份",
+      "紛"
+    ],
+    "answer": "粉",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0014",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「打○」正確用字是？",
+    "options": [
+      "扮",
+      "紛",
+      "份",
+      "粉"
+    ],
+    "answer": "扮",
+    "note": "",
+    "difficulty": "易"
+  },
+  {
+    "id": "zx-編-0015",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○回」正確用字是？",
+    "options": [
+      "飯",
+      "販",
+      "返",
+      "閻"
+    ],
+    "answer": "返",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0016",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「吃○」正確用字是？",
+    "options": [
+      "返",
+      "販",
+      "飯",
+      "葵"
+    ],
+    "answer": "飯",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0017",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「小○」正確用字是？",
+    "options": [
+      "返",
+      "販",
+      "飯",
+      "龜"
+    ],
+    "answer": "販",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0018",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○捉」正確用字是？",
+    "options": [
+      "捕",
+      "哺",
+      "鋪",
+      "輔"
+    ],
+    "answer": "捕",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0019",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○乳」正確用字是？",
+    "options": [
+      "哺",
+      "鋪",
+      "捕",
+      "輔"
+    ],
+    "answer": "哺",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0020",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「店○」正確用字是？",
+    "options": [
+      "哺",
+      "輔",
+      "捕",
+      "鋪"
+    ],
+    "answer": "鋪",
+    "note": "",
+    "difficulty": "難"
+  },
+  {
+    "id": "zx-編-0021",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○導」正確用字是？",
+    "options": [
+      "捕",
+      "哺",
+      "鋪",
+      "輔"
+    ],
+    "answer": "輔",
+    "note": "",
+    "difficulty": "難"
+  },
+  {
+    "id": "zx-編-0022",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「居○」正確用字是？",
+    "options": [
+      "注",
+      "柱",
+      "蛀",
+      "住"
+    ],
+    "answer": "住",
+    "note": "",
+    "difficulty": "易"
+  },
+  {
+    "id": "zx-編-0023",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○意」正確用字是？",
+    "options": [
+      "蛀",
+      "住",
+      "柱",
+      "注"
+    ],
+    "answer": "注",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0024",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「石○」正確用字是？",
+    "options": [
+      "蛀",
+      "住",
+      "注",
+      "柱"
+    ],
+    "answer": "柱",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0025",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○牙」正確用字是？",
+    "options": [
+      "注",
+      "柱",
+      "住",
+      "蛀"
+    ],
+    "answer": "蛀",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0026",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○償」正確用字是？",
+    "options": [
+      "培",
+      "剖",
+      "陪",
+      "賠"
+    ],
+    "answer": "賠",
+    "note": "",
+    "difficulty": "難"
+  },
+  {
+    "id": "zx-編-0027",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○伴」正確用字是？",
+    "options": [
+      "剖",
+      "培",
+      "陪",
+      "賠"
+    ],
+    "answer": "陪",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0028",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○養」正確用字是？",
+    "options": [
+      "陪",
+      "剖",
+      "培",
+      "賠"
+    ],
+    "answer": "培",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0029",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「解○」正確用字是？",
+    "options": [
+      "剖",
+      "培",
+      "陪",
+      "賠"
+    ],
+    "answer": "剖",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0030",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「新○」正確用字是？",
+    "options": [
+      "狼",
+      "郎",
+      "浪",
+      "娘"
+    ],
+    "answer": "郎",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0031",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「姑○」正確用字是？",
+    "options": [
+      "浪",
+      "娘",
+      "狼",
+      "郎"
+    ],
+    "answer": "娘",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0032",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「海○」正確用字是？",
+    "options": [
+      "娘",
+      "浪",
+      "狼",
+      "郎"
+    ],
+    "answer": "浪",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0033",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○狗」正確用字是？",
+    "options": [
+      "浪",
+      "郎",
+      "狼",
+      "娘"
+    ],
+    "answer": "狼",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0034",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「性○」正確用字是？",
+    "options": [
+      "略",
+      "路",
+      "格",
+      "露"
+    ],
+    "answer": "格",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0035",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「馬○」正確用字是？",
+    "options": [
+      "格",
+      "路",
+      "略",
+      "露"
+    ],
+    "answer": "路",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0036",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○水」正確用字是？",
+    "options": [
+      "格",
+      "露",
+      "略",
+      "路"
+    ],
+    "answer": "露",
+    "note": "",
+    "difficulty": "難"
+  },
+  {
+    "id": "zx-編-0037",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「省○」正確用字是？",
+    "options": [
+      "略",
+      "露",
+      "格",
+      "路"
+    ],
+    "answer": "略",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0038",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「思○」正確用字是？",
+    "options": [
+      "想",
+      "碟",
+      "箱",
+      "廂"
+    ],
+    "answer": "想",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0039",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「書○」正確用字是？",
+    "options": [
+      "廂",
+      "想",
+      "箱",
+      "捩"
+    ],
+    "answer": "箱",
+    "note": "",
+    "difficulty": "難"
+  },
+  {
+    "id": "zx-編-0040",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「車○」正確用字是？",
+    "options": [
+      "想",
+      "箱",
+      "廂",
+      "毽"
+    ],
+    "answer": "廂",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0041",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○歌」正確用字是？",
+    "options": [
+      "倡",
+      "唱",
+      "菖",
+      "籃"
+    ],
+    "answer": "唱",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0042",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「提○」正確用字是？",
+    "options": [
+      "倡",
+      "唱",
+      "菖",
+      "蝴"
+    ],
+    "answer": "倡",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0043",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「珍○」正確用字是？",
+    "options": [
+      "惜",
+      "措",
+      "借",
+      "蝶"
+    ],
+    "answer": "惜",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0044",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○書」正確用字是？",
+    "options": [
+      "借",
+      "措",
+      "惜",
+      "麒"
+    ],
+    "answer": "借",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0045",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○施」正確用字是？",
+    "options": [
+      "惜",
+      "借",
+      "麟",
+      "措"
+    ],
+    "answer": "措",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0046",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○浪」正確用字是？",
+    "options": [
+      "破",
+      "坡",
+      "披",
+      "波"
+    ],
+    "answer": "波",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0047",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○裂」正確用字是？",
+    "options": [
+      "披",
+      "波",
+      "坡",
+      "破"
+    ],
+    "answer": "破",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0048",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「山○」正確用字是？",
+    "options": [
+      "披",
+      "波",
+      "破",
+      "坡"
+    ],
+    "answer": "坡",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0049",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○風」正確用字是？",
+    "options": [
+      "坡",
+      "波",
+      "破",
+      "披"
+    ],
+    "answer": "披",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0050",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○過」正確用字是？",
+    "options": [
+      "捅",
+      "痛",
+      "桶",
+      "通"
+    ],
+    "answer": "通",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0051",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「水○」正確用字是？",
+    "options": [
+      "捅",
+      "痛",
+      "通",
+      "桶"
+    ],
+    "answer": "桶",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0052",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○苦」正確用字是？",
+    "options": [
+      "桶",
+      "捅",
+      "痛",
+      "通"
+    ],
+    "answer": "痛",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0053",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「運○」正確用字是？",
+    "options": [
+      "瞳",
+      "鴛",
+      "動",
+      "撞"
+    ],
+    "answer": "動",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0054",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「碰○」正確用字是？",
+    "options": [
+      "撞",
+      "鴦",
+      "瞳",
+      "動"
+    ],
+    "answer": "撞",
+    "note": "",
+    "difficulty": "難"
+  },
+  {
+    "id": "zx-編-0055",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「眼○」正確用字是？",
+    "options": [
+      "薔",
+      "瞳",
+      "撞",
+      "動"
+    ],
+    "answer": "瞳",
+    "note": "",
+    "difficulty": "難"
+  },
+  {
+    "id": "zx-編-0056",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「整○」正確用字是？",
+    "options": [
+      "裡",
+      "理",
+      "薇",
+      "埋"
+    ],
+    "answer": "理",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0057",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○葬」正確用字是？",
+    "options": [
+      "埋",
+      "裡",
+      "鸚",
+      "理"
+    ],
+    "answer": "埋",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0058",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「心○」正確用字是？",
+    "options": [
+      "鵡",
+      "理",
+      "裡",
+      "埋"
+    ],
+    "answer": "裡",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0059",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「日○」正確用字是？",
+    "options": [
+      "紀",
+      "貍",
+      "記",
+      "忌"
+    ],
+    "answer": "記",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0060",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「世○」正確用字是？",
+    "options": [
+      "記",
+      "紀",
+      "獾",
+      "忌"
+    ],
+    "answer": "紀",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0061",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「妒○」正確用字是？",
+    "options": [
+      "記",
+      "忌",
+      "蟬",
+      "紀"
+    ],
+    "answer": "忌",
+    "note": "",
+    "difficulty": "易"
+  },
+  {
+    "id": "zx-編-0062",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「其○」正確用字是？",
+    "options": [
+      "他",
+      "弛",
+      "地",
+      "池"
+    ],
+    "answer": "他",
+    "note": "",
+    "difficulty": "易"
+  },
+  {
+    "id": "zx-編-0063",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「土○」正確用字是？",
+    "options": [
+      "地",
+      "弛",
+      "他",
+      "池"
+    ],
+    "answer": "地",
+    "note": "",
+    "difficulty": "易"
+  },
+  {
+    "id": "zx-編-0064",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「水○」正確用字是？",
+    "options": [
+      "他",
+      "地",
+      "池",
+      "弛"
+    ],
+    "answer": "池",
+    "note": "",
+    "difficulty": "易"
+  },
+  {
+    "id": "zx-編-0065",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「鬆○」正確用字是？",
+    "options": [
+      "他",
+      "地",
+      "弛",
+      "池"
+    ],
+    "answer": "弛",
+    "note": "",
+    "difficulty": "易"
+  },
+  {
+    "id": "zx-編-0066",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「同○」正確用字是？",
+    "options": [
+      "拌",
+      "伴",
+      "絆",
+      "蟒"
+    ],
+    "answer": "伴",
+    "note": "",
+    "difficulty": "易"
+  },
+  {
+    "id": "zx-編-0067",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「攪○」正確用字是？",
+    "options": [
+      "拌",
+      "伴",
+      "絆",
+      "鰭"
+    ],
+    "answer": "拌",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0068",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○倒」正確用字是？",
+    "options": [
+      "絆",
+      "拌",
+      "伴",
+      "鯨"
+    ],
+    "answer": "絆",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0069",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○洋」正確用字是？",
+    "options": [
+      "悔",
+      "海",
+      "梅",
+      "鵬"
+    ],
+    "answer": "海",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0070",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○花」正確用字是？",
+    "options": [
+      "海",
+      "悔",
+      "驊",
+      "梅"
+    ],
+    "answer": "梅",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0071",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「後○」正確用字是？",
+    "options": [
+      "海",
+      "梅",
+      "騮",
+      "悔"
+    ],
+    "answer": "悔",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0072",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○話」正確用字是？",
+    "options": [
+      "銳",
+      "稅",
+      "脫",
+      "說"
+    ],
+    "answer": "說",
+    "note": "",
+    "difficulty": "難"
+  },
+  {
+    "id": "zx-編-0073",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「課○」正確用字是？",
+    "options": [
+      "銳",
+      "說",
+      "脫",
+      "稅"
+    ],
+    "answer": "稅",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0074",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○離」正確用字是？",
+    "options": [
+      "稅",
+      "銳",
+      "說",
+      "脫"
+    ],
+    "answer": "脫",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0075",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「敏○」正確用字是？",
+    "options": [
+      "稅",
+      "脫",
+      "說",
+      "銳"
+    ],
+    "answer": "銳",
+    "note": "",
+    "difficulty": "難"
+  },
+  {
+    "id": "zx-編-0076",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「醫○」正確用字是？",
+    "options": [
+      "玩",
+      "頑",
+      "驢",
+      "院"
+    ],
+    "answer": "院",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0077",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○具」正確用字是？",
+    "options": [
+      "頑",
+      "騾",
+      "玩",
+      "院"
+    ],
+    "answer": "玩",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0078",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○皮」正確用字是？",
+    "options": [
+      "頑",
+      "駱",
+      "玩",
+      "院"
+    ],
+    "answer": "頑",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0079",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「緩○」正確用字是？",
+    "options": [
+      "駝",
+      "慢",
+      "饅",
+      "漫"
+    ],
+    "answer": "慢",
+    "note": "",
+    "difficulty": "難"
+  },
+  {
+    "id": "zx-編-0080",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○畫」正確用字是？",
+    "options": [
+      "饅",
+      "漫",
+      "閻",
+      "慢"
+    ],
+    "answer": "漫",
+    "note": "",
+    "difficulty": "難"
+  },
+  {
+    "id": "zx-編-0081",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○頭」正確用字是？",
+    "options": [
+      "饅",
+      "漫",
+      "葵",
+      "慢"
+    ],
+    "answer": "饅",
+    "note": "",
+    "difficulty": "難"
+  },
+  {
+    "id": "zx-編-0082",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「車○」正確用字是？",
+    "options": [
+      "論",
+      "龜",
+      "輪",
+      "倫"
+    ],
+    "answer": "輪",
+    "note": "",
+    "difficulty": "難"
+  },
+  {
+    "id": "zx-編-0083",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「人○」正確用字是？",
+    "options": [
+      "碟",
+      "輪",
+      "倫",
+      "論"
+    ],
+    "answer": "倫",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0084",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「討○」正確用字是？",
+    "options": [
+      "輪",
+      "論",
+      "捩",
+      "倫"
+    ],
+    "answer": "論",
+    "note": "",
+    "difficulty": "難"
+  },
+  {
+    "id": "zx-編-0085",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○色」正確用字是？",
+    "options": [
+      "菜",
+      "彩",
+      "踩",
+      "採"
+    ],
+    "answer": "彩",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0086",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「青○」正確用字是？",
+    "options": [
+      "菜",
+      "踩",
+      "彩",
+      "採"
+    ],
+    "answer": "菜",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0087",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○集」正確用字是？",
+    "options": [
+      "採",
+      "踩",
+      "彩",
+      "菜"
+    ],
+    "answer": "採",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0088",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○到」正確用字是？",
+    "options": [
+      "採",
+      "彩",
+      "踩",
+      "菜"
+    ],
+    "answer": "踩",
+    "note": "",
+    "difficulty": "難"
+  },
+  {
+    "id": "zx-編-0089",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「海○」正確用字是？",
+    "options": [
+      "樣",
+      "漾",
+      "洋",
+      "毽"
+    ],
+    "answer": "洋",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0090",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「這○」正確用字是？",
+    "options": [
+      "洋",
+      "樣",
+      "漾",
+      "籃"
+    ],
+    "answer": "樣",
+    "note": "",
+    "difficulty": "難"
+  },
+  {
+    "id": "zx-編-0091",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○拜」正確用字是？",
+    "options": [
+      "崇",
+      "祟",
+      "宗",
+      "蝴"
+    ],
+    "answer": "崇",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0092",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「鬼○」正確用字是？",
+    "options": [
+      "祟",
+      "宗",
+      "崇",
+      "蝶"
+    ],
+    "answer": "祟",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0093",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「自○」正確用字是？",
+    "options": [
+      "己",
+      "巳",
+      "已",
+      "麒"
+    ],
+    "answer": "己",
+    "note": "",
+    "difficulty": "易"
+  },
+  {
+    "id": "zx-編-0094",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○經」正確用字是？",
+    "options": [
+      "己",
+      "巳",
+      "已",
+      "麟"
+    ],
+    "answer": "已",
+    "note": "",
+    "difficulty": "易"
+  },
+  {
+    "id": "zx-編-0095",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○守」正確用字是？",
+    "options": [
+      "戊",
+      "戌",
+      "戍",
+      "成"
+    ],
+    "answer": "戍",
+    "note": "",
+    "difficulty": "易"
+  },
+  {
+    "id": "zx-編-0096",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○功」正確用字是？",
+    "options": [
+      "戍",
+      "戊",
+      "戌",
+      "成"
+    ],
+    "answer": "成",
+    "note": "",
+    "difficulty": "易"
+  },
+  {
+    "id": "zx-編-0097",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○福」正確用字是？",
+    "options": [
+      "鴦",
+      "辛",
+      "鴛",
+      "幸"
+    ],
+    "answer": "幸",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0098",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○苦」正確用字是？",
+    "options": [
+      "薇",
+      "薔",
+      "幸",
+      "辛"
+    ],
+    "answer": "辛",
+    "note": "",
+    "difficulty": "易"
+  },
+  {
+    "id": "zx-編-0099",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「週○」正確用字是？",
+    "options": [
+      "鸚",
+      "鵡",
+      "未",
+      "末"
+    ],
+    "answer": "末",
+    "note": "",
+    "difficulty": "易"
+  },
+  {
+    "id": "zx-編-0100",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○來」正確用字是？",
+    "options": [
+      "末",
+      "貍",
+      "獾",
+      "未"
+    ],
+    "answer": "未",
+    "note": "",
+    "difficulty": "易"
+  },
+  {
+    "id": "zx-編-0101",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○熱」正確用字是？",
+    "options": [
+      "灸",
+      "炙",
+      "蟬",
+      "炎"
+    ],
+    "answer": "炎",
+    "note": "",
+    "difficulty": "中"
+  },
+  {
+    "id": "zx-編-0102",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「剪○」正確用字是？",
+    "options": [
+      "綵",
+      "蟒",
+      "彩",
+      "採"
+    ],
+    "answer": "綵",
+    "note": "",
+    "difficulty": "難"
+  },
+  {
+    "id": "zx-編-0103",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○習」正確用字是？",
+    "options": [
+      "鰭",
+      "練",
+      "鍊",
+      "煉"
+    ],
+    "answer": "練",
+    "note": "",
+    "difficulty": "難"
+  },
+  {
+    "id": "zx-編-0104",
+    "level": "國小",
+    "origin": "自編",
+    "source": "全字庫CNS11643開放資料・自編（形近字誘答）",
+    "type": "字形",
+    "question": "「○鋼」正確用字是？",
+    "options": [
+      "鍊",
+      "煉",
+      "鯨",
+      "練"
+    ],
+    "answer": "煉",
+    "note": "",
+    "difficulty": "中"
   }
 ]
