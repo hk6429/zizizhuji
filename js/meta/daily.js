@@ -6,6 +6,12 @@ import { earnPearls } from './economy.js';
 
 export const DAILY_GOAL = 10;
 export const MAX_CHARMS = 2;
+export const WEEK_HALF_DAYS = 3; // 週琉璃匣未達 5 天時的部分獎勵門檻
+
+const NODAMAGE_KEY = 'zizhu:noDamageMode';
+function noDamageOn() {
+  try { return localStorage.getItem(NODAMAGE_KEY) === '1'; } catch { return false; }
+}
 
 export const LANTERN_TIERS = [
   { tier: 0, name: '油燈', minStreak: 0 },
@@ -90,11 +96,19 @@ export function rolloverDaily(meta, today) {
           fx: 'charm-glow',
         });
       } else if (d.streak > 0) {
-        d.streak = 0; // 熄燈但「不清階級」：d.tier 保留
+        // 熄燈但「不清階級」：d.tier 保留。無傷模式開啟時只腰斬連燈數，不做恐懼式恐嚇；
+        // 兩種模式文案都改中性語氣（去掉「侵蝕」這類威脅框架），機制本身只在無傷模式軟化。
+        const softened = noDamageOn();
+        d.streak = softened ? Math.floor(d.streak / 2) : 0;
         events.push({
           type: 'lanternOut',
-          payload: { message: '墨靈趁夜侵蝕了一角，明日再點燈即可修復' },
-          fx: 'lantern-dim',
+          payload: {
+            softened,
+            message: softened
+              ? '墨靈幫你守住了半分燈火，明日再努力就好'
+              : '墨燈熄了一晚，今天重新點亮就好',
+          },
+          fx: softened ? 'lantern-half' : 'lantern-dim',
         });
       }
     }
@@ -105,6 +119,7 @@ export function rolloverDaily(meta, today) {
     d.weekKey = wk;
     d.weekOpenDays = [];
     d.liuliOpened = false;
+    d.liuliHalfOpened = false;
   }
 
   d.date = today;
@@ -187,6 +202,9 @@ export function getBoxState(meta, today) {
     opened: d.boxOpened,
     weekOpenDays: [...d.weekOpenDays],
     liuliAvailable: isSunday(today) && d.weekOpenDays.length >= 5 && !d.liuliOpened,
+    // 半程獎勵：未達 5 天全勤也有小獎勵可拿，不分無傷模式一律生效（純加分，不影響滿勤獎的價值）
+    halfAvailable: isSunday(today) && d.weekOpenDays.length >= WEEK_HALF_DAYS
+      && d.weekOpenDays.length < 5 && !d.liuliHalfOpened,
   };
 }
 
@@ -207,6 +225,10 @@ export function openBox(meta, today, rng = Math.random) {
     liuli = true;
     pearls += 20;
     weekTitle = '本週琉璃使者';
+  } else if (isSunday(today) && d.weekOpenDays.length >= WEEK_HALF_DAYS && !d.liuliHalfOpened) {
+    d.liuliHalfOpened = true;
+    pearls += 8;
+    weekTitle = '本週半程使者';
   }
   earnPearls(meta, pearls, 'daily-box', today);
   return { meta, reward: { pearls, liuli, weekTitle, glow: '青光' } };

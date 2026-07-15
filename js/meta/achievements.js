@@ -75,3 +75,49 @@ export function unlock(meta, ids) {
   }
   return { meta, newlyUnlocked };
 }
+
+// 每個成就對應的「目前值／目標值」，供成就總覽頁畫進度條；隱藏成就不外洩數字，見 getAchievementsOverview。
+const PROGRESS_FIELD = {
+  'first-win': ['wins', 1],
+  'combo-3': ['bestCombo', 3],
+  'combo-5': ['bestCombo', 5],
+  'perfect': ['perfectGames', 1],
+  'answered-100': ['totalCorrect', 100],
+  'answered-1000': ['totalCorrect', 1000],
+  'moling-bane': ['wins', 10],
+  'lantern-3': ['lanternBest', 3],
+  'lantern-7': ['lanternBest', 7],
+  'lantern-30': ['lanternBest', 30],
+  'forge-10': ['forgedCount', 10],
+  'forge-50': ['forgedCount', 50],
+  'forge-100': ['forgedCount', 100],
+  'forge-ziyin-250': ['forgedZiyin', 250],
+  'forge-chengyu-435': ['forgedChengyu', 435],
+  'forge-685': ['forgedCount', 685],
+};
+
+function progressFor(id, stats) {
+  const field = PROGRESS_FIELD[id];
+  if (!field) return null;
+  const [key, target] = field;
+  return { current: Math.min(stats[key] || 0, target), target };
+}
+
+// 讀取端總覽：不動任何既有解鎖邏輯，純粹整理 17 個成就的顯示資訊供 UI 渲染。
+export function getAchievementsOverview(meta) {
+  const stats = meta.ach.stats;
+  return ACHIEVEMENTS.map((a) => {
+    const unlockedAt = meta.ach.unlocked[a.id] || null;
+    const isHiddenLocked = a.hidden && !unlockedAt;
+    return {
+      id: a.id,
+      name: isHiddenLocked ? '未知成就' : a.name,
+      desc: isHiddenLocked ? '完成隱藏條件即可解鎖' : a.desc,
+      pearls: a.pearls,
+      hidden: a.hidden,
+      unlocked: !!unlockedAt,
+      unlockedAt,
+      progress: isHiddenLocked ? null : progressFor(a.id, stats),
+    };
+  });
+}

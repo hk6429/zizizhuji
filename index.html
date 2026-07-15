@@ -170,6 +170,14 @@
               </span>
               <span class="pet-entry__arrow" aria-hidden="true">›</span>
             </button>
+            <button id="btn-achievements" class="extra-entry extra-entry--ach" type="button">
+              <span class="extra-entry__icon" aria-hidden="true">成</span>
+              <span class="extra-entry__body">
+                <span class="extra-entry__title">成就總覽</span>
+                <span class="extra-entry__sub">看看你解鎖了哪些成就</span>
+              </span>
+              <span class="pet-entry__arrow" aria-hidden="true">›</span>
+            </button>
           </div>
         </details>
       </section>
@@ -247,8 +255,10 @@
       <p id="summary-moling" class="summary-moling"></p>
       <div class="summary-actions">
         <button id="summary-copy" class="summary-btn" type="button">複製分享文字</button>
+        <button id="summary-share-card" class="summary-btn" type="button" hidden>分享圖卡</button>
         <button id="summary-close" class="summary-btn summary-btn--ghost" type="button">收起戰報</button>
       </div>
+      <canvas id="share-card-canvas" width="1080" height="1350" hidden></canvas>
     </div>
   </div>
 
@@ -269,6 +279,24 @@
         <div id="pet-equip-grid" class="pet-equip-grid"></div>
       </div>
       <button id="pet-close" class="overlay-ghost-btn" type="button">收起</button>
+    </div>
+  </div>
+
+  <!-- 回歸玩家迎接：非阻斷、可隨時關閉，不提及斷簽損失 -->
+  <div id="welcomeback-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="welcomeback-title">
+    <div class="meta-overlay__card">
+      <h2 id="welcomeback-title" class="overlay-title">好久不見</h2>
+      <p id="welcomeback-msg"></p>
+      <button id="welcomeback-close" class="overlay-ghost-btn" type="button">知道了</button>
+    </div>
+  </div>
+
+  <!-- 成就總覽：17 個成就的已解鎖/未解鎖/進度 -->
+  <div id="ach-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="ach-title">
+    <div class="meta-overlay__card ach-card">
+      <h2 id="ach-title" class="overlay-title">成就總覽</h2>
+      <div id="ach-grid" class="ach-grid"></div>
+      <button id="ach-close" class="overlay-ghost-btn" type="button">收起</button>
     </div>
   </div>
 

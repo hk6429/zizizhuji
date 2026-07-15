@@ -117,3 +117,13 @@ export function getPolishTasks(meta) {
   }
   return tasks;
 }
+
+// 常錯字複習：回傳答錯次數最多的前 n 題（不限已煉成/未煉成），供自學模組主動推題。
+export function getMostWrong(meta, bank, n = 15) {
+  const byId = new Map(bank.map((e) => [e.id, e]));
+  return Object.entries(meta.collection)
+    .filter(([id, r]) => r.wrong > 0 && byId.has(id))
+    .sort((a, b) => b[1].wrong - a[1].wrong)
+    .slice(0, n)
+    .map(([id, r]) => ({ id, wrong: r.wrong, entry: byId.get(id) }));
+}

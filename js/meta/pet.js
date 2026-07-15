@@ -7,7 +7,7 @@
 import { spendPearls } from './economy.js';
 
 export const LEVEL_STEP = 20;   // 每精通 20 題升 1 級
-export const MAX_LEVEL = 10;
+export const MAX_LEVEL = 15;
 export const EQUIP_SLOTS = 2;
 
 // category：'字音' | '成語' | '混合'。unlockAt：該類別精通題數達標即解鎖。
@@ -30,11 +30,12 @@ export const PETS = [
 ];
 
 // 寵物設備：字珠購買，裝進主寵欄位給戰鬥加成。
+// tier 純顯示用（沿用 collection.js GRADES 的命名風格），依現有價格分級對應，不影響任何戰鬥數值。
 export const PET_EQUIP = [
-  { id: 'wo',      name: '玲瓏獸窩',  price: 120, desc: '安居靈獸，戰鬥傷害 +1',        effect: { damageBonus: 1 } },
-  { id: 'xirang',  name: '息壤靈符',  price: 150, desc: '生生不息，戰鬥傷害 +2',        effect: { damageBonus: 2 } },
-  { id: 'ling',    name: '昆吾靈鈴',  price: 180, desc: '開場多排除一個錯誤選項',        effect: { freeEliminate: 1 } },
-  { id: 'zhulong', name: '燭龍之睛',  price: 220, desc: '燭照九幽，戰鬥傷害 +3',        effect: { damageBonus: 3 } },
+  { id: 'wo',      name: '玲瓏獸窩',  price: 120, tier: '白', desc: '安居靈獸，戰鬥傷害 +1',        effect: { damageBonus: 1 } },
+  { id: 'xirang',  name: '息壤靈符',  price: 150, tier: '青', desc: '生生不息，戰鬥傷害 +2',        effect: { damageBonus: 2 } },
+  { id: 'ling',    name: '昆吾靈鈴',  price: 180, tier: '金', desc: '開場多排除一個錯誤選項',        effect: { freeEliminate: 1 } },
+  { id: 'zhulong', name: '燭龍之睛',  price: 220, tier: '墨玉', desc: '燭照九幽，戰鬥傷害 +3',        effect: { damageBonus: 3 } },
 ];
 
 const PET_BY_ID = new Map(PETS.map((p) => [p.id, p]));

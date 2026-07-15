@@ -6,6 +6,7 @@ import { saveMeta } from './meta/store.js';
 import { samplePairs } from './selfstudy/pairs.js';
 import { buildLayout, canConnect, tilesMatch, countRemaining, hasMoves } from './selfstudy/link.js';
 import { recordAnswer, nextQuestionId } from './leitner.js';
+import { getMostWrong } from './meta/collection.js';
 import { shuffle } from './shuffle.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
 
@@ -25,6 +26,7 @@ const GAMES = [
   { id: 'memory', name: '記憶配對牌', icon: '🂠', desc: '4×4 翻牌，把國字配到正確注音' },
   { id: 'flash',  name: '閃卡復習',   icon: '📇', desc: '翻卡自評，記得的隔更久再出現' },
   { id: 'link',   name: '連連看',     icon: '🀄', desc: '牽線消除字與注音，路徑轉折 ≤2' },
+  { id: 'wrongreview', name: '常錯字複習', icon: '🔁', desc: '複習你最常答錯的字/成語' },
 ];
 
 export function initSelfStudy(opts) {
@@ -71,6 +73,7 @@ function enterGame(id) {
   if (id === 'memory') startMemory();
   else if (id === 'link') startLink();
   else if (id === 'flash') startFlash();
+  else if (id === 'wrongreview') startWrongReview();
 }
 
 function setStatus(t) { $('ss-status').textContent = t; }
@@ -287,5 +290,65 @@ async function startFlash() {
     reviewed += 1;
     lastId = cur.id;
     next();
+  }
+}
+
+/* ============ 常錯字複習（依 collection.js 的答錯次數排序，非 Leitner 抽卡） ============ */
+async function startWrongReview() {
+  currentRestart = startWrongReview;
+  let bank, ctx;
+  try { bank = await deps.loadBank('mixed'); ctx = await deps.ensureCtx(); } catch { setStatus('題庫載入失敗'); return; }
+  if (!ctx || !bank.length) { setStatus('題庫載入失敗'); return; }
+  const items = getMostWrong(ctx.meta, bank);
+  if (!items.length) {
+    setStatus('目前沒有常錯的字，繼續保持！');
+    $('ss-board').innerHTML = '';
+    setFoot(null);
+    return;
+  }
+  let idx = 0, flipped = false;
+  render();
+
+  function render() {
+    const board = $('ss-board');
+    board.innerHTML = '';
+    setStatus(`常錯字複習 ${idx + 1}/${items.length}`);
+    const cur = items[idx].entry;
+    const card = el('button', `flash-card${flipped ? ' is-flipped' : ''}`);
+    card.type = 'button';
+    if (!flipped) {
+      card.innerHTML = `<span class="flash-card__tag">題目</span><span class="flash-card__q">${cur.question}</span><span class="flash-card__hint">點卡看答案</span>`;
+      card.addEventListener('click', () => { flipped = true; render(); });
+    } else {
+      const note = cur.note ? `<span class="flash-card__note">${cur.note}</span>` : '';
+      card.innerHTML = `<span class="flash-card__tag flash-card__tag--a">答案</span><span class="flash-card__a">${cur.answer}</span>${note}`;
+      card.addEventListener('click', () => { flipped = false; render(); });
+    }
+    board.appendChild(card);
+
+    const foot = el('div', 'flash-rate');
+    if (flipped) {
+      const nextBtn = el('button', 'flash-rate__btn flash-rate__btn--yes', idx + 1 < items.length ? '下一題' : '複習完成');
+      nextBtn.type = 'button';
+      nextBtn.addEventListener('click', () => {
+        if (idx + 1 < items.length) { idx += 1; flipped = false; render(); }
+        else finish();
+      });
+      foot.appendChild(nextBtn);
+    } else {
+      foot.appendChild(el('span', 'flash-rate__hint', `已答錯 ${items[idx].wrong} 次，先想答案再翻卡`));
+    }
+    setFoot(foot);
+  }
+
+  function finish() {
+    const done = el('div', 'ss-win');
+    done.innerHTML = '<b>常錯字複習完成！</b>';
+    const again = el('button', 'ss-again', '再來一輪');
+    again.type = 'button';
+    again.addEventListener('click', startWrongReview);
+    done.appendChild(again);
+    $('ss-board').innerHTML = '';
+    setFoot(done);
   }
 }

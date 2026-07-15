@@ -14,6 +14,7 @@ import {
   createBattleContext, createBattleStateEx, takeEliminate, isOverEx,
 } from './meta/battle-adapter.js';
 import { getPetBattleMods, syncUnlocks as syncPetUnlocks, listPets } from './meta/pet.js';
+import { shouldOfferShareCard, renderShareCard, exportShareCard } from './meta/share-card.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
 
 const $ = (id) => document.getElementById(id);
@@ -373,6 +374,25 @@ export function renderSummary(summary) {
     }
     copyBtn.textContent = '已複製！';
   };
+  // 分享圖卡：只在破紀錄(以本場是否解鎖新成就當「稀有時刻」信號)或羈絆滿百時提供，避免每場都要存圖
+  const shareCardBtn = $('summary-share-card');
+  const hasNewAchievement = !!(s.newAchievements && s.newAchievements.length);
+  if (shouldOfferShareCard(s, { newRecord: hasNewAchievement })) {
+    shareCardBtn.hidden = false;
+    shareCardBtn.textContent = '分享圖卡';
+    shareCardBtn.onclick = async () => {
+      const canvas = $('share-card-canvas');
+      renderShareCard(canvas, s);
+      const r = await exportShareCard(canvas);
+      shareCardBtn.textContent = r.ok
+        ? (r.method === 'clipboard' ? '已複製圖卡！' : '已下載圖卡！')
+        : '存圖失敗，再試一次';
+    };
+  } else {
+    shareCardBtn.hidden = true;
+    shareCardBtn.onclick = null;
+  }
+
   const close = () => closeOverlay(overlay);
   $('summary-close').onclick = close;
   openOverlay(overlay, close);

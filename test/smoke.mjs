@@ -45,6 +45,12 @@ await page.waitForSelector('#pet-overlay:not([hidden])');
 const petCount = await page.$$eval('#pet-grid .pet-card-item', els => els.length);
 await page.click('#pet-close');
 
+// 成就總覽：開啟後應渲染 17 個成就卡
+await page.click('#btn-achievements');
+await page.waitForSelector('#ach-overlay:not([hidden])');
+const achCount = await page.$$eval('#ach-grid .ach-item', els => els.length);
+await page.click('#ach-close');
+
 // 自學・墨池：三款遊戲選單；進「記憶配對牌」應鋪出 16 張牌
 await page.click('#btn-selfstudy');
 await page.waitForSelector('#selfstudy-overlay:not([hidden])');
@@ -85,16 +91,21 @@ await page.waitForSelector('#options button');
 const battleOptionCount = await page.$$eval('#options button', els => els.length);
 const hudVisible = await page.$eval('#battle-hud', el => !el.hidden);
 
+// 分享圖卡按鈕存在於 DOM（預設 hidden，只在破紀錄/羈絆滿百時顯示，這裡不跑完整場只驗證元件存在）
+const shareCardBtnExists = await page.$('#summary-share-card') !== null;
+
 await browser.close();
 server.close();
 
 if (petCount !== 12) throw new Error(`寵物閣應有 12 隻神獸，實際 ${petCount}`);
-if (ssMenuCount !== 3) throw new Error(`自學選單應有 3 款遊戲，實際 ${ssMenuCount}`);
+if (achCount !== 17) throw new Error(`成就總覽應有 17 個成就，實際 ${achCount}`);
+if (ssMenuCount !== 4) throw new Error(`自學選單應有 4 款遊戲，實際 ${ssMenuCount}`);
 if (memCardCount !== 16) throw new Error(`記憶配對牌應鋪 16 張，實際 ${memCardCount}`);
 if (linkTileCount !== 16) throw new Error(`連連看應鋪 16 張，實際 ${linkTileCount}`);
 if (sgMenuCount !== 3) throw new Error(`積分競技應有 3 種模式，實際 ${sgMenuCount}`);
 if (sgOptionCount !== 4) throw new Error(`積分競技選項數應為 4，實際 ${sgOptionCount}`);
 if (practiceOptionCount !== 4) throw new Error(`練習模式選項數應為4，實際 ${practiceOptionCount}`);
+if (!shareCardBtnExists) throw new Error('分享圖卡按鈕 #summary-share-card 應存在於 DOM');
 if (battleOptionCount !== 4) throw new Error(`對戰模式選項數應為4，實際 ${battleOptionCount}`);
 if (!hudVisible) throw new Error('對戰模式狀態列 #battle-hud 應顯示');
 if (errors.length) throw new Error(`頁面出現 JS 錯誤: ${errors.join(' | ')}`);

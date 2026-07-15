@@ -51,7 +51,7 @@ export function defaultMeta() {
     arts: { unlocked: [], equipped: null, battlesWon: 0 },
     daily: {
       date: '', todayCorrect: 0, streak: 0, best: 0, tier: 0, boxOpened: false,
-      lastLit: '', weekKey: '', weekOpenDays: [], liuliOpened: false,
+      lastLit: '', weekKey: '', weekOpenDays: [], liuliOpened: false, liuliHalfOpened: false,
       charms: 0, milestonesClaimed: [],
     },
     bond: { value: 0, lastDailyBonus: '', giftsClaimed: [] },

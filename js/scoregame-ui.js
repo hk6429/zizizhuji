@@ -11,6 +11,9 @@ import {
 import { submitScore, fetchTop } from './leaderboard.js';
 import { shuffle } from './shuffle.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
+import { buildHotseatShareText } from './meta/summary.js';
+import { rushRankName } from './meta/rank-tier.js';
+import { shouldCheckpoint } from './session-checkpoint.js';
 
 const CLASS_RE = /^[\w一-鿿]{1,20}$/;
 const NICK_MAX = 12;
@@ -34,6 +37,14 @@ const CPU_ACC = 0.6;      // 電腦答對率
 const TURN_DELAY = 700;
 const AI_DELAY = 950;
 const BEST_KEY = 'mixed';
+const CHECKPOINT_EVERY = 15; // 獨自衝分每答 N 題問一次「要繼續嗎」
+const WRONG_FLASH_DELAY = TURN_DELAY + 250 + 900; // 答錯多給約 1.15 秒看正解
+
+// 答對照常速前進；答錯多留一段時間讓正解看得清楚
+export function advanceDelay(correct) { return correct ? TURN_DELAY + 250 : WRONG_FLASH_DELAY; }
+
+// 班級榜按讚：純前端、不落地、不連網的鼓勵效果（刻意不接後端，避免匿名分數榜被濫用）
+const cheerCounts = new Map();
 
 const MODES = [
   { id: 'solo',    name: '獨自衝分', icon: '🎯', desc: '一路答下去衝高分，答錯會扣分，隨時結束' },
@@ -252,6 +263,16 @@ function renderLeaderboard(host, title, r) {
     r.top.forEach((row) => {
       const li = el('li', 'sg-lb__row');
       li.innerHTML = `<span class="sg-lb__name">${escapeHtml(row.name)}</span><span class="sg-lb__score">${row.score}</span>`;
+      const cheerKey = `${title}::${row.name}`;
+      const cheer = el('button', 'sg-lb__cheer', `👍 ${cheerCounts.get(cheerKey) || ''}`.trim());
+      cheer.type = 'button';
+      cheer.title = '幫他加油（僅本機顯示，不會上傳）';
+      cheer.addEventListener('click', () => {
+        cheerCounts.set(cheerKey, (cheerCounts.get(cheerKey) || 0) + 1);
+        cheer.textContent = `👍 ${cheerCounts.get(cheerKey)}`;
+        floatMsg('+1', 'up');
+      });
+      li.appendChild(cheer);
       ol.appendChild(li);
     });
     host.appendChild(ol);
@@ -314,10 +335,30 @@ function humanTurn(p) {
     p.score = r.state;
     p.answered += 1;
     floatMsg(correct ? `＋${r.gain}${p.score.streak >= 3 ? ` 連${p.score.streak}` : ''}` : `答錯 −${r.penalty}`, correct ? 'gain' : 'pen');
+    if (!correct) floatMsg(`正解：${q.answer}`, 'reveal');
     renderHud();
     advanceTurn();
-    later(step, TURN_DELAY + 250);
+    if (state.mode === 'solo' && shouldCheckpoint(p.answered, CHECKPOINT_EVERY)) {
+      later(() => offerCheckpoint(p), advanceDelay(correct));
+      return;
+    }
+    later(step, advanceDelay(correct));
   };
+}
+
+// 獨自衝分每答 N 題的非阻斷停頓點：問要繼續還是結束看成績，「結束」全程可用不受影響
+function offerCheckpoint(p) {
+  const optionsEl = $('sg-options');
+  optionsEl.onclick = null;
+  optionsEl.innerHTML = '';
+  $('sg-question').textContent = `今日已答 ${p.answered} 題，要繼續嗎？`;
+  const cont = el('button', 'sg-opt', '繼續衝分');
+  cont.type = 'button';
+  cont.addEventListener('click', step);
+  const stop = el('button', 'sg-opt', '結束並看成績');
+  stop.type = 'button';
+  stop.addEventListener('click', () => results(true));
+  optionsEl.append(cont, stop);
 }
 
 /* ---------- 成績 ---------- */
@@ -351,8 +392,29 @@ async function results(early) {
       `<span class="sg-result__meta">${TIERS[p.score.tier].name}・答對 ${p.score.correct}/${p.score.answered}</span>`;
     panel.appendChild(row);
   }
-  const bestLine = el('div', 'sg-result__best', `個人最佳：${state.meta.selfstudy.scoreBest[BEST_KEY] || 0} 分`);
+  const bestScore = state.meta.selfstudy.scoreBest[BEST_KEY] || 0;
+  const bestLine = el('div', 'sg-result__best', `個人最佳：${bestScore} 分・${rushRankName(bestScore)}`);
   panel.appendChild(bestLine);
+  if (state.mode === 'hotseat') {
+    const share = el('button', 'ss-again sg-result__share', '複製戰報');
+    share.type = 'button';
+    share.addEventListener('click', async () => {
+      const text = buildHotseatShareText(state.players);
+      try {
+        await navigator.clipboard.writeText(text);
+        floatMsg('已複製戰報！', 'up');
+      } catch {
+        const ta = el('textarea', 'sg-result__sharefallback');
+        ta.value = text;
+        ta.readOnly = true;
+        panel.appendChild(ta);
+        ta.focus();
+        ta.select();
+        ta.addEventListener('blur', () => ta.remove(), { once: true });
+      }
+    });
+    panel.appendChild(share);
+  }
   const again = el('button', 'ss-again', '再玩一場');
   again.type = 'button';
   again.addEventListener('click', showMenu);

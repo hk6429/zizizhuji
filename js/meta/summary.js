@@ -118,3 +118,14 @@ export function recordChallenge(meta, record) {
   if (meta.challenges.length > MAX_CHALLENGES) meta.challenges.length = MAX_CHALLENGES;
   return meta;
 }
+
+// players = [{ name, score: { score, correct, answered } }, ...]，兩人對戰結束後的純文字戰報。
+export function buildHotseatShareText(players) {
+  const sorted = [...players].sort((a, b) => b.score.score - a.score.score);
+  const [a, b] = sorted;
+  const tie = a.score.score === b.score.score;
+  const line = tie
+    ? `${a.name} ${a.score.score} : ${b.name} ${b.score.score}，平手！`
+    : `${a.name} ${a.score.score} : ${b.name} ${b.score.score}，${a.name} 獲勝！`;
+  return `字字珠璣・兩人對戰戰報\n${line}\n（答對 ${a.name} ${a.score.correct}/${a.score.answered}、${b.name} ${b.score.correct}/${b.score.answered}）`;
+}

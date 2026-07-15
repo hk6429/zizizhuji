@@ -124,7 +124,7 @@ function renderEquip() {
     icon.loading = 'lazy';
     const info = document.createElement('div');
     info.className = 'pet-equip-item__info';
-    info.innerHTML = `<b>${e.name}</b><span>${e.desc}</span>`;
+    info.innerHTML = `<b>${e.name} <span class="pet-equip-item__tier">${e.tier}</span></b><span>${e.desc}</span>`;
 
     const action = document.createElement('div');
     action.className = 'pet-equip-item__action';

@@ -3,13 +3,15 @@ import { BANK_SOURCES, fetchBank, loadBank } from './bank.js';
 import { nextQuestionId } from './leitner.js';
 import * as kernel from './meta/kernel.js';
 import {
-  ensureMeta, getCtx, refreshWidgets, bindDailyBox,
+  ensureMeta, getCtx, getToday, refreshWidgets, bindDailyBox,
   renderEvents, renderSummary, syncPets,
   beginBattle, battleOver, applyEliminate, hideMolingBubble,
 } from './integration.js';
 import { initPetUI } from './pet-ui.js';
 import { initSelfStudy } from './selfstudy-ui.js';
 import { initScoreGame } from './scoregame-ui.js';
+import { initAchievementsUI } from './achievements-ui.js';
+import { checkWelcomeBack } from './meta/welcome-back.js';
 import { shuffle } from './shuffle.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
 
@@ -327,10 +329,29 @@ async function startBattle() {
 $('btn-practice').addEventListener('click', startPractice);
 $('btn-battle').addEventListener('click', startBattle);
 
+// 回歸玩家迎接：非阻斷、不提斷簽損失，一天只顯示一次（用獨立 key，不進 zzj_meta schema）
+const WELCOME_SHOWN_KEY = 'zizhu:lastWelcomeShown';
+function maybeShowWelcomeBack() {
+  const ctx = getCtx();
+  if (!ctx) return;
+  const today = getToday();
+  let shownToday = false;
+  try { shownToday = localStorage.getItem(WELCOME_SHOWN_KEY) === today; } catch {}
+  if (shownToday) return;
+  const { show, daysAway } = checkWelcomeBack(ctx.meta, today);
+  if (!show) return;
+  $('welcomeback-msg').textContent = `休息 ${daysAway} 天也沒關係，墨燈一直等著你`;
+  const close = () => closeOverlay($('welcomeback-overlay'));
+  $('welcomeback-close').addEventListener('click', close, { once: true });
+  openOverlay($('welcomeback-overlay'), close);
+  try { localStorage.setItem(WELCOME_SHOWN_KEY, today); } catch {}
+}
+
 /* ---------- 開站 ---------- */
 const ensureCtx = async () => { await initMetaLayer(); return getCtx(); };
 bindDailyBox();
 initPetUI({ getMeta: () => getCtx()?.meta, onChange: refreshWidgets });
 initSelfStudy({ loadBank, ensureCtx });
 initScoreGame({ loadBank, ensureCtx, onChange: refreshWidgets });
-initMetaLayer();
+initAchievementsUI({ getMeta: () => getCtx()?.meta });
+initMetaLayer().then(maybeShowWelcomeBack);
