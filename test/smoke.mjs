@@ -35,6 +35,19 @@ await page.goto('http://localhost:4173');
 await page.waitForSelector('#oath-overlay:not([hidden])');
 await page.click('#oath-skip');
 
+// 學制切換：預設國小，切到國中後應重整頁面並套用國中題庫
+await page.waitForSelector('#level-select');
+const levelDefaultActive = await page.$eval('#level-elem', el => el.classList.contains('is-active'));
+await page.click('#level-junior');
+await page.waitForSelector('#level-junior.is-active');
+await page.click('#btn-practice');
+await page.waitForSelector('#options button');
+const juniorPracticeOptionCount = await page.$$eval('#options button', els => els.length);
+await page.click('#btn-back');
+// 切回國小，後續其餘檢查沿用國小題庫
+await page.click('#level-elem');
+await page.waitForSelector('#level-elem.is-active');
+
 // 「更多功能」預設收合（漸進揭露），要先展開才點得到寵物閣／自學／積分競技
 await page.click('.more-section > summary');
 await page.waitForSelector('#btn-pet', { state: 'visible' });
@@ -103,6 +116,8 @@ const shareCardBtnExists = await page.$('#summary-share-card') !== null;
 await browser.close();
 server.close();
 
+if (!levelDefaultActive) throw new Error('預設應為國小學制（#level-elem.is-active）');
+if (juniorPracticeOptionCount !== 4) throw new Error(`國中練習模式選項數應為4，實際 ${juniorPracticeOptionCount}`);
 if (petCount !== 12) throw new Error(`寵物閣應有 12 隻神獸，實際 ${petCount}`);
 if (achCount !== 17) throw new Error(`成就總覽應有 17 個成就，實際 ${achCount}`);
 if (!/^[A-Z0-9]{6}$/.test(savesyncCode)) throw new Error(`雲端存檔代碼格式應為 6 碼英數，實際「${savesyncCode}」`);

@@ -92,23 +92,29 @@
           </figure>
         </div>
 
+        <!-- 學制切換 -->
+        <div id="level-select" class="level-select" role="group" aria-label="學制切換">
+          <button id="level-elem" class="level-btn is-active" type="button" data-level="國小" aria-pressed="true">國小</button>
+          <button id="level-junior" class="level-btn" type="button" data-level="國中" aria-pressed="false">國中</button>
+        </div>
+
         <!-- 題庫切換 -->
         <h2 class="section-title"><i aria-hidden="true"></i>選擇題庫<i aria-hidden="true"></i></h2>
         <div class="bank-grid" role="group" aria-label="題庫切換">
           <button id="bank-ziyin" class="bank-card is-active" type="button" aria-pressed="true">
             <span class="bank-icon"><img src="assets/web/icon-ziyin.jpg" alt="" loading="lazy"></span>
             <span class="bank-name">字音字形</span>
-            <span class="bank-count">1532 題</span>
+            <span id="bank-count-ziyin" class="bank-count">1532 題</span>
           </button>
           <button id="bank-chengyu" class="bank-card" type="button" aria-pressed="false">
             <span class="bank-icon"><img src="assets/web/icon-chengyu.jpg" alt="" loading="lazy"></span>
             <span class="bank-name">成語</span>
-            <span class="bank-count">434 題</span>
+            <span id="bank-count-chengyu" class="bank-count">434 題</span>
           </button>
           <button id="bank-mixed" class="bank-card" type="button" aria-pressed="false">
             <span class="bank-icon"><img src="assets/web/icon-mixed.jpg" alt="" loading="lazy"></span>
             <span class="bank-name">混合挑戰</span>
-            <span class="bank-count">1966 題</span>
+            <span id="bank-count-mixed" class="bank-count">1966 題</span>
           </button>
         </div>
 

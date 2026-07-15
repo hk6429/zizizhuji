@@ -1,5 +1,5 @@
 // zizizhuji/js/app.js
-import { BANK_SOURCES, fetchBank, loadBank } from './bank.js';
+import { BANK_SOURCES, fetchBank, loadBank, getLevel, setLevel } from './bank.js';
 import { nextQuestionId } from './leitner.js';
 import * as kernel from './meta/kernel.js';
 import {
@@ -40,6 +40,30 @@ if (ndToggle) {
 
 const $ = (id) => document.getElementById(id);
 
+/* ---------- 學制切換 ---------- */
+// 國中題數待內容產出批次完成後回填（見 data/ziyin-zixing-junior.json / chengyu-junior.json 實際筆數）。
+const BANK_COUNTS = {
+  國小: { ziyin: 1532, chengyu: 434, mixed: 1966 },
+  國中: { ziyin: 126, chengyu: 61, mixed: 187 },
+};
+
+function renderBankCounts() {
+  const counts = BANK_COUNTS[getLevel()];
+  $('bank-count-ziyin').textContent = `${counts.ziyin} 題`;
+  $('bank-count-chengyu').textContent = `${counts.chengyu} 題`;
+  $('bank-count-mixed').textContent = `${counts.mixed} 題`;
+}
+
+const levelButtons = document.querySelectorAll('#level-select .level-btn');
+for (const btn of levelButtons) {
+  btn.classList.toggle('is-active', btn.dataset.level === getLevel());
+  btn.setAttribute('aria-pressed', String(btn.dataset.level === getLevel()));
+  btn.addEventListener('click', () => {
+    if (setLevel(btn.dataset.level)) location.reload();
+  });
+}
+renderBankCounts();
+
 const loadCurrentBank = async () => {
   const bank = await loadBank(currentBank);
   if (currentDifficulty === 'all') return bank;
@@ -60,7 +84,7 @@ async function initMetaLayer() {
   if (getCtx()) return getCtx();
   try {
     const [ziyin, chengyu] = await Promise.all(
-      BANK_SOURCES.mixed.map((src) => fetchBank(src.path, src.kind))
+      BANK_SOURCES[getLevel()].mixed.map((src) => fetchBank(src.path, src.kind))
     );
     return ensureMeta({ ziyin, chengyu });
   } catch (err) {
