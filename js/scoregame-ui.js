@@ -9,6 +9,8 @@ import {
   buyInsurance, TIERS, INSURANCE_COST,
 } from './scoreEngine.js';
 import { submitScore, fetchTop } from './leaderboard.js';
+import { shuffle } from './shuffle.js';
+import { openOverlay, closeOverlay } from './overlay-a11y.js';
 
 const CLASS_RE = /^[\w一-鿿]{1,20}$/;
 const NICK_MAX = 12;
@@ -20,14 +22,6 @@ function el(tag, cls, txt) {
   if (cls) n.className = cls;
   if (txt != null) n.textContent = txt;
   return n;
-}
-function shuffle(a) {
-  const b = a.slice();
-  for (let i = b.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [b[i], b[j]] = [b[j], b[i]];
-  }
-  return b;
 }
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => (
@@ -62,11 +56,11 @@ function clearTimers() { timers.forEach(clearTimeout); timers = []; }
 function later(fn, ms) { const t = setTimeout(fn, ms); timers.push(t); return t; }
 
 async function open() {
-  $('scoregame-overlay').hidden = false;
+  openOverlay($('scoregame-overlay'), close);
   try { const ctx = await deps.ensureCtx(); metaRef = ctx ? ctx.meta : null; } catch { metaRef = null; }
   showMenu();
 }
-function close() { clearTimers(); state = null; $('scoregame-overlay').hidden = true; }
+function close() { clearTimers(); state = null; closeOverlay($('scoregame-overlay')); }
 
 function showMenu() {
   clearTimers();
@@ -218,10 +212,10 @@ function renderClassForm() {
   const bar = $('sg-classbar');
   bar.innerHTML = '';
   const { code, nick } = classInfo();
-  const codeIn = el('input', 'sg-classbar__in'); codeIn.placeholder = '班級代碼(如601)'; codeIn.maxLength = 20; codeIn.value = code;
-  const nickIn = el('input', 'sg-classbar__in'); nickIn.placeholder = '暱稱'; nickIn.maxLength = NICK_MAX; nickIn.value = nick;
+  const codeIn = el('input', 'sg-classbar__in'); codeIn.placeholder = '班級代碼(如601)'; codeIn.maxLength = 20; codeIn.value = code; codeIn.setAttribute('aria-label', '班級代碼');
+  const nickIn = el('input', 'sg-classbar__in'); nickIn.placeholder = '暱稱'; nickIn.maxLength = NICK_MAX; nickIn.value = nick; nickIn.setAttribute('aria-label', '暱稱');
   const save = el('button', 'sg-classbar__btn', '儲存'); save.type = 'button';
-  const err = el('span', 'sg-classbar__err', '');
+  const err = el('span', 'sg-classbar__err', ''); err.setAttribute('aria-live', 'polite');
   save.addEventListener('click', () => {
     const c = codeIn.value.trim(), n = nickIn.value.trim().slice(0, NICK_MAX);
     if (!CLASS_RE.test(c)) { err.textContent = '班級代碼只能中英數、1–20 字'; return; }
@@ -375,16 +369,20 @@ async function results(early) {
 
     const progress = Math.max(0, human.score.score - prevBest);
     const streak = (state.meta.daily && typeof state.meta.daily.streak === 'number') ? state.meta.daily.streak : 0;
-    const [subScore] = await Promise.all([
+    const [subScore, subProgress, subStreak] = await Promise.all([
       submitScore(code, nick, human.score.score),
-      progress > 0 ? submitScore(boardKey(code, 'progress'), nick, progress) : Promise.resolve(null),
-      streak > 0 ? submitScore(boardKey(code, 'streak'), nick, streak) : Promise.resolve(null),
+      progress > 0 ? submitScore(boardKey(code, 'progress'), nick, progress) : Promise.resolve({ ok: true }),
+      streak > 0 ? submitScore(boardKey(code, 'streak'), nick, streak) : Promise.resolve({ ok: true }),
     ]);
+    const uploadFailed = !subScore.ok || !subProgress.ok || !subStreak.ok;
     const [rScore, rProgress, rStreak] = await Promise.all([
       subScore.ok ? Promise.resolve(subScore) : fetchTop(code),
       fetchTop(boardKey(code, 'progress')),
       fetchTop(boardKey(code, 'streak')),
     ]);
     renderAllBoards(lbBox, code, { rScore, rProgress, rStreak }, null);
+    if (uploadFailed) {
+      lbBox.appendChild(el('p', 'sg-lb__load', '本場分數目前僅記錄本機，班級榜暫時連不上，下次連線後再上傳。'));
+    }
   }
 }

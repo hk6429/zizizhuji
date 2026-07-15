@@ -14,6 +14,7 @@ import {
   createBattleContext, createBattleStateEx, takeEliminate, isOverEx,
 } from './meta/battle-adapter.js';
 import { getPetBattleMods, syncUnlocks as syncPetUnlocks, listPets } from './meta/pet.js';
+import { openOverlay, closeOverlay } from './overlay-a11y.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -57,27 +58,41 @@ function showOathOverlay(intro) {
   }
   const list = $('oath-list');
   list.innerHTML = '';
+  const notice = $('oath-notice');
+  notice.hidden = true;
   for (const o of intro.oaths) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'oath-btn';
     btn.textContent = o.text;
     btn.addEventListener('click', () => {
-      oath.swearOath(ctx.meta, o.id, today);
+      const result = oath.swearOath(ctx.meta, o.id, today);
       oath.markIntroSeen(ctx.meta);
       saveMeta(ctx.meta);
-      overlay.hidden = true;
+      if (!result.ok) {
+        notice.textContent = '距離上次立誓未滿 30 天，暫時無法換誓。';
+        notice.hidden = false;
+        return;
+      }
+      closeOverlay(overlay);
       refreshWidgets();
     });
     list.appendChild(btn);
   }
-  $('oath-skip').onclick = () => {
+  const skip = () => {
     oath.markIntroSeen(ctx.meta);
     saveMeta(ctx.meta);
-    overlay.hidden = true;
+    closeOverlay(overlay);
   };
-  overlay.hidden = false;
+  $('oath-skip').onclick = skip;
+  openOverlay(overlay, skip);
 }
+
+// 首頁常駐誓言列可點擊重開誓言卡（回顧誓詞／滿 30 天可換誓）
+$('oath-line').addEventListener('click', () => {
+  if (!ctx) return;
+  showOathOverlay({ cards: oath.INTRO_CARDS, oaths: oath.OATHS });
+});
 
 /* ---------- 主畫面常駐面板 ---------- */
 
@@ -358,7 +373,8 @@ export function renderSummary(summary) {
     }
     copyBtn.textContent = '已複製！';
   };
-  $('summary-close').onclick = () => { overlay.hidden = true; };
-  overlay.hidden = false;
+  const close = () => closeOverlay(overlay);
+  $('summary-close').onclick = close;
+  openOverlay(overlay, close);
   refreshWidgets();
 }

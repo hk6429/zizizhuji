@@ -6,6 +6,8 @@ import { saveMeta } from './meta/store.js';
 import { samplePairs } from './selfstudy/pairs.js';
 import { buildLayout, canConnect, tilesMatch, countRemaining, hasMoves } from './selfstudy/link.js';
 import { recordAnswer, nextQuestionId } from './leitner.js';
+import { shuffle } from './shuffle.js';
+import { openOverlay, closeOverlay } from './overlay-a11y.js';
 
 const $ = (id) => document.getElementById(id);
 function el(tag, cls, txt) {
@@ -13,13 +15,6 @@ function el(tag, cls, txt) {
   if (cls) n.className = cls;
   if (txt != null) n.textContent = txt;
   return n;
-}
-function shuffle(a) {
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
 }
 
 let deps = {};        // { loadBank, ensureCtx }
@@ -43,8 +38,8 @@ export function initSelfStudy(opts) {
 function clearTimers() { timers.forEach(clearTimeout); timers = []; }
 function later(fn, ms) { const t = setTimeout(fn, ms); timers.push(t); return t; }
 
-function open() { showMenu(); $('selfstudy-overlay').hidden = false; }
-function close() { clearTimers(); $('selfstudy-overlay').hidden = true; }
+function open() { showMenu(); openOverlay($('selfstudy-overlay'), close); }
+function close() { clearTimers(); closeOverlay($('selfstudy-overlay')); }
 
 function showMenu() {
   clearTimers();
@@ -88,12 +83,12 @@ async function startMemory() {
   try { bank = await deps.loadBank('ziyin'); } catch { setStatus('題庫載入失敗'); return; }
   const pairs = samplePairs(bank, 8);
   if (pairs.length < 2) { setStatus('可用配對不足'); return; }
-  const cards = [];
+  let cards = [];
   pairs.forEach((p, i) => {
     cards.push({ pk: i, label: p.char });
     cards.push({ pk: i, label: p.zhuyin });
   });
-  shuffle(cards);
+  cards = shuffle(cards);
 
   const board = $('ss-board');
   board.innerHTML = '';
@@ -211,10 +206,10 @@ async function startLink() {
   }
 
   function reshuffle() {
-    const remain = [];
+    let remain = [];
     for (const row of grid) for (const t of row) if (t) remain.push(t);
     for (let tries = 0; tries < 40; tries++) {
-      shuffle(remain);
+      remain = shuffle(remain);
       let k = 0;
       const g = grid.map((row) => row.map((t) => (t ? remain[k++] : null)));
       if (hasMoves(g)) { grid = g; return; }

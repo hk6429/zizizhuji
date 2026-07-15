@@ -10,8 +10,10 @@ import {
 import { initPetUI } from './pet-ui.js';
 import { initSelfStudy } from './selfstudy-ui.js';
 import { initScoreGame } from './scoregame-ui.js';
+import { shuffle } from './shuffle.js';
+import { openOverlay, closeOverlay } from './overlay-a11y.js';
 
-const FEEDBACK_DELAY = 650; // 等墨暈／潑濺動畫播完再進下一題
+const FEEDBACK_DELAY = 800; // 等墨暈／潑濺動畫播完再進下一題（對齊 goldGlow/inkBloom .8s）
 
 let currentBank = 'ziyin';
 let currentDifficulty = 'all'; // 'all' | '易' | '中' | '難'
@@ -33,15 +35,6 @@ if (ndToggle) {
 }
 
 const $ = (id) => document.getElementById(id);
-
-function shuffle(arr) {
-  const a = arr.slice();
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
 
 const loadCurrentBank = async () => {
   const bank = await loadBank(currentBank);
@@ -72,12 +65,16 @@ async function initMetaLayer() {
   }
 }
 
-// 題庫載入失敗（離線/路徑錯）時進答題頁顯示訊息，玩家可按「收卷」返回
+// 題庫載入失敗（離線/路徑錯）時顯示獨立錯誤卡，不佔用答題版位，可原地重試
 function showLoadError(mode) {
-  enterQuiz(mode);
-  $('battle-hud').hidden = true;
-  $('question-text').textContent = '題庫載入失敗了，請檢查網路後收卷再試一次。';
-  $('options').innerHTML = '';
+  const overlay = $('load-error-overlay');
+  const back = () => closeOverlay(overlay);
+  $('load-error-retry').onclick = () => {
+    closeOverlay(overlay);
+    if (mode === 'practice') startPractice(); else startBattle();
+  };
+  $('load-error-back').onclick = back;
+  openOverlay(overlay, back);
 }
 
 /* ---------- 題庫切換 ---------- */

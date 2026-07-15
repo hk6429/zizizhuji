@@ -35,6 +35,10 @@ await page.goto('http://localhost:4173');
 await page.waitForSelector('#oath-overlay:not([hidden])');
 await page.click('#oath-skip');
 
+// 「更多功能」預設收合（漸進揭露），要先展開才點得到寵物閣／自學／積分競技
+await page.click('.more-section > summary');
+await page.waitForSelector('#btn-pet', { state: 'visible' });
+
 // 寵物閣：開啟後應渲染 12 隻神獸格
 await page.click('#btn-pet');
 await page.waitForSelector('#pet-overlay:not([hidden])');

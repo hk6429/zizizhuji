@@ -115,8 +115,16 @@ export function getBond(meta) {
   return { value: meta.bond.value, stage: idx, stageName: STAGES[idx].name };
 }
 
+const NODAMAGE_KEY = 'zizhu:noDamageMode';
+
 export function pickLine(stage, situation, rng = Math.random) {
-  const stageLines = LINES[Math.max(0, Math.min(stage, LINES.length - 1))];
+  let effectiveStage = Math.max(0, Math.min(stage, LINES.length - 1));
+  if (effectiveStage === 0 && (situation === 'wrong' || situation === 'lose')) {
+    try {
+      if (localStorage.getItem(NODAMAGE_KEY) === '1') effectiveStage = 1;
+    } catch {}
+  }
+  const stageLines = LINES[effectiveStage];
   const pool = stageLines[situation] || stageLines.open;
   return pool[Math.floor(rng() * pool.length)];
 }

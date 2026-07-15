@@ -3,8 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="字字珠璣——台灣國小字音字形與成語答題對戰遊戲">
-  <title>字字珠璣</title>
+  <meta name="description" content="字字珠璣——適合國小中高年級的字音字形與成語答題對戰遊戲，免費開源、無廣告、不蒐集個資">
+  <title>字字珠璣｜國小字音字形・成語答題對戰</title>
+  <link rel="canonical" href="https://zizizhuji.vercel.app/">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/web/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/web/favicon-192.png">
+  <link rel="apple-touch-icon" href="assets/web/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#c9a227">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="字字珠璣">
+  <meta property="og:title" content="字字珠璣｜國小字音字形・成語答題對戰">
+  <meta property="og:description" content="適合國小中高年級的字音字形與成語答題對戰遊戲，免費開源、無廣告、不蒐集個資">
+  <meta property="og:image" content="https://zizizhuji.vercel.app/assets/web/emblem.jpg">
+  <meta property="og:url" content="https://zizizhuji.vercel.app/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="字字珠璣｜國小字音字形・成語答題對戰">
+  <meta name="twitter:description" content="適合國小中高年級的字音字形與成語答題對戰遊戲，免費開源、無廣告、不蒐集個資">
+  <meta name="twitter:image" content="https://zizizhuji.vercel.app/assets/web/emblem.jpg">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -36,6 +52,7 @@
           <span class="brand-seal" aria-hidden="true">珠璣</span>
         </div>
         <p class="brand-sub">字音字形 × 成語 ── 答題對戰</p>
+        <p class="brand-grade">適合國小中高年級（可依難度分級練習）</p>
         <p class="brand-trust">免費開源．無廣告．無金流．不蒐集個資</p>
       </header>
 
@@ -59,7 +76,7 @@
             <button id="daily-box" class="box-btn" type="button" hidden>開墨匣</button>
           </div>
         </section>
-        <p id="oath-line" class="oath-line" hidden></p>
+        <button id="oath-line" class="oath-line" type="button" hidden></button>
         <p id="omen-line" class="omen-line" hidden></p>
 
         <!-- 角色對峙 VS -->
@@ -119,38 +136,42 @@
           <input type="checkbox" id="toggle-nodamage">
           <span>無傷模式（對戰時關閉連擊嗆聲與低血警示，減輕挫折感）</span>
         </label>
+        <p class="mode-hint">想要排行榜與計分？「更多功能」裡的積分競技也是對戰玩法。</p>
 
-        <!-- 山海寵物入口 -->
-        <h2 class="section-title"><i aria-hidden="true"></i>山海寵物<i aria-hidden="true"></i></h2>
-        <button id="btn-pet" class="pet-entry" type="button">
-          <img id="pet-entry-img" class="pet-entry__img" src="assets/web/pet-baize.jpg" alt="" loading="lazy">
-          <span class="pet-entry__body">
-            <span class="pet-entry__title">寵物閣</span>
-            <span id="pet-entry-sub" class="pet-entry__sub">選一隻山海神獸出戰</span>
-          </span>
-          <span class="pet-entry__arrow" aria-hidden="true">›</span>
-        </button>
+        <!-- 更多功能（漸進揭露：山海寵物／自學／積分競技，收合減少首頁決策點） -->
+        <details class="more-section">
+          <summary class="section-title section-title--toggle"><i aria-hidden="true"></i><span class="toggle-label">更多功能</span><i aria-hidden="true"></i></summary>
 
-        <!-- 自學・墨池 ＆ 積分競技 -->
-        <h2 class="section-title"><i aria-hidden="true"></i>自學與競技<i aria-hidden="true"></i></h2>
-        <div class="extra-grid">
-          <button id="btn-selfstudy" class="extra-entry extra-entry--study" type="button">
-            <span class="extra-entry__icon" aria-hidden="true">墨</span>
-            <span class="extra-entry__body">
-              <span class="extra-entry__title">自學・墨池</span>
-              <span class="extra-entry__sub">記憶牌・閃卡・連連看</span>
+          <!-- 山海寵物入口 -->
+          <button id="btn-pet" class="pet-entry" type="button">
+            <img id="pet-entry-img" class="pet-entry__img" src="assets/web/pet-baize.jpg" alt="" loading="lazy">
+            <span class="pet-entry__body">
+              <span class="pet-entry__title">寵物閣</span>
+              <span id="pet-entry-sub" class="pet-entry__sub">選一隻山海神獸出戰</span>
             </span>
             <span class="pet-entry__arrow" aria-hidden="true">›</span>
           </button>
-          <button id="btn-scoregame" class="extra-entry extra-entry--score" type="button">
-            <span class="extra-entry__icon" aria-hidden="true">積</span>
-            <span class="extra-entry__body">
-              <span class="extra-entry__title">積分競技</span>
-              <span class="extra-entry__sub">衝分・對電腦・兩人對戰</span>
-            </span>
-            <span class="pet-entry__arrow" aria-hidden="true">›</span>
-          </button>
-        </div>
+
+          <!-- 自學・墨池 ＆ 積分競技 -->
+          <div class="extra-grid">
+            <button id="btn-selfstudy" class="extra-entry extra-entry--study" type="button">
+              <span class="extra-entry__icon" aria-hidden="true">墨</span>
+              <span class="extra-entry__body">
+                <span class="extra-entry__title">自學・墨池</span>
+                <span class="extra-entry__sub">記憶牌・閃卡・連連看</span>
+              </span>
+              <span class="pet-entry__arrow" aria-hidden="true">›</span>
+            </button>
+            <button id="btn-scoregame" class="extra-entry extra-entry--score" type="button">
+              <span class="extra-entry__icon" aria-hidden="true">積</span>
+              <span class="extra-entry__body">
+                <span class="extra-entry__title">積分競技（對戰玩法）</span>
+                <span class="extra-entry__sub">衝分・對電腦・兩人對戰</span>
+              </span>
+              <span class="pet-entry__arrow" aria-hidden="true">›</span>
+            </button>
+          </div>
+        </details>
       </section>
 
       <!-- 對戰狀態列（僅對戰模式顯示） -->
@@ -193,22 +214,33 @@
 
   </main>
 
+  <!-- 題庫載入失敗（獨立於答題卡，不佔用題目版位） -->
+  <div id="load-error-overlay" class="meta-overlay" hidden role="alertdialog" aria-modal="true" aria-labelledby="load-error-title">
+    <div class="meta-overlay__card">
+      <h2 id="load-error-title" class="overlay-title">題庫載入失敗</h2>
+      <p>請檢查網路連線後再試一次。</p>
+      <button id="load-error-retry" class="overlay-ghost-btn" type="button">重新載入</button>
+      <button id="load-error-back" class="overlay-ghost-btn" type="button">回首頁</button>
+    </div>
+  </div>
+
   <!-- 事件 toast（八角機制層演出） -->
   <div id="event-toasts" aria-live="polite"></div>
 
   <!-- 首訪開卷誓言 -->
-  <div id="oath-overlay" class="meta-overlay" hidden>
+  <div id="oath-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="oath-title">
     <div class="meta-overlay__card oath-card">
-      <h2 class="overlay-title">開卷・立誓</h2>
+      <h2 id="oath-title" class="overlay-title">開卷・立誓</h2>
       <div id="oath-story"></div>
       <p class="oath-prompt">立下你的誓言：</p>
       <div id="oath-list"></div>
+      <p id="oath-notice" class="oath-notice" aria-live="polite" hidden></p>
       <button id="oath-skip" class="overlay-ghost-btn" type="button">先看看再說</button>
     </div>
   </div>
 
   <!-- 戰報卷軸（結算卡） -->
-  <div id="summary-scroll" class="meta-overlay" hidden>
+  <div id="summary-scroll" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="summary-title">
     <div id="summary-card" class="meta-overlay__card summary-card scroll-unroll">
       <h2 id="summary-title" class="overlay-title">戰報</h2>
       <div id="summary-rows"></div>
@@ -221,18 +253,18 @@
   </div>
 
   <!-- 寵物閣：山海神獸 × 寵物設備 -->
-  <div id="pet-overlay" class="meta-overlay" hidden>
+  <div id="pet-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="pet-title">
     <div class="meta-overlay__card pet-card">
-      <h2 class="overlay-title">寵物閣・山海神獸</h2>
+      <h2 id="pet-title" class="overlay-title">寵物閣・山海神獸</h2>
       <p class="pet-hint">精通字音／成語題目愈多，神獸境界愈高；主寵與設備的加成會帶進墨靈對戰。</p>
       <div class="pet-tabs" role="tablist">
-        <button class="pet-tab is-active" data-tab="pets" type="button">神獸</button>
-        <button class="pet-tab" data-tab="equip" type="button">寵物設備</button>
+        <button class="pet-tab is-active" data-tab="pets" type="button" role="tab" aria-selected="true" aria-controls="pet-panel-pets" id="pet-tab-pets">神獸</button>
+        <button class="pet-tab" data-tab="equip" type="button" role="tab" aria-selected="false" aria-controls="pet-panel-equip" id="pet-tab-equip">寵物設備</button>
       </div>
-      <div id="pet-panel-pets" class="pet-panel">
+      <div id="pet-panel-pets" class="pet-panel" role="tabpanel" aria-labelledby="pet-tab-pets">
         <div id="pet-grid" class="pet-grid"></div>
       </div>
-      <div id="pet-panel-equip" class="pet-panel" hidden>
+      <div id="pet-panel-equip" class="pet-panel" hidden role="tabpanel" aria-labelledby="pet-tab-equip">
         <p class="pet-equip-balance">字珠 <b id="pet-equip-pearls">0</b>｜主寵裝備欄：<span id="pet-equip-active">未選主寵</span></p>
         <div id="pet-equip-grid" class="pet-equip-grid"></div>
       </div>
@@ -241,9 +273,9 @@
   </div>
 
   <!-- 自學・墨池：記憶牌／閃卡／連連看 -->
-  <div id="selfstudy-overlay" class="meta-overlay" hidden>
+  <div id="selfstudy-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="ss-title">
     <div class="meta-overlay__card ss-card">
-      <h2 class="overlay-title">自學・墨池</h2>
+      <h2 id="ss-title" class="overlay-title">自學・墨池</h2>
       <div id="ss-menu" class="ss-menu"></div>
       <div id="ss-game" class="ss-game" hidden>
         <div class="ss-game__bar">
@@ -259,9 +291,9 @@
   </div>
 
   <!-- 積分競技：衝分／對電腦／兩人對戰 -->
-  <div id="scoregame-overlay" class="meta-overlay" hidden>
+  <div id="scoregame-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="sg-title">
     <div class="meta-overlay__card sg-card">
-      <h2 class="overlay-title">積分競技</h2>
+      <h2 id="sg-title" class="overlay-title">積分競技</h2>
       <div id="sg-classbar" class="sg-classbar"></div>
       <div id="sg-lb" class="sg-lb" hidden></div>
       <div id="sg-menu" class="sg-menu"></div>

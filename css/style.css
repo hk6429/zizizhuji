@@ -16,14 +16,23 @@
   --navy:       #274b63;
   --rouge:      #c14b4b;   /* 胭脂紅 */
   --rouge-deep: #9d3232;
-  --gold:       #c9a227;   /* 鎏金 */
+  --gold:       #c9a227;   /* 鎏金（裝飾用：邊框／漸層背景） */
   --gold-hi:    #e6c96a;
+  --gold-text:  #7d5c0f;   /* 鎏金字：對宣紙背景達 4.5:1 對比，供文字使用 */
   --serif: "Songti TC", "Noto Serif TC", "LiSong Pro", "PMingLiU", serif;
   --kai:   "Kaiti TC", "BiauKai", "DFKai-SB", "TW-Kai", "Songti TC", "Noto Serif TC", serif;
   --sans:  -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif;
 }
 
 * { box-sizing: border-box; }
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--teal-deep);
+  outline-offset: 2px;
+}
 
 html { -webkit-text-size-adjust: 100%; }
 
@@ -33,6 +42,10 @@ body {
   font-family: var(--sans);
   color: var(--ink);
   background: var(--paper);
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 /* ---------- 遠景潑墨山水 ---------- */
@@ -175,6 +188,12 @@ body {
   text-indent: .35em;
   color: var(--ink-soft);
 }
+.brand-grade {
+  margin: 2px 0 0;
+  font-size: .72rem;
+  letter-spacing: .05em;
+  color: var(--teal-deep);
+}
 .brand-trust {
   margin: 4px 0 0;
   font-size: .68rem;
@@ -185,13 +204,14 @@ body {
 
 /* 進入答題後：收起首頁、題名縮小 */
 body.in-quiz #screen-home { display: none; }
-body.in-quiz .brand { flex-direction: row; justify-content: center; margin-bottom: 12px; }
+body.in-quiz .brand { flex-direction: row; flex-wrap: wrap; justify-content: center; margin-bottom: 12px; }
 body.in-quiz .brand-emblem { width: 40px; height: 40px; }
 body.in-quiz .brand-title { font-size: 1.5rem; }
 body.in-quiz .brand-seal,
 body.in-quiz .brand-sub,
-body.in-quiz .brand-trust,
+body.in-quiz .brand-grade,
 body.in-quiz .nodamage-toggle { display: none; }
+body.in-quiz .brand-trust { flex-basis: 100%; margin: 0; font-size: .6rem; text-align: center; }
 
 /* ---------- 角色對峙 VS ---------- */
 .vs-stage {
@@ -291,6 +311,17 @@ body.in-quiz .nodamage-toggle { display: none; }
 .section-title i:last-child {
   background: linear-gradient(-90deg, transparent, var(--gold) 45%, var(--rouge) 100%);
 }
+.more-section { margin-top: 4px; }
+.more-section > summary { cursor: pointer; list-style: none; min-height: 44px; }
+.more-section > summary::-webkit-details-marker { display: none; }
+.section-title--toggle .toggle-label::after { content: ' ▸'; display: inline-block; transition: transform .2s ease; }
+.more-section[open] .section-title--toggle .toggle-label::after { transform: rotate(90deg); }
+.mode-hint {
+  margin: 6px 0 0;
+  font-size: .72rem;
+  text-align: center;
+  color: var(--ink-soft);
+}
 
 /* ---------- 題庫卡 ---------- */
 .bank-grid {
@@ -378,6 +409,10 @@ body.in-quiz .nodamage-toggle { display: none; }
   cursor: pointer;
   flex: 1;
   padding: 8px 6px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--kai);
   font-weight: 700;
   font-size: .92rem;
@@ -818,9 +853,12 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 .back-btn {
   appearance: none;
   cursor: pointer;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin: 16px auto 0;
   padding: 8px 22px;
+  min-height: 44px;
   font-family: var(--sans);
   font-size: .88rem;
   letter-spacing: .1em;
@@ -928,7 +966,7 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 .meta-chip--pearl b {
   font-family: var(--kai);
   font-size: 1.15rem;
-  color: var(--gold);
+  color: var(--gold-text);
   text-shadow: 0 1px 0 rgba(157,50,50,.15);
 }
 .meta-chip__label { letter-spacing: .2em; }
@@ -978,6 +1016,10 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 .box-btn {
   margin-top: 2px;
   padding: 2px 8px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: .68rem;
   font-family: var(--kai);
   color: var(--paper-hi);
@@ -997,7 +1039,25 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
   text-align: center;
   color: var(--ink-soft);
 }
-.oath-line { font-family: var(--kai); color: var(--teal-deep); }
+.oath-notice {
+  font-size: .78rem;
+  text-align: center;
+  color: var(--rouge-deep);
+  margin: 0 0 8px;
+}
+.oath-line {
+  appearance: none;
+  display: block;
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 4px;
+  min-height: 44px;
+  font-family: var(--kai);
+  color: var(--teal-deep);
+  cursor: pointer;
+  text-decoration: underline dotted;
+}
 
 /* ---------- 事件 toast ---------- */
 #event-toasts {
@@ -1042,8 +1102,8 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
   border-color: var(--teal);
 }
 .event-toast--milestone,
-.event-toast--lantern { color: var(--gold); border-color: var(--gold); }
-.event-toast--charm { color: var(--gold); }
+.event-toast--lantern { color: var(--gold-text); border-color: var(--gold); }
+.event-toast--charm { color: var(--gold-text); }
 .event-toast--forge { font-family: var(--kai); color: var(--navy); }
 .event-toast--letter { font-family: var(--kai); }
 @keyframes ink-stamp {
@@ -1066,7 +1126,7 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
   animation: xp-rise 2s ease both;
 }
 .meta-float--xp { color: var(--teal-deep); }
-.meta-float--pearl { color: var(--gold); top: 26px; }
+.meta-float--pearl { color: var(--gold-text); top: 26px; }
 @keyframes xp-rise {
   0%   { opacity: 0; translate: 0 6px; }
   20%  { opacity: 1; }
@@ -1265,7 +1325,7 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 .pet-entry__body { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; flex: 1; }
 .pet-entry__title { font-family: var(--serif); font-weight: 800; font-size: 1.1rem; letter-spacing: .1em; }
 .pet-entry__sub { font-size: .82rem; color: var(--ink-soft); }
-.pet-entry__arrow { font-size: 1.6rem; color: var(--gold); font-weight: 700; }
+.pet-entry__arrow { font-size: 1.6rem; color: var(--gold-text); font-weight: 700; }
 
 /* ---- overlay 卡 ---- */
 .pet-card { max-width: 560px; width: 92vw; max-height: 88vh; display: flex; flex-direction: column; }
@@ -1301,11 +1361,11 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 .pet-track { display: block; height: 5px; border-radius: 3px; background: var(--paper-dim); overflow: hidden; }
 .pet-track__fill { display: block; height: 100%; background: linear-gradient(90deg, var(--teal), var(--gold)); }
 .pet-card-item__badge { font-size: .7rem; color: var(--rouge-deep); font-weight: 800; }
-.pet-card-item__hint { font-size: .7rem; color: var(--gold); }
+.pet-card-item__hint { font-size: .7rem; color: var(--gold-text); }
 
 /* ---- 寵物設備 ---- */
 .pet-equip-balance { font-size: .84rem; color: var(--ink-soft); margin: 0 0 10px; }
-.pet-equip-balance b { color: var(--gold); font-size: 1rem; }
+.pet-equip-balance b { color: var(--gold-text); font-size: 1rem; }
 .pet-equip-grid { display: flex; flex-direction: column; gap: 8px; }
 .pet-equip-item {
   display: flex; align-items: center; gap: 10px;
@@ -1375,7 +1435,8 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 /* ---- 遊戲上方工具列 ---- */
 .ss-game__bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
 .ss-barbtn {
-  padding: 6px 12px; border-radius: 8px; cursor: pointer; font-family: var(--kai);
+  padding: 6px 12px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 8px; cursor: pointer; font-family: var(--kai);
   font-size: .84rem; color: var(--ink); background: var(--paper-dim); border: 1px solid rgba(43,58,74,.2);
 }
 .ss-status, .sg-score__round { font-family: var(--kai); font-size: .86rem; color: var(--teal-deep); letter-spacing: .06em; }
@@ -1469,14 +1530,15 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 .sg-score.is-active { border-color: var(--rouge); box-shadow: 0 0 0 2px rgba(193,75,75,.3); }
 .sg-score__name { font-family: var(--kai); font-size: .82rem; color: var(--ink-soft); letter-spacing: .1em; }
 .sg-score__val { font-family: var(--serif); font-weight: 800; font-size: 1.6rem; color: var(--navy); line-height: 1.1; }
-.sg-score__tier { font-size: .72rem; color: var(--gold); font-family: var(--kai); letter-spacing: .1em; }
+.sg-score__tier { font-size: .72rem; color: var(--gold-text); font-family: var(--kai); letter-spacing: .1em; }
 .sg-score__combo {
   position: absolute; top: -8px; right: -4px; font-size: .68rem; color: var(--paper-hi);
   background: var(--rouge); border-radius: 20px; padding: 1px 7px; font-family: var(--kai);
 }
 .sg-ctrl { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; min-height: 34px; }
 .sg-ctrl-btn {
-  padding: 7px 16px; border: none; border-radius: 20px; cursor: pointer;
+  padding: 7px 16px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center;
+  border: none; border-radius: 20px; cursor: pointer;
   font-family: var(--kai); font-size: .84rem; color: var(--paper-hi); letter-spacing: .06em;
 }
 .sg-ctrl-btn--up { background: linear-gradient(180deg, var(--gold-hi), var(--gold)); color: #4a3a08; }
@@ -1504,7 +1566,7 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 }
 .sg-float--gain, .sg-float--up { color: var(--teal-deep); }
 .sg-float--pen { color: var(--rouge); }
-.sg-float--ins { color: var(--gold); }
+.sg-float--ins { color: var(--gold-text); }
 @keyframes sg-float-up {
   from { opacity: 0; transform: translateY(6px); }
   30%  { opacity: 1; transform: translateY(0); }
@@ -1519,7 +1581,7 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 .sg-result__name { font-family: var(--kai); font-weight: 700; color: var(--ink); }
 .sg-result__score { font-family: var(--serif); font-weight: 800; color: var(--navy); }
 .sg-result__meta { grid-column: 1 / -1; font-size: .74rem; color: var(--ink-soft); }
-.sg-result__best { text-align: center; font-size: .82rem; color: var(--gold); font-family: var(--kai); margin-top: 2px; }
+.sg-result__best { text-align: center; font-size: .82rem; color: var(--gold-text); font-family: var(--kai); margin-top: 2px; }
 
 /* ---------- M3 班級共享排行榜 ---------- */
 .sg-classbar {
@@ -1564,7 +1626,7 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 .sg-lb__row:nth-child(odd) { background: rgba(46,143,138,.06); }
 .sg-lb__row::before {
   content: counter(rank); font-family: var(--serif); font-weight: 800;
-  color: var(--gold); text-align: center;
+  color: var(--gold-text); text-align: center;
 }
 .sg-lb__row:nth-child(1)::before { color: var(--rouge); }
 .sg-lb__name { font-family: var(--kai); font-weight: 700; color: var(--ink); }

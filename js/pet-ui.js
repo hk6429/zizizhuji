@@ -7,6 +7,7 @@ import {
   listPets, setActivePet, buyEquip, installEquip, uninstallEquip,
 } from './meta/pet.js';
 import { getBalance } from './meta/economy.js';
+import { openOverlay, closeOverlay } from './overlay-a11y.js';
 
 const $ = (id) => document.getElementById(id);
 const EQUIP_BY_ID = new Map(PET_EQUIP.map((e) => [e.id, e]));
@@ -19,7 +20,7 @@ export function initPetUI(opts) {
   onChange = opts.onChange || (() => {});
 
   $('btn-pet').addEventListener('click', open);
-  $('pet-close').addEventListener('click', () => { $('pet-overlay').hidden = true; });
+  $('pet-close').addEventListener('click', close);
 
   for (const tab of document.querySelectorAll('.pet-tab')) {
     tab.addEventListener('click', () => switchTab(tab.dataset.tab));
@@ -30,12 +31,16 @@ function open() {
   if (!getMeta()) return;
   switchTab('pets');
   render();
-  $('pet-overlay').hidden = false;
+  openOverlay($('pet-overlay'), close);
 }
+
+function close() { closeOverlay($('pet-overlay')); }
 
 function switchTab(name) {
   for (const tab of document.querySelectorAll('.pet-tab')) {
-    tab.classList.toggle('is-active', tab.dataset.tab === name);
+    const active = tab.dataset.tab === name;
+    tab.classList.toggle('is-active', active);
+    tab.setAttribute('aria-selected', String(active));
   }
   $('pet-panel-pets').hidden = name !== 'pets';
   $('pet-panel-equip').hidden = name !== 'equip';
