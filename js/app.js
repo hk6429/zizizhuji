@@ -44,7 +44,7 @@ const $ = (id) => document.getElementById(id);
 // 國中題數待內容產出批次完成後回填（見 data/ziyin-zixing-junior.json / chengyu-junior.json 實際筆數）。
 const BANK_COUNTS = {
   國小: { ziyin: 1532, chengyu: 434, mixed: 1966 },
-  國中: { ziyin: 429, chengyu: 105, mixed: 534 },
+  國中: { ziyin: 507, chengyu: 105, mixed: 612 },
 };
 
 function renderBankCounts() {
