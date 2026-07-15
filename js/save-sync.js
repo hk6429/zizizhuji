@@ -5,9 +5,14 @@ const BASE = 'https://naicheng-counter.vercel.app';
 const SITE = 'zizizhuji';
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 排除易混淆的 0/O/1/I
 
+// 6 碼中保證有一組重複字元（好記），其餘 5 碼獨立亂數（32^5≈3360 萬組合，碰撞機率仍極低）。
 export function generateCode() {
-  const bytes = crypto.getRandomValues(new Uint8Array(6));
-  return Array.from(bytes, (b) => CODE_CHARS[b % CODE_CHARS.length]).join('');
+  const bytes = crypto.getRandomValues(new Uint8Array(5));
+  const chars = Array.from(bytes, (b) => CODE_CHARS[b % CODE_CHARS.length]);
+  const dupChar = chars[bytes[4] % chars.length];
+  const insertAt = crypto.getRandomValues(new Uint8Array(1))[0] % (chars.length + 1);
+  chars.splice(insertAt, 0, dupChar);
+  return chars.join('');
 }
 
 export async function pushSave(code, meta) {

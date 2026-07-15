@@ -11,6 +11,7 @@ const SYNCED_KEY = 'zizhu:lastSyncedAt';
 let getMeta = () => null;
 let onLoaded = () => {};
 let confirmingLoad = false;
+let confirmingRegen = false;
 
 function myCode() {
   let code = null;
@@ -41,6 +42,8 @@ export function initSaveSyncUI(opts) {
   $('savesync-pull').addEventListener('click', handlePull);
   $('savesync-code-input').addEventListener('input', resetPullConfirm);
   $('savesync-pull-cancel').addEventListener('click', resetPullConfirm);
+  $('savesync-regen').addEventListener('click', handleRegen);
+  $('savesync-regen-cancel').addEventListener('click', resetRegenConfirm);
 }
 
 function open() {
@@ -55,6 +58,7 @@ function render() {
   $('savesync-code').textContent = myCode();
   $('savesync-status').textContent = lastSyncedText();
   resetPullConfirm();
+  resetRegenConfirm();
 }
 
 async function handlePush() {
@@ -79,6 +83,27 @@ function resetPullConfirm() {
   confirmingLoad = false;
   $('savesync-pull').textContent = '載入';
   $('savesync-pull-cancel').hidden = true;
+}
+
+function resetRegenConfirm() {
+  confirmingRegen = false;
+  $('savesync-regen').textContent = '換一組代碼';
+  $('savesync-regen-cancel').hidden = true;
+}
+
+function handleRegen() {
+  if (!confirmingRegen) {
+    confirmingRegen = true;
+    $('savesync-regen').textContent = '確定要換新代碼？舊代碼仍找得到舊存檔，再按一次確定';
+    $('savesync-regen-cancel').hidden = false;
+    return;
+  }
+  const code = generateCode();
+  try {
+    localStorage.setItem(CODE_KEY, code);
+    localStorage.removeItem(SYNCED_KEY);
+  } catch {}
+  render();
 }
 
 async function handlePull() {
