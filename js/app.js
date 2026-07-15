@@ -14,6 +14,7 @@ import { initScoreGame } from './scoregame-ui.js';
 const FEEDBACK_DELAY = 650; // 等墨暈／潑濺動畫播完再進下一題
 
 let currentBank = 'ziyin';
+let currentDifficulty = 'all'; // 'all' | '易' | '中' | '難'
 let session = 0; // 收卷／重新開局時 +1，讓舊回合的 setTimeout 失效
 let currentMode = null;    // 'practice' | 'battle' | null
 let battleState = null;    // 對戰中的 state（收卷結算用）
@@ -30,7 +31,20 @@ function shuffle(arr) {
   return a;
 }
 
-const loadCurrentBank = () => loadBank(currentBank);
+const loadCurrentBank = async () => {
+  const bank = await loadBank(currentBank);
+  if (currentDifficulty === 'all') return bank;
+  const filtered = bank.filter((q) => q.difficulty === currentDifficulty);
+  return filtered.length ? filtered : bank; // 篩到空題庫時退回全部，避免卡關
+};
+
+const diffButtons = document.querySelectorAll('#diff-select .diff-btn');
+for (const btn of diffButtons) {
+  btn.addEventListener('click', () => {
+    currentDifficulty = btn.dataset.diff;
+    for (const b of diffButtons) b.classList.toggle('is-active', b === btn);
+  });
+}
 
 // 兩份題庫齊備後初始化機制層（八角 meta）。失敗（離線）不擋原有遊玩入口。
 async function initMetaLayer() {

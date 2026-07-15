@@ -358,6 +358,31 @@ body.in-quiz .brand-sub { display: none; }
   box-shadow: 1px 1px 3px rgba(157,50,50,.4);
 }
 
+/* ---------- 難度篩選 ---------- */
+.diff-select {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0 18px;
+}
+.diff-btn {
+  appearance: none;
+  cursor: pointer;
+  flex: 1;
+  padding: 8px 6px;
+  font-family: var(--kai);
+  font-weight: 700;
+  font-size: .92rem;
+  color: var(--ink-soft);
+  background: var(--paper-hi);
+  border: 1.5px solid rgba(39,75,99,.3);
+  border-radius: 999px;
+}
+.diff-btn.is-active {
+  color: var(--paper-hi);
+  background: var(--teal);
+  border-color: var(--teal-deep);
+}
+
 /* ---------- 模式按鈕 ---------- */
 #mode-select {
   display: grid;
