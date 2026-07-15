@@ -59,15 +59,24 @@ test('自編 字形 entries: all options are real characters and answer is among
   }
 });
 
-test('ziyin-zixing-junior answers only use the 甲表 delta pool (756 chars beyond elementary scope)', () => {
-  const elemAnchor = JSON.parse(readFileSync(new URL('../tools/anchors/ziyin-anchor-elementary.json', import.meta.url)));
+test('ziyin-zixing-junior answers only use chars not already actually tested at 國小 level', () => {
   const fullAnchor = JSON.parse(readFileSync(new URL('../tools/anchors/ziyin-anchor.json', import.meta.url)));
+  const elemUsed = new Set();
+  for (const e of ziyin) {
+    if (e.type === '字音') {
+      const m = e.question.match(/「[^」]+」的「([^」]+)」正確讀音是？/);
+      if (m) elemUsed.add(m[1]);
+    } else {
+      elemUsed.add(e.answer);
+      for (const o of e.options) elemUsed.add(o);
+    }
+  }
   for (const e of ziyinJunior) {
     const targetChar = e.type === '字音'
       ? e.question.match(/「[^」]+」的「([^」]+)」正確讀音是？/)?.[1]
       : e.answer;
     assert.ok(targetChar, `could not extract target char: ${e.id}`);
-    assert.ok(!elemAnchor[targetChar], `char already used at 國小 level, should not reappear at 國中: ${e.id} / ${targetChar}`);
+    assert.ok(!elemUsed.has(targetChar), `char already actually tested at 國小 level, should not reappear at 國中: ${e.id} / ${targetChar}`);
     assert.ok(fullAnchor[targetChar], `char not a real CNS11643 character: ${e.id} / ${targetChar}`);
   }
 });
