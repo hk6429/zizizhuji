@@ -20,6 +20,18 @@ let currentMode = null;    // 'practice' | 'battle' | null
 let battleState = null;    // 對戰中的 state（收卷結算用）
 let battleDone = false;    // 防止 onBattleEnd 重複呼叫
 
+// 無傷模式：關閉連擊嗆聲與低血警示視覺，降低對戰對弱勢學生的心理壓力
+const NODAMAGE_KEY = 'zizhu:noDamageMode';
+let noDamageMode = localStorage.getItem(NODAMAGE_KEY) === '1';
+const ndToggle = document.getElementById('toggle-nodamage');
+if (ndToggle) {
+  ndToggle.checked = noDamageMode;
+  ndToggle.addEventListener('change', () => {
+    noDamageMode = ndToggle.checked;
+    localStorage.setItem(NODAMAGE_KEY, noDamageMode ? '1' : '0');
+  });
+}
+
 const $ = (id) => document.getElementById(id);
 
 function shuffle(arr) {
@@ -173,7 +185,7 @@ function bindAnswer(entry, mySession, onDone) {
 /* ---------- 對戰 HUD ---------- */
 function renderHpSide(fillEl, numEl, hp, maxHp = 100) {
   fillEl.style.width = `${Math.max(0, Math.min(100, (hp / maxHp) * 100))}%`;
-  fillEl.classList.toggle('is-low', hp <= maxHp * 0.3);
+  fillEl.classList.toggle('is-low', !noDamageMode && hp <= maxHp * 0.3);
   numEl.textContent = hp;
 }
 
@@ -182,11 +194,12 @@ function renderBattleHud(state, maxHpA = 100, maxHpB = 100) {
   renderHpSide($('hp-b'), $('hp-num-b'), state.hpB, maxHpB);
   const combo = $('combo');
   // 答對打斷對手連擊、答錯歸零自己連擊，兩者互斥，共用同一枚印章
-  const rivalStreak = state.comboA === 0 && state.comboB >= 2;
+  // 無傷模式關閉「對手連擊」嗆聲，只顯示自己的連對數，避免落後時被動加壓
+  const rivalStreak = !noDamageMode && state.comboA === 0 && state.comboB >= 2;
   combo.textContent = rivalStreak ? `對手連擊 ${state.comboB}` : `連對 ${state.comboA}`;
   combo.hidden = state.comboA < 2 && !rivalStreak; // 連對 0/1 不佔版面
   combo.classList.toggle('is-rival', rivalStreak);
-  combo.classList.toggle('is-hot', state.comboA >= 3 || state.comboB >= 3);
+  combo.classList.toggle('is-hot', !noDamageMode && (state.comboA >= 3 || state.comboB >= 3));
   if (!combo.hidden) {
     combo.classList.remove('pop');
     void combo.offsetWidth; // 重播印章跳出動畫

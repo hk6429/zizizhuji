@@ -232,18 +232,23 @@ function renderClassForm() {
   bar.append(codeIn, nickIn, save, err);
 }
 
+// 進步量／連續守燈子榜：跟主分數榜共用同一支 API，只是換一個 board 字串
+// 讓弱勢學生也有機會上榜（進步最多／守燈最久），不是只有分數高的人才看得到自己
+function boardKey(code, suffix) { return `${code}::${suffix}`; }
+
 async function showLeaderboard(code) {
   $('sg-menu').hidden = true;
   const lb = $('sg-lb');
   lb.hidden = false;
   lb.innerHTML = '<p class="sg-lb__load">排行榜載入中…</p>';
-  const r = await fetchTop(code);
-  renderLeaderboard(lb, code, r, () => { lb.hidden = true; $('sg-menu').hidden = false; });
+  const [rScore, rProgress, rStreak] = await Promise.all([
+    fetchTop(code), fetchTop(boardKey(code, 'progress')), fetchTop(boardKey(code, 'streak')),
+  ]);
+  renderAllBoards(lb, code, { rScore, rProgress, rStreak }, () => { lb.hidden = true; $('sg-menu').hidden = false; });
 }
 
-function renderLeaderboard(host, code, r, onClose) {
-  host.innerHTML = '';
-  host.appendChild(el('div', 'sg-lb__title', `班級榜・${code}`));
+function renderLeaderboard(host, title, r) {
+  host.appendChild(el('div', 'sg-lb__title', title));
   if (!r.ok) {
     host.appendChild(el('p', 'sg-lb__load', '排行榜暫時無法連線，稍後再試。'));
   } else if (!r.top.length) {
@@ -257,6 +262,13 @@ function renderLeaderboard(host, code, r, onClose) {
     });
     host.appendChild(ol);
   }
+}
+
+function renderAllBoards(host, code, { rScore, rProgress, rStreak }, onClose) {
+  host.innerHTML = '';
+  renderLeaderboard(host, `分數榜・${code}`, rScore);
+  renderLeaderboard(host, `進步量榜・${code}（單場進步最多）`, rProgress);
+  renderLeaderboard(host, `連續守燈榜・${code}（連續天數）`, rStreak);
   if (onClose) {
     const back = el('button', 'ss-again', '關閉班級榜'); back.type = 'button';
     back.addEventListener('click', onClose);
@@ -360,8 +372,19 @@ async function results(early) {
     const lbBox = el('div', 'sg-lb sg-lb--inline');
     lbBox.innerHTML = '<p class="sg-lb__load">上傳班級榜…</p>';
     panel.appendChild(lbBox);
-    const sub = await submitScore(code, nick, human.score.score);
-    const data = sub.ok ? { ok: true, top: sub.top } : await fetchTop(code);
-    renderLeaderboard(lbBox, code, data, null);
+
+    const progress = Math.max(0, human.score.score - prevBest);
+    const streak = (state.meta.daily && typeof state.meta.daily.streak === 'number') ? state.meta.daily.streak : 0;
+    const [subScore] = await Promise.all([
+      submitScore(code, nick, human.score.score),
+      progress > 0 ? submitScore(boardKey(code, 'progress'), nick, progress) : Promise.resolve(null),
+      streak > 0 ? submitScore(boardKey(code, 'streak'), nick, streak) : Promise.resolve(null),
+    ]);
+    const [rScore, rProgress, rStreak] = await Promise.all([
+      subScore.ok ? Promise.resolve(subScore) : fetchTop(code),
+      fetchTop(boardKey(code, 'progress')),
+      fetchTop(boardKey(code, 'streak')),
+    ]);
+    renderAllBoards(lbBox, code, { rScore, rProgress, rStreak }, null);
   }
 }

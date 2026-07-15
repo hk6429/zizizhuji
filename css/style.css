@@ -175,6 +175,13 @@ body {
   text-indent: .35em;
   color: var(--ink-soft);
 }
+.brand-trust {
+  margin: 4px 0 0;
+  font-size: .68rem;
+  letter-spacing: .05em;
+  color: var(--ink-soft);
+  opacity: .7;
+}
 
 /* 進入答題後：收起首頁、題名縮小 */
 body.in-quiz #screen-home { display: none; }
@@ -182,7 +189,9 @@ body.in-quiz .brand { flex-direction: row; justify-content: center; margin-botto
 body.in-quiz .brand-emblem { width: 40px; height: 40px; }
 body.in-quiz .brand-title { font-size: 1.5rem; }
 body.in-quiz .brand-seal,
-body.in-quiz .brand-sub { display: none; }
+body.in-quiz .brand-sub,
+body.in-quiz .brand-trust,
+body.in-quiz .nodamage-toggle { display: none; }
 
 /* ---------- 角色對峙 VS ---------- */
 .vs-stage {
@@ -425,6 +434,18 @@ body.in-quiz .brand-sub { display: none; }
   font-size: .8rem;
   opacity: .88;
   letter-spacing: .06em;
+}
+
+/* ---------- 無傷模式切換 ---------- */
+.nodamage-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  margin-top: 8px;
+  font-size: .75rem;
+  color: var(--ink-soft);
+  cursor: pointer;
 }
 
 /* ---------- 對戰狀態列 ---------- */

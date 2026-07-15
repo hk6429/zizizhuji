@@ -36,6 +36,7 @@
           <span class="brand-seal" aria-hidden="true">珠璣</span>
         </div>
         <p class="brand-sub">字音字形 × 成語 ── 答題對戰</p>
+        <p class="brand-trust">免費開源．無廣告．無金流．不蒐集個資</p>
       </header>
 
       <!-- 首頁（進入答題後由 body.in-quiz 隱藏） -->
@@ -64,12 +65,12 @@
         <!-- 角色對峙 VS -->
         <div class="vs-stage" aria-label="小書生對決墨靈少女">
           <figure class="fighter fighter--player">
-            <img src="assets/web/char-player.jpg" alt="小書生">
+            <img src="assets/web/char-player.jpg" alt="小書生" loading="lazy">
             <figcaption>小書生</figcaption>
           </figure>
           <div class="vs-badge" aria-hidden="true"><span>對</span><span>決</span></div>
           <figure class="fighter fighter--rival">
-            <img src="assets/web/char-rival.jpg" alt="墨靈少女">
+            <img src="assets/web/char-rival.jpg" alt="墨靈少女" loading="lazy">
             <figcaption>墨靈少女</figcaption>
           </figure>
         </div>
@@ -78,17 +79,17 @@
         <h2 class="section-title"><i aria-hidden="true"></i>選擇題庫<i aria-hidden="true"></i></h2>
         <div class="bank-grid" role="group" aria-label="題庫切換">
           <button id="bank-ziyin" class="bank-card is-active" type="button" aria-pressed="true">
-            <span class="bank-icon"><img src="assets/web/icon-ziyin.jpg" alt=""></span>
+            <span class="bank-icon"><img src="assets/web/icon-ziyin.jpg" alt="" loading="lazy"></span>
             <span class="bank-name">字音字形</span>
             <span class="bank-count">1532 題</span>
           </button>
           <button id="bank-chengyu" class="bank-card" type="button" aria-pressed="false">
-            <span class="bank-icon"><img src="assets/web/icon-chengyu.jpg" alt=""></span>
+            <span class="bank-icon"><img src="assets/web/icon-chengyu.jpg" alt="" loading="lazy"></span>
             <span class="bank-name">成語</span>
             <span class="bank-count">434 題</span>
           </button>
           <button id="bank-mixed" class="bank-card" type="button" aria-pressed="false">
-            <span class="bank-icon"><img src="assets/web/icon-mixed.jpg" alt=""></span>
+            <span class="bank-icon"><img src="assets/web/icon-mixed.jpg" alt="" loading="lazy"></span>
             <span class="bank-name">混合挑戰</span>
             <span class="bank-count">1966 題</span>
           </button>
@@ -114,6 +115,10 @@
             <span class="mode-desc">答對出招．連對三題威力加倍</span>
           </button>
         </div>
+        <label class="nodamage-toggle">
+          <input type="checkbox" id="toggle-nodamage">
+          <span>無傷模式（對戰時關閉連擊嗆聲與低血警示，減輕挫折感）</span>
+        </label>
 
         <!-- 山海寵物入口 -->
         <h2 class="section-title"><i aria-hidden="true"></i>山海寵物<i aria-hidden="true"></i></h2>
@@ -151,7 +156,7 @@
       <!-- 對戰狀態列（僅對戰模式顯示） -->
       <section id="battle-hud" hidden aria-label="對戰狀態">
         <div class="hp-side hp-side--a">
-          <img class="hp-avatar hp-avatar--a" src="assets/web/char-player.jpg" alt="小書生">
+          <img class="hp-avatar hp-avatar--a" src="assets/web/char-player.jpg" alt="小書生" loading="lazy">
           <div class="hp-meta">
             <span class="hp-name">小書生 <b id="hp-num-a" class="hp-num">100</b></span>
             <div class="hp-track"><div id="hp-a" class="hp-fill" style="width:100%"></div></div>
@@ -159,7 +164,7 @@
         </div>
         <div id="combo" class="combo" hidden>連對 0</div>
         <div class="hp-side hp-side--b">
-          <img class="hp-avatar hp-avatar--b" src="assets/web/char-rival.jpg" alt="墨靈少女">
+          <img class="hp-avatar hp-avatar--b" src="assets/web/char-rival.jpg" alt="墨靈少女" loading="lazy">
           <div class="hp-meta">
             <span class="hp-name"><b id="hp-num-b" class="hp-num">100</b> 墨靈少女</span>
             <div class="hp-track"><div id="hp-b" class="hp-fill" style="width:100%"></div></div>
@@ -171,7 +176,7 @@
       <!-- 答題區：灑金箋 -->
       <section id="quiz-area" hidden>
         <div class="quiz-card">
-          <img class="card-seal" src="assets/web/emblem.jpg" alt="" aria-hidden="true">
+          <img class="card-seal" src="assets/web/emblem.jpg" alt="" aria-hidden="true" loading="lazy">
           <span id="mode-tag" class="mode-tag" aria-hidden="true"></span>
           <p id="question-text"></p>
           <div id="options"></div>
