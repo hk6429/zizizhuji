@@ -51,6 +51,12 @@ await page.waitForSelector('#ach-overlay:not([hidden])');
 const achCount = await page.$$eval('#ach-grid .ach-item', els => els.length);
 await page.click('#ach-close');
 
+// 雲端存檔：開啟後應自動產生並顯示 6 碼代碼
+await page.click('#btn-savesync');
+await page.waitForSelector('#savesync-overlay:not([hidden])');
+const savesyncCode = await page.$eval('#savesync-code', el => el.textContent.trim());
+await page.click('#savesync-close');
+
 // 自學・墨池：三款遊戲選單；進「記憶配對牌」應鋪出 16 張牌
 await page.click('#btn-selfstudy');
 await page.waitForSelector('#selfstudy-overlay:not([hidden])');
@@ -99,6 +105,7 @@ server.close();
 
 if (petCount !== 12) throw new Error(`寵物閣應有 12 隻神獸，實際 ${petCount}`);
 if (achCount !== 17) throw new Error(`成就總覽應有 17 個成就，實際 ${achCount}`);
+if (!/^[A-Z0-9]{6}$/.test(savesyncCode)) throw new Error(`雲端存檔代碼格式應為 6 碼英數，實際「${savesyncCode}」`);
 if (ssMenuCount !== 4) throw new Error(`自學選單應有 4 款遊戲，實際 ${ssMenuCount}`);
 if (memCardCount !== 16) throw new Error(`記憶配對牌應鋪 16 張，實際 ${memCardCount}`);
 if (linkTileCount !== 16) throw new Error(`連連看應鋪 16 張，實際 ${linkTileCount}`);

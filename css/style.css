@@ -1242,6 +1242,30 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
   cursor: pointer;
 }
 
+/* ---------- 雲端存檔 ---------- */
+.savesync-hint { margin: 0 0 10px; font-size: .8rem; line-height: 1.6; color: var(--ink-soft); }
+.savesync-code-block { display: flex; justify-content: center; margin-bottom: 10px; }
+.savesync-code {
+  font-family: monospace; font-size: 1.6rem; font-weight: 700; letter-spacing: .2em;
+  padding: 8px 16px; border-radius: 10px; color: var(--rouge-deep);
+  background: var(--paper-hi); border: 1px dashed rgba(201,162,39,.6);
+}
+.savesync-btn {
+  display: block; width: 100%; margin-bottom: 6px; padding: 9px 12px;
+  font-family: var(--kai); font-size: .88rem; color: var(--paper-hi);
+  background: var(--teal-deep); border: none; border-radius: 10px; cursor: pointer;
+}
+.savesync-btn:disabled { background: var(--paper-dim); color: var(--ink-soft); cursor: default; }
+.savesync-status { margin: 0 0 6px; font-size: .76rem; text-align: center; color: var(--ink-soft); }
+.savesync-divider { border: none; border-top: 1px dashed rgba(85,99,111,.3); margin: 12px 0; }
+.savesync-pull-row { display: flex; gap: 6px; }
+.savesync-input {
+  flex: 1; min-width: 0; padding: 8px 10px; font-family: monospace; font-size: 1rem;
+  letter-spacing: .15em; text-transform: uppercase; border-radius: 8px;
+  border: 1px solid rgba(43,58,74,.3); background: var(--paper-hi); color: var(--ink);
+}
+.savesync-pull-row .savesync-btn { width: auto; margin-bottom: 0; flex: none; }
+
 /* ---------- 戰報卷軸 ---------- */
 .scroll-unroll { animation: scroll-unroll .45s ease both; }
 @keyframes scroll-unroll {
@@ -1431,6 +1455,7 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 .extra-entry--study { background: linear-gradient(120deg, rgba(46,143,138,.16), rgba(201,162,39,.10)); }
 .extra-entry--score { background: linear-gradient(120deg, rgba(193,75,75,.14), rgba(201,162,39,.10)); }
 .extra-entry--ach { background: linear-gradient(120deg, rgba(201,162,39,.18), rgba(46,143,138,.10)); grid-column: 1 / -1; }
+.extra-entry--sync { background: linear-gradient(120deg, rgba(59,111,138,.16), rgba(46,143,138,.10)); grid-column: 1 / -1; }
 .extra-entry__icon {
   width: 40px; height: 40px; flex: none; display: grid; place-items: center;
   border-radius: 50%; font-family: var(--kai); font-weight: 800; font-size: 1.2rem;
@@ -1438,6 +1463,7 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 }
 .extra-entry--score .extra-entry__icon { background: radial-gradient(circle at 34% 30%, #d96a5f, var(--rouge-deep) 72%); }
 .extra-entry--ach .extra-entry__icon { background: radial-gradient(circle at 34% 30%, var(--gold-hi), var(--gold-text) 72%); }
+.extra-entry--sync .extra-entry__icon { background: radial-gradient(circle at 34% 30%, #3b6f8a, var(--navy) 72%); }
 .extra-entry__body { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
 .extra-entry__title { font-family: var(--serif); font-weight: 800; font-size: .98rem; letter-spacing: .06em; }
 .extra-entry__sub { font-size: .68rem; color: var(--ink-soft); overflow-wrap: anywhere; }

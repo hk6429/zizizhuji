@@ -11,6 +11,8 @@ import { initPetUI } from './pet-ui.js';
 import { initSelfStudy } from './selfstudy-ui.js';
 import { initScoreGame } from './scoregame-ui.js';
 import { initAchievementsUI } from './achievements-ui.js';
+import { initSaveSyncUI } from './save-sync-ui.js';
+import { saveMeta } from './meta/store.js';
 import { checkWelcomeBack } from './meta/welcome-back.js';
 import { shuffle } from './shuffle.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
@@ -354,4 +356,8 @@ initPetUI({ getMeta: () => getCtx()?.meta, onChange: refreshWidgets });
 initSelfStudy({ loadBank, ensureCtx });
 initScoreGame({ loadBank, ensureCtx, onChange: refreshWidgets });
 initAchievementsUI({ getMeta: () => getCtx()?.meta });
+initSaveSyncUI({
+  getMeta: () => getCtx()?.meta,
+  onLoaded: (data) => { saveMeta(data); location.reload(); },
+});
 initMetaLayer().then(maybeShowWelcomeBack);
