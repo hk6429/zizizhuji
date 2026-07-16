@@ -76,3 +76,33 @@ test('validateChengyuEntry rejects unknown level', () => {
   assert.equal(result.valid, false);
   assert.ok(result.errors.some((e) => e.includes('level must be')));
 });
+
+test('new junior formats accept a typed qformat and non-empty anchor list', () => {
+  const ziyinEntry = {
+    id: 'zy-中-test', level: '國中', origin: '自編', source: '自編', type: '字形',
+    question: '哪一個用字正確？', options: ['佞', '倖', '倨', '佯'], answer: '佞',
+    qformat: 'zixing-sentence', anchor: ['佞'],
+  };
+  const chengyuEntry = {
+    id: 'cy-中-test', level: '國中', origin: '自編', source: '自編', type: '成語',
+    question: '哪一句使用正確？', options: ['甲', '乙', '丙', '丁'], answer: '甲',
+    qformat: 'usage-judge', anchor: ['一意孤行'],
+  };
+
+  assert.equal(validateZiyinEntry(ziyinEntry).valid, true);
+  assert.equal(validateChengyuEntry(chengyuEntry).valid, true);
+});
+
+test('schema rejects unknown qformat and malformed anchor without breaking legacy entries', () => {
+  const legacy = {
+    id: 'zy-中-legacy', level: '國中', origin: '自編', source: '自編', type: '字音',
+    question: '「佞臣」的「佞」正確讀音是？',
+    options: ['ㄋㄧㄥˋ', 'ㄋㄧㄣˋ', 'ㄌㄧㄥˋ', 'ㄋㄧㄥˊ'], answer: 'ㄋㄧㄥˋ',
+  };
+  const badFormat = { ...legacy, qformat: 'reading-made-up', anchor: ['佞'] };
+  const badAnchor = { ...legacy, qformat: 'reading-live', anchor: [] };
+
+  assert.equal(validateZiyinEntry(legacy).valid, true);
+  assert.equal(validateZiyinEntry(badFormat).valid, false);
+  assert.equal(validateZiyinEntry(badAnchor).valid, false);
+});
