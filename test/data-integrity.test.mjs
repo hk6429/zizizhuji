@@ -153,10 +153,14 @@ test('every explicit anchor resolves against the corresponding official anchor f
   }
 });
 
-test('new-format question stems are unique within each junior bank', () => {
+test('new-format questions are unique within each junior bank (stem+options)', () => {
+  // 通用題幹（如「哪一個用字不正確？」）允許重複，選項才是題目本體；
+  // 題幹＋選項完全相同才視為重複題。
   for (const [name, entries] of Object.entries({ ziyinJunior, chengyuJunior })) {
-    const stems = entries.filter((e) => e.qformat && e.qformat !== 'def-pick').map((e) => e.question);
-    assert.equal(new Set(stems).size, stems.length, `${name}: repeated new-format question stem`);
+    const keys = entries
+      .filter((e) => e.qformat && e.qformat !== 'def-pick')
+      .map((e) => `${e.question}|${e.options.join('|')}`);
+    assert.equal(new Set(keys).size, keys.length, `${name}: repeated new-format question (stem+options)`);
   }
 });
 
