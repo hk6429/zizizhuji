@@ -54,6 +54,17 @@ function renderBankCounts() {
   $('bank-count-mixed').textContent = `${counts.mixed} 題`;
 }
 
+const AVATAR_SRC = {
+  國小: { player: 'assets/web/char-player.jpg', rival: 'assets/web/char-rival.jpg' },
+  國中: { player: 'assets/web/char-player-junior.jpg', rival: 'assets/web/char-rival-junior.jpg' },
+};
+
+function renderAvatars() {
+  const src = AVATAR_SRC[getLevel()];
+  for (const id of ['avatar-player', 'hp-avatar-player']) $(id).src = src.player;
+  for (const id of ['avatar-rival', 'hp-avatar-rival']) $(id).src = src.rival;
+}
+
 const levelButtons = document.querySelectorAll('#level-select .level-btn');
 for (const btn of levelButtons) {
   btn.classList.toggle('is-active', btn.dataset.level === getLevel());
@@ -63,6 +74,7 @@ for (const btn of levelButtons) {
   });
 }
 renderBankCounts();
+renderAvatars();
 
 const loadCurrentBank = async () => {
   const bank = await loadBank(currentBank);
