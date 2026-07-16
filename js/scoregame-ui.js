@@ -315,7 +315,7 @@ function humanTurn(p) {
   $('sg-question').textContent = q.question;
   const optionsEl = $('sg-options');
   optionsEl.innerHTML = '';
-  for (const opt of q.options) {
+  for (const opt of shuffle(q.options)) {
     const btn = el('button', 'sg-opt', opt);
     btn.type = 'button';
     btn.dataset.value = opt;

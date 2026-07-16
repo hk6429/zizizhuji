@@ -188,7 +188,7 @@ function renderQuestion(entry) {
   $('question-text').textContent = entry.question;
   const optionsEl = $('options');
   optionsEl.innerHTML = '';
-  entry.options.forEach((opt) => {
+  shuffle(entry.options).forEach((opt) => {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.textContent = opt;

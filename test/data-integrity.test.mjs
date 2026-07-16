@@ -90,3 +90,16 @@ test('chengyu-junior entries: answer idiom is a real 教育部/moedict headword 
     assert.ok(!elemUsed.has(e.answer), `idiom already used at 國小 level: ${e.id} / ${e.answer}`);
   }
 });
+
+test('answer position within options is not skewed toward any single slot', () => {
+  const banks = { ziyin, chengyu, ziyinJunior, chengyuJunior };
+  for (const [name, entries] of Object.entries(banks)) {
+    const posCount = [0, 0, 0, 0];
+    for (const e of entries) posCount[e.options.indexOf(e.answer)] += 1;
+    const total = entries.length;
+    for (const [pos, count] of posCount.entries()) {
+      const ratio = count / total;
+      assert.ok(ratio <= 0.4, `${name}: answer sits in options[${pos}] ${(ratio * 100).toFixed(1)}% of the time (>40%), options may not be shuffled at generation time`);
+    }
+  }
+});
