@@ -17,6 +17,8 @@ function baseChecks(entry) {
   if (!LEVELS.has(entry.level)) errors.push('level must be "國小", "國中", or "選手"');
   if (!Array.isArray(entry.options) || entry.options.length !== 4) {
     errors.push('options must have exactly 4 entries');
+  } else if (entry.options.some((option) => typeof option !== 'string' || option.length === 0) || new Set(entry.options).size !== 4) {
+    errors.push('options must be four distinct non-empty strings');
   }
   if (!entry.answer || !Array.isArray(entry.options) || !entry.options.includes(entry.answer)) {
     errors.push('answer must be non-empty and included in options');

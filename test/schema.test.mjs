@@ -28,6 +28,17 @@ test('validateZiyinEntry rejects entry missing answer or wrong option count', ()
   assert.ok(result.errors.includes('answer must be non-empty and included in options'));
 });
 
+test('schema rejects null, empty, or repeated option strings', () => {
+  const entry = {
+    id: 'zy-中-options', level: '國中', origin: '自編', source: '自編', type: '字形',
+    question: '應選哪個字？', options: ['佞', null, '', '佞'], answer: '佞',
+    qformat: 'zixing-fix', anchor: ['佞'],
+  };
+  const result = validateZiyinEntry(entry);
+  assert.equal(result.valid, false);
+  assert.ok(result.errors.includes('options must be four distinct non-empty strings'));
+});
+
 test('validateChengyuEntry requires source to be 真題 or 自編', () => {
   const entry = {
     id: 'cy-001', level: '國小', type: '意義',
