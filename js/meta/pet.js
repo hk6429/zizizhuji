@@ -42,12 +42,30 @@ const PET_BY_ID = new Map(PETS.map((p) => [p.id, p]));
 const EQUIP_BY_ID = new Map(PET_EQUIP.map((e) => [e.id, e]));
 
 function ensurePetState(meta) {
-  if (!meta.pet) meta.pet = { seen: {}, active: null, ownedEquip: [], equipped: {} };
+  if (!meta.pet) meta.pet = { seen: {}, active: null, ownedEquip: [], equipped: {}, nicknames: {} };
   const s = meta.pet;
   if (!s.seen) s.seen = {};
   if (!s.ownedEquip) s.ownedEquip = [];
   if (!s.equipped) s.equipped = {};
+  if (!s.nicknames) s.nicknames = {};
   return s;
+}
+
+// 寵物暱稱：孩子幫神獸取名（1–8 字）；空字串＝清除、回本名。
+export const NICKNAME_MAX = 8;
+
+export function setPetNickname(meta, petId, nickname) {
+  const s = ensurePetState(meta);
+  if (!PET_BY_ID.has(petId)) return { meta, ok: false, reason: 'not-found' };
+  if (!isUnlocked(meta, petId)) return { meta, ok: false, reason: 'locked' };
+  const nick = String(nickname).trim();
+  if (nick.length === 0) {
+    delete s.nicknames[petId];
+    return { meta, ok: true, reason: null };
+  }
+  if (nick.length > NICKNAME_MAX) return { meta, ok: false, reason: 'too-long' };
+  s.nicknames[petId] = nick;
+  return { meta, ok: true, reason: null };
 }
 
 // 某類別的精通題數（已煉成字珠）。字音＝zy- 前綴、成語＝cy- 前綴、混合＝全部。
@@ -82,8 +100,10 @@ export function listPets(meta) {
     const mastery = categoryMastery(meta, p.category);
     const level = Math.min(MAX_LEVEL, Math.floor(mastery / LEVEL_STEP));
     const nextAt = level >= MAX_LEVEL ? null : (level + 1) * LEVEL_STEP;
+    const nickname = meta.pet.nicknames[p.id] || null;
     return {
       id: p.id, name: p.name, category: p.category, desc: p.desc,
+      nickname, displayName: nickname || p.name,
       unlocked: mastery >= p.unlockAt, unlockAt: p.unlockAt,
       mastery, level, nextAt,
       active: meta.pet.active === p.id,

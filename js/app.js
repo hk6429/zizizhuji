@@ -5,17 +5,20 @@ import * as kernel from './meta/kernel.js';
 import {
   ensureMeta, getCtx, getToday, refreshWidgets, bindDailyBox,
   renderEvents, renderSummary, syncPets,
-  beginBattle, battleOver, applyEliminate, hideMolingBubble,
+  beginBattle, battleOver, applyEliminate, hideMolingBubble, showMolingLine,
 } from './integration.js';
 import { initPetUI } from './pet-ui.js';
 import { initSelfStudy } from './selfstudy-ui.js';
 import { initScoreGame } from './scoregame-ui.js';
 import { initAchievementsUI } from './achievements-ui.js';
+import { initPearlsUI } from './pearls-ui.js';
 import { initSaveSyncUI } from './save-sync-ui.js';
 import { saveMeta } from './meta/store.js';
 import { checkWelcomeBack } from './meta/welcome-back.js';
 import { shuffle } from './shuffle.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
+import { initNoDamagePrompt, maybeOfferNoDamage } from './nodamage-prompt.js';
+import { initTermsHelp, maybeShowTermsIntro } from './terms-intro.js';
 
 const FEEDBACK_DELAY = 800; // 等墨暈／潑濺動畫播完再進下一題（對齊 goldGlow/inkBloom .8s）
 
@@ -37,6 +40,11 @@ if (ndToggle) {
     localStorage.setItem(NODAMAGE_KEY, noDamageMode ? '1' : '0');
   });
 }
+// 首次低血/斷燈時的一次性提示：學生同意就當場開啟無傷模式並同步勾選狀態
+initNoDamagePrompt(() => {
+  noDamageMode = true;
+  if (ndToggle) ndToggle.checked = true;
+});
 
 const $ = (id) => document.getElementById(id);
 
@@ -229,6 +237,8 @@ function renderHpSide(fillEl, numEl, hp, maxHp = 100) {
 function renderBattleHud(state, maxHpA = 100, maxHpB = 100) {
   renderHpSide($('hp-a'), $('hp-num-a'), state.hpA, maxHpA);
   renderHpSide($('hp-b'), $('hp-num-b'), state.hpB, maxHpB);
+  // 玩家自己第一次進入低血狀態時，跳一次性提示卡問要不要開無傷模式
+  if (!noDamageMode && state.hpA <= maxHpA * 0.3) maybeOfferNoDamage();
   const combo = $('combo');
   // 答對打斷對手連擊、答錯歸零自己連擊，兩者互斥，共用同一枚印章
   // 無傷模式關閉「對手連擊」嗆聲，只顯示自己的連對數，避免落後時被動加壓
@@ -311,6 +321,7 @@ async function startBattle() {
   renderBattleHud(state, maxHpA, maxHpB);
   const queue = shuffle(bank);
   let idx = 0;
+  let pendingChallenge = null; // 字妖突襲：下一題轉為挑戰題（答對回血、答錯無懲罰）
 
   function endBattle() {
     battleDone = true;
@@ -346,11 +357,36 @@ async function startBattle() {
     }
     const entry = queue[idx++];
     renderQuestion(entry);
+
+    // 字妖突襲挑戰題：獨立加賽一題，答對回血、答錯無懲罰（雙方都不出招）
+    if (pendingChallenge) {
+      const heal = pendingChallenge.healOnWin || 10;
+      pendingChallenge = null;
+      $('mode-tag').textContent = '字妖挑戰';
+      bindAnswer(entry, mySession, (correct) => {
+        $('mode-tag').textContent = '對戰';
+        if (correct) {
+          state = { ...state, hpA: Math.min(maxHpA, state.hpA + heal) };
+          battleState = state;
+          renderBattleHud(state, maxHpA, maxHpB);
+          showMolingLine(`字妖敗退！你回復了 ${heal} 點 HP`);
+        } else {
+          showMolingLine('字妖溜走了，沒有損失，繼續！');
+        }
+        nextRound();
+      });
+      return;
+    }
+
     applyEliminate($('options'), entry.answer); // 明目日/奇遇：劃掉錯誤選項
     bindAnswer(entry, mySession, (correct) => {
       // kernel 經 battle-adapter 呼叫 applyAnswer 並疊加法寶/護符/奇遇，不可再自己 applyAnswer
       const rA = kernel.onBattleAnswer(ctx, state, 'A', correct, entry.id);
       renderEvents(rA.events);
+      for (const e of rA.events) {
+        const p = e.payload || {};
+        if (e.type === 'encounter' && p.effect && p.effect.type === 'challenge') pendingChallenge = p.effect;
+      }
       // 答對打斷對手連擊；答錯換對手出招（沿用原版節奏）
       const rB = kernel.onBattleAnswer(ctx, rA.state, 'B', !correct);
       renderEvents(rB.events);
@@ -386,14 +422,27 @@ function maybeShowWelcomeBack() {
 }
 
 /* ---------- 開站 ---------- */
+initTermsHelp();
 const ensureCtx = async () => { await initMetaLayer(); return getCtx(); };
 bindDailyBox();
 initPetUI({ getMeta: () => getCtx()?.meta, onChange: refreshWidgets });
 initSelfStudy({ loadBank, ensureCtx });
 initScoreGame({ loadBank, ensureCtx, onChange: refreshWidgets });
 initAchievementsUI({ getMeta: () => getCtx()?.meta });
+initPearlsUI({
+  getMeta: () => getCtx()?.meta,
+  // 珠面文字要跨學制解析：兩學制的混合題庫全載（fetchBank 有快取，重開不重抓）
+  loadEntries: async () => {
+    const srcs = Object.values(BANK_SOURCES).flatMap((lv) => lv.mixed);
+    const banks = await Promise.all(srcs.map((s) => fetchBank(s.path, s.kind)));
+    return new Map(banks.flat().map((e) => [e.id, e]));
+  },
+});
 initSaveSyncUI({
   getMeta: () => getCtx()?.meta,
   onLoaded: (data) => { saveMeta(data); location.reload(); },
 });
-initMetaLayer().then(maybeShowWelcomeBack);
+initMetaLayer().then(() => {
+  maybeShowWelcomeBack();
+  maybeShowTermsIntro();
+});

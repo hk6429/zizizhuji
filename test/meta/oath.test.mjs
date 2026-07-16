@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { defaultMeta } from '../../js/meta/store.js';
 import {
-  INTRO_CARDS, OATHS, shouldShowIntro, markIntroSeen, swearOath, getOath,
+  INTRO_CARDS, OATHS, CUSTOM_OATH_ID, shouldShowIntro, markIntroSeen, swearOath, getOath,
 } from '../../js/meta/oath.js';
 
 test('intro has 3 cards (each ≤40 chars) and 4 oaths', () => {
@@ -39,6 +39,24 @@ test('renewal blocked before 30 days, allowed at 30 days, bumps renewCount', () 
   assert.equal(r.ok, true);
   assert.equal(r.renewed, true);
   assert.equal(meta.oath.renewCount, 1);
+});
+
+test('first oath grants 1 starter charm; renewal does not', () => {
+  const meta = defaultMeta();
+  assert.equal(meta.daily.charms, 0);
+  swearOath(meta, 'oath-1', '2026-07-14');
+  assert.equal(meta.daily.charms, 1); // 新手立誓送起始護珠符
+  swearOath(meta, 'oath-2', '2026-08-13'); // 30 天後換誓
+  assert.equal(meta.daily.charms, 1); // 換誓不重複送
+});
+
+test('custom oath: 2–20 chars accepted and shown, out-of-range rejected', () => {
+  const meta = defaultMeta();
+  assert.equal(swearOath(meta, CUSTOM_OATH_ID, '2026-07-14', '一').ok, false); // 太短
+  assert.equal(swearOath(meta, CUSTOM_OATH_ID, '2026-07-14', '字'.repeat(21)).ok, false); // 太長
+  const r = swearOath(meta, CUSTOM_OATH_ID, '2026-07-14', '  我要天天練十題  ');
+  assert.equal(r.ok, true);
+  assert.equal(getOath(meta, '2026-07-14').oathText, '我要天天練十題'); // trim 後入檔
 });
 
 test('getOath returns null before any oath', () => {

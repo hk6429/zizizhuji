@@ -1725,3 +1725,103 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
   font-size: .84rem; color: var(--ink-soft); padding: 2px 6px; border-radius: 999px;
 }
 .sg-lb__cheer:active { transform: translateY(1px); }
+
+/* ---------- 字珠寶殿（收藏總覽） ---------- */
+.extra-entry--pearls { background: linear-gradient(120deg, rgba(160,82,45,.14), rgba(201,162,39,.12)); }
+.extra-entry--pearls .extra-entry__icon { background: radial-gradient(circle at 30% 30%, #f5e6c8, #c9a227); }
+.pearls-card { max-width: 560px; }
+.pearls-counts {
+  display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;
+  margin: 0 0 12px;
+}
+.pearls-count {
+  font-size: .8rem; padding: 3px 10px; border-radius: 999px;
+  font-family: var(--kai); color: var(--ink);
+  background: rgba(46,143,138,.08);
+}
+.pearls-count--g0 { background: rgba(120,120,120,.12); }
+.pearls-count--g1 { background: rgba(46,143,138,.16); }
+.pearls-count--g2 { background: rgba(201,162,39,.22); }
+.pearls-count--g3 { background: rgba(40,40,40,.16); }
+.pearls-count--dusty { background: rgba(110,90,60,.14); color: var(--ink-soft); }
+.pearls-grid {
+  display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+  max-height: 46vh; overflow-y: auto; padding: 4px;
+}
+.pearl-chip {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 2.4em; padding: 6px 10px; border-radius: 999px;
+  font-family: var(--kai); font-weight: 700; font-size: 1rem; color: var(--ink);
+  box-shadow: inset 0 1px 2px rgba(255,255,255,.6), 0 1px 3px rgba(0,0,0,.12);
+}
+.pearl-chip--g0 { background: radial-gradient(circle at 30% 30%, #ffffff, #dcdcd4); }
+.pearl-chip--g1 { background: radial-gradient(circle at 30% 30%, #d8f3f1, #7ec8c3); }
+.pearl-chip--g2 { background: radial-gradient(circle at 30% 30%, #fdf3d0, #dcb84a); }
+.pearl-chip--g3 { background: radial-gradient(circle at 30% 30%, #6b6b6b, #2c2c2c); color: #f5efe2; }
+.pearl-chip.is-dusty { opacity: .55; filter: grayscale(.5); }
+.pearls-empty { text-align: center; color: var(--ink-soft); font-size: .9rem; }
+
+/* ---------- 自訂誓言＋寵物暱稱輸入列 ---------- */
+.oath-custom, .pet-nickname-row {
+  display: flex; gap: 8px; align-items: center;
+  margin: 8px 0;
+}
+.oath-custom input, .pet-nickname-row input {
+  flex: 1; min-width: 0;
+  padding: 8px 10px; border-radius: 8px;
+  border: 1px solid rgba(46,143,138,.35);
+  background: rgba(255,255,255,.7);
+  font-family: var(--kai); font-size: .95rem; color: var(--ink);
+}
+.oath-btn--custom { flex: none; white-space: nowrap; }
+.pet-nickname-row .pet-equip-btn { flex: none; white-space: nowrap; }
+
+/* ---------- 修行小抄（術語解說） ---------- */
+.terms-help {
+  appearance: none; cursor: pointer;
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 1px solid rgba(46,143,138,.4);
+  background: rgba(255,255,255,.6);
+  color: var(--teal-deep); font-weight: 700; font-size: .85rem;
+  align-self: center; flex: none;
+}
+.terms-help:active { transform: translateY(1px); }
+.terms-list { margin: 0 0 12px; }
+.terms-list dt {
+  font-family: var(--kai); font-weight: 800; color: var(--teal-deep);
+  margin-top: 10px;
+}
+.terms-list dd { margin: 2px 0 0; color: var(--ink); font-size: .92rem; line-height: 1.6; }
+
+/* ---------- 今日天機籤形徽章 ---------- */
+.omen-line {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 6px 12px; border-radius: 999px;
+  width: fit-content; max-width: 100%;
+  margin-left: auto; margin-right: auto;
+  background: rgba(46,143,138,.08);
+  border: 1px dashed rgba(46,143,138,.35);
+}
+.omen-glyph {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 26px; height: 26px; border-radius: 50%;
+  font-family: var(--kai); font-weight: 800; font-size: .9rem; color: #fff;
+  background: var(--teal-deep);
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  animation: omen-breathe 2.6s ease-in-out infinite;
+}
+@keyframes omen-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+@media (prefers-reduced-motion: reduce) { .omen-glyph { animation: none; } }
+.omen-body { display: inline-flex; flex-wrap: wrap; gap: 2px 8px; align-items: baseline; text-align: left; }
+.omen-name { font-family: var(--kai); color: var(--ink); font-size: .82rem; }
+.omen-desc { color: var(--ink-soft); font-size: .78rem; }
+.omen-line--moyu .omen-glyph    { background: #4a6b8a; }
+.omen-line--zhufeng .omen-glyph { background: #c9a227; }
+.omen-line--linggan .omen-glyph { background: #7b5ea7; }
+.omen-line--jingxin .omen-glyph { background: #2e8f8a; }
+.omen-line--mingmu .omen-glyph  { background: #b0563a; }
+.omen-line--lianxin .omen-glyph { background: #c05a78; }
+.omen-line--wenqu .omen-glyph   { background: #3b6f8a; }

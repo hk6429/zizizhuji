@@ -88,7 +88,7 @@ test('box: locked before goal, opens once, never twice', () => {
   assert.equal(openBox(meta, '2026-07-14').ok, false);
 });
 
-test('liuli box appears on Sunday after opening the box on 5+ days that ISO week', () => {
+test('liuli on Sunday pays linearly: 5 weekdays + Sunday = 6 days × 4 pearls, full title', () => {
   const meta = defaultMeta();
   const week = ['2026-07-13', '2026-07-14', '2026-07-15', '2026-07-16', '2026-07-17']; // Mon-Fri
   for (const d of week) {
@@ -99,17 +99,33 @@ test('liuli box appears on Sunday after opening the box on 5+ days that ISO week
   assert.equal(getBoxState(meta, '2026-07-19').liuliAvailable, true);
   const r = openBox(meta, '2026-07-19', () => 0);
   assert.equal(r.reward.liuli, true);
-  assert.equal(r.reward.pearls, 3 + 20);
+  assert.equal(r.reward.weekDays, 6);
+  assert.equal(r.reward.pearls, 3 + 6 * 4);
   assert.equal(r.reward.weekTitle, '本週琉璃使者');
 });
 
-test('liuli not available with fewer than 5 open days', () => {
+test('liuli with fewer than 5 open days still pays linearly with half title', () => {
   const meta = defaultMeta();
   for (const d of ['2026-07-17', '2026-07-18']) {
     lightDay(meta, d);
     openBox(meta, d, () => 0);
   }
   lightDay(meta, '2026-07-19');
+  assert.equal(getBoxState(meta, '2026-07-19').liuliAvailable, true);
+  const r = openBox(meta, '2026-07-19', () => 0);
+  assert.equal(r.reward.liuli, false);
+  assert.equal(r.reward.weekDays, 3);
+  assert.equal(r.reward.pearls, 3 + 3 * 4);
+  assert.equal(r.reward.weekTitle, '本週半程使者');
+});
+
+test('liuli pays only once per week even if box reopens', () => {
+  const meta = defaultMeta();
+  lightDay(meta, '2026-07-19');
+  const r = openBox(meta, '2026-07-19', () => 0);
+  assert.equal(r.reward.weekDays, 1);
+  assert.equal(r.reward.pearls, 3 + 1 * 4);
+  assert.equal(r.reward.weekTitle, null); // 1 天不冠稱號，但仍有分潤
   assert.equal(getBoxState(meta, '2026-07-19').liuliAvailable, false);
 });
 

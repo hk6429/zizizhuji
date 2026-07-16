@@ -16,6 +16,8 @@ import {
 import { getPetBattleMods, syncUnlocks as syncPetUnlocks, listPets } from './meta/pet.js';
 import { shouldOfferShareCard, renderShareCard, exportShareCard } from './meta/share-card.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
+import { maybeOfferNoDamage } from './nodamage-prompt.js';
+import { maybeShowTermsIntro } from './terms-intro.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -33,10 +35,7 @@ export function ensureMeta(banks) {
   const init = kernel.initSession(today, banks);
   ctx = init.ctx;
 
-  if (init.omen) {
-    $('omen-line').textContent = `今日天機「${init.omen.name}」：${init.omen.desc}`;
-    $('omen-line').hidden = false;
-  }
+  if (init.omen) renderOmenLine(init.omen);
   for (const letter of init.pendingMilestones) {
     toast(`墨界回信・${letter.title}｜${letter.text}`, 'letter');
     markMilestoneSeen(ctx.meta, letter.id);
@@ -46,6 +45,27 @@ export function ensureMeta(banks) {
   if (init.intro) showOathOverlay(init.intro);
   refreshWidgets();
   return ctx;
+}
+
+// 今日天機視覺化：籤形徽章（每種天機一個字符＋專屬色），取代舊的純文字一行
+const OMEN_GLYPHS = {
+  moyu: '雨', zhufeng: '珠', linggan: '靈', jingxin: '靜',
+  mingmu: '目', lianxin: '心', wenqu: '文',
+};
+
+function renderOmenLine(omen) {
+  const el = $('omen-line');
+  el.innerHTML = '';
+  el.className = `omen-line omen-line--${omen.omenId}`;
+  const icon = document.createElement('span');
+  icon.className = 'omen-glyph';
+  icon.setAttribute('aria-hidden', 'true');
+  icon.textContent = OMEN_GLYPHS[omen.omenId] || '機';
+  const body = document.createElement('span');
+  body.className = 'omen-body';
+  body.innerHTML = `<b class="omen-name">今日天機「${omen.name}」</b><span class="omen-desc">${omen.desc}</span>`;
+  el.append(icon, body);
+  el.hidden = false;
 }
 
 function showOathOverlay(intro) {
@@ -61,29 +81,37 @@ function showOathOverlay(intro) {
   list.innerHTML = '';
   const notice = $('oath-notice');
   notice.hidden = true;
+  const swear = (oathId, customText = '') => {
+    const result = oath.swearOath(ctx.meta, oathId, today, customText);
+    oath.markIntroSeen(ctx.meta);
+    saveMeta(ctx.meta);
+    if (!result.ok) {
+      notice.textContent = result.reason === 'bad-custom-text'
+        ? '自訂誓言要 2–20 個字喔。'
+        : '距離上次立誓未滿 30 天，暫時無法換誓。';
+      notice.hidden = false;
+      return;
+    }
+    closeOverlay(overlay);
+    refreshWidgets();
+    maybeShowTermsIntro(); // 首訪：誓言收掉後補上修行小抄
+  };
   for (const o of intro.oaths) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'oath-btn';
     btn.textContent = o.text;
-    btn.addEventListener('click', () => {
-      const result = oath.swearOath(ctx.meta, o.id, today);
-      oath.markIntroSeen(ctx.meta);
-      saveMeta(ctx.meta);
-      if (!result.ok) {
-        notice.textContent = '距離上次立誓未滿 30 天，暫時無法換誓。';
-        notice.hidden = false;
-        return;
-      }
-      closeOverlay(overlay);
-      refreshWidgets();
-    });
+    btn.addEventListener('click', () => swear(o.id));
     list.appendChild(btn);
   }
+  const customInput = $('oath-custom-input');
+  customInput.value = '';
+  $('oath-custom-btn').onclick = () => swear(oath.CUSTOM_OATH_ID, customInput.value);
   const skip = () => {
     oath.markIntroSeen(ctx.meta);
     saveMeta(ctx.meta);
     closeOverlay(overlay);
+    maybeShowTermsIntro(); // 首訪：跳過誓言也補上修行小抄
   };
   $('oath-skip').onclick = skip;
   openOverlay(overlay, skip);
@@ -145,7 +173,7 @@ export function refreshPetEntry() {
   if (!sub) return;
   const active = listPets(ctx.meta).find((p) => p.active);
   if (active) {
-    sub.textContent = `${active.name}・${active.level} 級出戰中`;
+    sub.textContent = `${active.displayName}・${active.level} 級出戰中`;
     if (img) img.src = `assets/web/pet-${active.id}.jpg`;
   } else {
     sub.textContent = '選一隻山海神獸出戰';
@@ -273,12 +301,14 @@ export function renderEvents(events) {
       case 'pearlPolished': toast(`擦亮了！${p.gradeName}復光`, 'forge'); break;
       case 'gradeUp':       toast(`字珠升階——${p.gradeName}！`, 'forge'); break;
       case 'encounter':
-        if (p.effect && p.effect.type === 'challenge') break; // 字妖突襲留 P2
-        toast(`奇遇「${p.name}」：${p.desc}`, 'encounter');
+        toast(`奇遇「${p.name}」：${p.desc}`, 'encounter'); // 含字妖突襲（挑戰題由對戰 UI 插入下一題）
         break;
       case 'lanternLit':       toast(`長明燈亮了！${p.message}（守燈 ${p.streak} 天）`, 'lantern'); break;
       case 'lanternTierUp':    toast(`燈升階——「${p.name}」！`, 'lantern'); break;
-      case 'lanternOut':       toast(p.message, 'lantern'); break;
+      case 'lanternOut':
+        toast(p.message, 'lantern');
+        if (!p.softened) maybeOfferNoDamage(); // 首次斷燈歸零時問要不要開無傷模式（腰斬=已開，不問）
+        break;
       case 'lanternMilestone': toast(`守燈 ${p.days} 天「${p.title}」＋${p.pearls} 珠`, 'milestone'); break;
       case 'charmUsed':        toast(p.message, 'charm'); break;
       case 'charmGranted':     toast(`獲得護珠符（現有 ${p.charms} 枚）`, 'charm'); break;
@@ -395,6 +425,8 @@ export function renderSummary(summary) {
 
   const close = () => closeOverlay(overlay);
   $('summary-close').onclick = close;
+  // 結算後順路逛寵物閣：剛賺到的字珠馬上有地方花，也讓藏在「更多功能」裡的寵物閣被看見
+  $('summary-pet').onclick = () => { close(); $('btn-pet').click(); };
   openOverlay(overlay, close);
   refreshWidgets();
 }

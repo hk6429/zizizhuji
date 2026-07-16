@@ -34,6 +34,9 @@ await page.goto('http://localhost:4173');
 // 首訪會先跳「開卷誓言」攔截層，先跳過才點得到模式按鈕
 await page.waitForSelector('#oath-overlay:not([hidden])');
 await page.click('#oath-skip');
+// 首訪誓言收掉後會補跳「修行小抄」術語卡，關掉才能繼續
+await page.waitForSelector('#terms-overlay:not([hidden])');
+await page.click('#terms-close');
 
 // 學制切換：預設國小，切到國中後應重整頁面並套用國中題庫
 await page.waitForSelector('#level-select');
@@ -57,6 +60,13 @@ await page.click('#btn-pet');
 await page.waitForSelector('#pet-overlay:not([hidden])');
 const petCount = await page.$$eval('#pet-grid .pet-card-item', els => els.length);
 await page.click('#pet-close');
+
+// 字珠寶殿：開啟後顯示品階統計列（新玩家 0 顆 → 空狀態文案）
+await page.click('#btn-pearls');
+await page.waitForSelector('#pearls-overlay:not([hidden])');
+const pearlsCountChips = await page.$$eval('#pearls-counts .pearls-count', els => els.length);
+const pearlsEmptyShown = await page.$eval('#pearls-empty', el => !el.hidden);
+await page.click('#pearls-close');
 
 // 成就總覽：開啟後應渲染 17 個成就卡
 await page.click('#btn-achievements');
@@ -120,6 +130,8 @@ if (!levelDefaultActive) throw new Error('預設應為國小學制（#level-elem
 if (juniorPracticeOptionCount !== 4) throw new Error(`國中練習模式選項數應為4，實際 ${juniorPracticeOptionCount}`);
 if (petCount !== 12) throw new Error(`寵物閣應有 12 隻神獸，實際 ${petCount}`);
 if (achCount !== 17) throw new Error(`成就總覽應有 17 個成就，實際 ${achCount}`);
+if (pearlsCountChips !== 4) throw new Error(`字珠寶殿應有 4 個品階統計，實際 ${pearlsCountChips}`);
+if (!pearlsEmptyShown) throw new Error('新玩家的字珠寶殿應顯示空狀態文案');
 if (!/^[A-Z0-9]{6}$/.test(savesyncCode)) throw new Error(`雲端存檔代碼格式應為 6 碼英數，實際「${savesyncCode}」`);
 if (ssMenuCount !== 4) throw new Error(`自學選單應有 4 款遊戲，實際 ${ssMenuCount}`);
 if (memCardCount !== 16) throw new Error(`記憶配對牌應鋪 16 張，實際 ${memCardCount}`);

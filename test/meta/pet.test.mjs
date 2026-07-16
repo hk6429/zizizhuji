@@ -4,7 +4,7 @@ import { defaultMeta } from '../../js/meta/store.js';
 import {
   PETS, PET_EQUIP, LEVEL_STEP, MAX_LEVEL, EQUIP_SLOTS,
   categoryMastery, petLevel, isUnlocked, listPets, syncUnlocks,
-  setActivePet, buyEquip, installEquip, uninstallEquip, getPetBattleMods,
+  setActivePet, buyEquip, installEquip, uninstallEquip, getPetBattleMods, setPetNickname,
 } from '../../js/meta/pet.js';
 
 // 造一個帶 N 顆已煉成字珠的 meta。prefix 'zy-'＝字音、'cy-'＝成語。
@@ -118,5 +118,15 @@ test('uninstallEquip 卸下後欄位空出', () => {
 });
 
 test('defaultMeta 內含 pet 初始狀態', () => {
-  assert.deepEqual(defaultMeta().pet, { seen: {}, active: null, ownedEquip: [], equipped: {} });
+  assert.deepEqual(defaultMeta().pet, { seen: {}, active: null, ownedEquip: [], equipped: {}, nicknames: {} });
+});
+
+test('setPetNickname：1–8 字入檔、太長拒收、空字串清除、鎖住的不能取名', () => {
+  const meta = metaWithForged('zy-', 0);
+  assert.equal(setPetNickname(meta, 'baize', '小白白').ok, true);
+  assert.equal(listPets(meta).find((p) => p.id === 'baize').displayName, '小白白');
+  assert.equal(setPetNickname(meta, 'baize', '九個字九個字九個字').ok, false); // >8 字
+  assert.equal(setPetNickname(meta, 'baize', '  ').ok, true); // 空白＝清除
+  assert.equal(listPets(meta).find((p) => p.id === 'baize').displayName, '白澤');
+  assert.equal(setPetNickname(meta, 'kun', '小鯤').ok, false); // 未解鎖
 });

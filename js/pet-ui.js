@@ -4,13 +4,18 @@
 import { saveMeta } from './meta/store.js';
 import {
   PET_EQUIP, EQUIP_SLOTS,
-  listPets, setActivePet, buyEquip, installEquip, uninstallEquip,
+  listPets, setActivePet, buyEquip, installEquip, uninstallEquip, setPetNickname,
 } from './meta/pet.js';
 import { getBalance } from './meta/economy.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
 
 const $ = (id) => document.getElementById(id);
 const EQUIP_BY_ID = new Map(PET_EQUIP.map((e) => [e.id, e]));
+
+// 暱稱是使用者輸入，插進 innerHTML 前先轉義
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => (
+  { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+));
 
 let getMeta = () => null;
 let onChange = () => {};
@@ -21,6 +26,13 @@ export function initPetUI(opts) {
 
   $('btn-pet').addEventListener('click', open);
   $('pet-close').addEventListener('click', close);
+  $('pet-nickname-save').addEventListener('click', () => {
+    const meta = getMeta();
+    const active = listPets(meta).find((x) => x.active);
+    if (!active) return;
+    const r = setPetNickname(meta, active.id, $('pet-nickname-input').value);
+    if (r.ok) { saveMeta(meta); onChange(); render(); }
+  });
 
   for (const tab of document.querySelectorAll('.pet-tab')) {
     tab.addEventListener('click', () => switchTab(tab.dataset.tab));
@@ -59,9 +71,20 @@ function pctToNext(p) {
 
 function renderPets() {
   const meta = getMeta();
+  const pets = listPets(meta);
+
+  // 暱稱列：有主寵才顯示，輸入框帶入現有暱稱
+  const active = pets.find((x) => x.active);
+  const nickRow = $('pet-nickname-row');
+  nickRow.hidden = !active;
+  if (active) {
+    $('pet-nickname-input').value = active.nickname || '';
+    $('pet-nickname-input').placeholder = `幫「${active.name}」取暱稱（1–8 字，清空＝回本名）`;
+  }
+
   const grid = $('pet-grid');
   grid.innerHTML = '';
-  for (const p of listPets(meta)) {
+  for (const p of pets) {
     const card = document.createElement('button');
     card.type = 'button';
     card.className = `pet-card-item${p.unlocked ? '' : ' is-locked'}${p.active ? ' is-active' : ''}`;
@@ -79,7 +102,7 @@ function renderPets() {
       ? `${p.level} 級｜精通 ${p.mastery}${p.nextAt === null ? '（已滿級）' : ` / ${p.nextAt}`}`
       : `精通 ${p.category} ${p.unlockAt} 題解鎖`;
     body.innerHTML =
-      `<span class="pet-card-item__name">${p.name}` +
+      `<span class="pet-card-item__name">${p.nickname ? `${esc(p.nickname)}・${p.name}` : p.name}` +
       `<span class="pet-card-item__cat">${p.category}</span></span>` +
       `<span class="pet-card-item__status">${p.unlocked ? '' : '🔒 '}${status}</span>` +
       `<span class="pet-track"><span class="pet-track__fill" style="width:${p.unlocked ? pctToNext(p) : 0}%"></span></span>` +

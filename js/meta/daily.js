@@ -6,7 +6,8 @@ import { earnPearls } from './economy.js';
 
 export const DAILY_GOAL = 10;
 export const MAX_CHARMS = 2;
-export const WEEK_HALF_DAYS = 3; // 週琉璃匣未達 5 天時的部分獎勵門檻
+export const WEEK_HALF_DAYS = 3; // 週日獎勵冠「半程使者」稱號的門檻
+export const LIULI_PEARLS_PER_DAY = 4; // 週日琉璃匣：本週每開 1 天墨匣分潤 4 珠（線性，不設全勤二元門檻）
 
 const NODAMAGE_KEY = 'zizhu:noDamageMode';
 function noDamageOn() {
@@ -201,10 +202,8 @@ export function getBoxState(meta, today) {
     unlocked: d.lastLit === today,
     opened: d.boxOpened,
     weekOpenDays: [...d.weekOpenDays],
-    liuliAvailable: isSunday(today) && d.weekOpenDays.length >= 5 && !d.liuliOpened,
-    // 半程獎勵：未達 5 天全勤也有小獎勵可拿，不分無傷模式一律生效（純加分，不影響滿勤獎的價值）
-    halfAvailable: isSunday(today) && d.weekOpenDays.length >= WEEK_HALF_DAYS
-      && d.weekOpenDays.length < 5 && !d.liuliHalfOpened,
+    // 週日只要本週有開過墨匣（含當天開匣）就有琉璃分潤，開幾天領幾分——不再卡 5/7 全勤二元門檻
+    liuliAvailable: isSunday(today) && !d.liuliOpened,
   };
 }
 
@@ -220,18 +219,17 @@ export function openBox(meta, today, rng = Math.random) {
   let pearls = 3 + Math.floor(rng() * 6); // 3–8
   let liuli = false;
   let weekTitle = null;
-  if (isSunday(today) && d.weekOpenDays.length >= 5 && !d.liuliOpened) {
+  let weekDays = 0;
+  if (isSunday(today) && !d.liuliOpened) {
     d.liuliOpened = true;
-    liuli = true;
-    pearls += 20;
-    weekTitle = '本週琉璃使者';
-  } else if (isSunday(today) && d.weekOpenDays.length >= WEEK_HALF_DAYS && !d.liuliHalfOpened) {
-    d.liuliHalfOpened = true;
-    pearls += 8;
-    weekTitle = '本週半程使者';
+    weekDays = d.weekOpenDays.length; // 已含今天
+    pearls += weekDays * LIULI_PEARLS_PER_DAY; // 線性分潤：開 1 天也有、全勤最多
+    liuli = weekDays >= 5;
+    if (weekDays >= 5) weekTitle = '本週琉璃使者';
+    else if (weekDays >= WEEK_HALF_DAYS) weekTitle = '本週半程使者';
   }
   earnPearls(meta, pearls, 'daily-box', today);
-  return { meta, reward: { pearls, liuli, weekTitle, glow: '青光' } };
+  return { meta, reward: { pearls, liuli, weekTitle, weekDays, glow: '青光' } };
 }
 
 export function getOmen(dateStr) {

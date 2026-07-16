@@ -75,6 +75,7 @@
             <span id="lantern-text" class="meta-chip__sub">油燈・守燈 0 天</span>
             <button id="daily-box" class="box-btn" type="button" hidden>開墨匣</button>
           </div>
+          <button id="terms-help" class="terms-help" type="button" aria-label="這些是什麼？">？</button>
         </section>
         <button id="oath-line" class="oath-line" type="button" hidden></button>
         <p id="omen-line" class="omen-line" hidden></p>
@@ -184,6 +185,14 @@
               </span>
               <span class="pet-entry__arrow" aria-hidden="true">›</span>
             </button>
+            <button id="btn-pearls" class="extra-entry extra-entry--pearls" type="button">
+              <span class="extra-entry__icon" aria-hidden="true">珠</span>
+              <span class="extra-entry__body">
+                <span class="extra-entry__title">字珠寶殿</span>
+                <span class="extra-entry__sub">看看你煉成的每一顆字珠</span>
+              </span>
+              <span class="pet-entry__arrow" aria-hidden="true">›</span>
+            </button>
             <button id="btn-savesync" class="extra-entry extra-entry--sync" type="button">
               <span class="extra-entry__icon" aria-hidden="true">雲</span>
               <span class="extra-entry__body">
@@ -256,6 +265,10 @@
       <div id="oath-story"></div>
       <p class="oath-prompt">立下你的誓言：</p>
       <div id="oath-list"></div>
+      <div class="oath-custom">
+        <input id="oath-custom-input" type="text" maxlength="20" placeholder="或自己寫一句誓言（2–20 字）" aria-label="自訂誓言">
+        <button id="oath-custom-btn" class="oath-btn oath-btn--custom" type="button">立此誓</button>
+      </div>
       <p id="oath-notice" class="oath-notice" aria-live="polite" hidden></p>
       <button id="oath-skip" class="overlay-ghost-btn" type="button">先看看再說</button>
     </div>
@@ -270,6 +283,7 @@
       <div class="summary-actions">
         <button id="summary-copy" class="summary-btn" type="button">複製分享文字</button>
         <button id="summary-share-card" class="summary-btn" type="button" hidden>分享圖卡</button>
+        <button id="summary-pet" class="summary-btn summary-btn--ghost" type="button">前往寵物閣</button>
         <button id="summary-close" class="summary-btn summary-btn--ghost" type="button">收起戰報</button>
       </div>
       <canvas id="share-card-canvas" width="1080" height="1350" hidden></canvas>
@@ -286,6 +300,10 @@
         <button class="pet-tab" data-tab="equip" type="button" role="tab" aria-selected="false" aria-controls="pet-panel-equip" id="pet-tab-equip">寵物設備</button>
       </div>
       <div id="pet-panel-pets" class="pet-panel" role="tabpanel" aria-labelledby="pet-tab-pets">
+        <div id="pet-nickname-row" class="pet-nickname-row" hidden>
+          <input id="pet-nickname-input" type="text" maxlength="8" placeholder="幫出戰神獸取暱稱（1–8 字）" aria-label="寵物暱稱">
+          <button id="pet-nickname-save" class="pet-equip-btn" type="button">取名</button>
+        </div>
         <div id="pet-grid" class="pet-grid"></div>
       </div>
       <div id="pet-panel-equip" class="pet-panel" hidden role="tabpanel" aria-labelledby="pet-tab-equip">
@@ -305,12 +323,48 @@
     </div>
   </div>
 
+  <!-- 修行小抄：字珠/文氣/守燈 三個核心術語解說（首次自動彈一次，之後點「？」隨時看） -->
+  <div id="terms-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="terms-title">
+    <div class="meta-overlay__card">
+      <h2 id="terms-title" class="overlay-title">修行小抄</h2>
+      <dl class="terms-list">
+        <dt>字珠</dt><dd>你的寶物錢幣——答對題目會掉字珠，存起來可以買寵物設備。</dd>
+        <dt>文氣</dt><dd>你的修行經驗值——累積文氣就能晉升境界（蒙童→書生→…）。</dd>
+        <dt>守燈</dt><dd>每天答對 10 題就點亮長明燈——連續天數愈多，燈的階級愈高、獎勵愈好。</dd>
+      </dl>
+      <button id="terms-close" class="overlay-ghost-btn" type="button">知道了</button>
+    </div>
+  </div>
+
+  <!-- 無傷模式一次性提示：首次低血/斷燈時詢問，只問一次 -->
+  <div id="nodamage-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="nodamage-title">
+    <div class="meta-overlay__card">
+      <h2 id="nodamage-title" class="overlay-title">要開啟無傷模式嗎？</h2>
+      <p>無傷模式會關掉低血警示和對手連擊嗆聲，斷燈也只會腰斬、不歸零，讓修行少一點壓力。之後隨時可以在「更多功能」裡切換。</p>
+      <div class="summary-actions">
+        <button id="nodamage-yes" class="overlay-ghost-btn" type="button">開啟無傷模式</button>
+        <button id="nodamage-no" class="overlay-ghost-btn" type="button">維持現狀</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 成就總覽：17 個成就的已解鎖/未解鎖/進度 -->
   <div id="ach-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="ach-title">
     <div class="meta-overlay__card ach-card">
       <h2 id="ach-title" class="overlay-title">成就總覽</h2>
       <div id="ach-grid" class="ach-grid"></div>
       <button id="ach-close" class="overlay-ghost-btn" type="button">收起</button>
+    </div>
+  </div>
+
+  <!-- 字珠寶殿：已煉成字珠收藏總覽（白/青/金/墨玉＋蒙塵） -->
+  <div id="pearls-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="pearls-title">
+    <div class="meta-overlay__card pearls-card">
+      <h2 id="pearls-title" class="overlay-title">字珠寶殿</h2>
+      <div id="pearls-counts" class="pearls-counts"></div>
+      <div id="pearls-grid" class="pearls-grid"></div>
+      <p id="pearls-empty" class="pearls-empty" hidden>寶殿還空著——把一題練到滾瓜爛熟，就會煉成第一顆字珠！</p>
+      <button id="pearls-close" class="overlay-ghost-btn" type="button">收起</button>
     </div>
   </div>
 

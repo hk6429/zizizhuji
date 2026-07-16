@@ -33,7 +33,7 @@ export function defaultMeta() {
   return {
     v: SCHEMA_VERSION,
     profile: { name: '', createdAt: '' },
-    oath: { oathId: null, swornAt: '', storySeen: false, renewCount: 0 },
+    oath: { oathId: null, swornAt: '', storySeen: false, renewCount: 0, customText: '' },
     world: { purified: [], byZone: { yin: 0, xing: 0, chengyu: 0 }, milestonesSeen: [] },
     leitner: {},
     collection: {},
@@ -58,7 +58,7 @@ export function defaultMeta() {
     encounter: { sinceLast: 0, lastEventId: null, totalCount: 0 },
     arena: { week: '', entries: [], history: [] },
     challenges: [],
-    pet: { seen: {}, active: null, ownedEquip: [], equipped: {} },
+    pet: { seen: {}, active: null, ownedEquip: [], equipped: {}, nicknames: {} },
     // 閃卡 Leitner 盒位；積分競技各庫最高分；班級排行榜代碼與暱稱
     selfstudy: { flash: {}, scoreBest: {}, classCode: '', nick: '' },
   };
