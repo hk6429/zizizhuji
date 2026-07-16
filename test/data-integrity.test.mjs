@@ -153,6 +153,25 @@ test('every explicit anchor resolves against the corresponding official anchor f
   }
 });
 
+test('new-format question stems are unique within each junior bank', () => {
+  for (const [name, entries] of Object.entries({ ziyinJunior, chengyuJunior })) {
+    const stems = entries.filter((e) => e.qformat && e.qformat !== 'def-pick').map((e) => e.question);
+    assert.equal(new Set(stems).size, stems.length, `${name}: repeated new-format question stem`);
+  }
+});
+
+test('new-format stories and direct idiom choices satisfy their content contracts', () => {
+  for (const e of ziyinJunior.filter((entry) => entry.qformat === 'zixing-story')) {
+    assert.ok(e.question.length >= 40 && e.question.length <= 80, `${e.id}: zixing-story must be 40-80 characters`);
+  }
+  for (const e of chengyuJunior.filter((entry) => ['fill-blank', 'story-blank', 'synonym', 'antonym'].includes(entry.qformat))) {
+    for (const option of e.options) assert.ok(chengyuAnchorSet.has(option), `${e.id}: direct idiom option is not anchored: ${option}`);
+  }
+  for (const e of [...ziyinJunior, ...chengyuJunior].filter((entry) => entry.qformat && entry.qformat !== 'def-pick')) {
+    assert.match(e.note ?? '', /【T(?:10|[1-9])】$/, `${e.id}: persona marker missing`);
+  }
+});
+
 test('answer position within options is not skewed toward any single slot', () => {
   const banks = { ziyin, chengyu, ziyinJunior, chengyuJunior };
   for (const [name, entries] of Object.entries(banks)) {
