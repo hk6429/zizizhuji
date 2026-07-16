@@ -41,17 +41,16 @@ if (ndToggle) {
 const $ = (id) => document.getElementById(id);
 
 /* ---------- 學制切換 ---------- */
-// 國中題數待內容產出批次完成後回填（見 data/ziyin-zixing-junior.json / chengyu-junior.json 實際筆數）。
-const BANK_COUNTS = {
-  國小: { ziyin: 1532, chengyu: 434, mixed: 1966 },
-  國中: { ziyin: 1631, chengyu: 1522, mixed: 3153 },
-};
-
-function renderBankCounts() {
-  const counts = BANK_COUNTS[getLevel()];
-  $('bank-count-ziyin').textContent = `${counts.ziyin} 題`;
-  $('bank-count-chengyu').textContent = `${counts.chengyu} 題`;
-  $('bank-count-mixed').textContent = `${counts.mixed} 題`;
+async function renderBankCounts() {
+  const [ziyin, chengyu] = await Promise.all(
+    BANK_SOURCES[getLevel()].mixed.map((src) => fetchBank(src.path, src.kind)),
+  );
+  const matchDiff = (q) => currentDifficulty === 'all' || q.difficulty === currentDifficulty;
+  const ziyinCount = ziyin.filter(matchDiff).length;
+  const chengyuCount = chengyu.filter(matchDiff).length;
+  $('bank-count-ziyin').textContent = `${ziyinCount} 題`;
+  $('bank-count-chengyu').textContent = `${chengyuCount} 題`;
+  $('bank-count-mixed').textContent = `${ziyinCount + chengyuCount} 題`;
 }
 
 const AVATAR_SRC = {
@@ -88,6 +87,7 @@ for (const btn of diffButtons) {
   btn.addEventListener('click', () => {
     currentDifficulty = btn.dataset.diff;
     for (const b of diffButtons) b.classList.toggle('is-active', b === btn);
+    renderBankCounts();
   });
 }
 
