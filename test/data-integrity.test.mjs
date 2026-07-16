@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { validateZiyinEntry, validateChengyuEntry } from '../js/schema.js';
 
 const ziyin = JSON.parse(readFileSync(new URL('../data/ziyin-zixing-elementary.json', import.meta.url)));
@@ -177,18 +178,35 @@ test('new-format stories and direct idiom choices satisfy their content contract
 });
 
 test('usage questions use natural contextual sentences instead of definition matching', () => {
-  const forbidden = /可用來(?:表示|概括|表達)|釋義|同學讀到|引號中的意思|形容|比喻|用來|…/;
-  for (const e of chengyuJunior.filter((entry) => ['usage-judge', 'usage-wrong'].includes(entry.qformat))) {
+  const usageEntries = chengyuJunior.filter((entry) => ['usage-judge', 'usage-wrong'].includes(entry.qformat));
+  const forbidden = /可用來(?:表示|概括|表達)|釋義|引號中的意思|形容|比喻|用來|泛指|借指|代指|語出|典故|生活態度|象徵|呈現|比擬|…/;
+  const limitedPhrases = ['家人聽說', '校刊記下', '老師看到', '同學讀到', '不禁感嘆', '忍不住說', '編輯直呼', '這正是'];
+  const allOptions = usageEntries.flatMap((entry) => entry.options);
+  assert.equal(usageEntries.length, 538, 'usage bank size changed unexpectedly');
+  for (const phrase of limitedPhrases) {
+    const count = allOptions.filter((option) => option.includes(phrase)).length;
+    assert.ok(count <= 10, `usage formula exceeds limit: ${phrase} / ${count}`);
+  }
+  for (const e of usageEntries) {
     assert.match(e.question, /^下列成語的運用，何者(?:使用正確|使用不恰當)？$/, `${e.id}: usage stem is not concise`);
     for (const option of e.options) {
-      assert.ok(option.length >= 15 && option.length <= 40, `${e.id}: usage option must be 15-40 characters / ${option}`);
+      assert.ok(option.length >= 18 && option.length <= 45, `${e.id}: usage option must be 18-45 characters / ${option}`);
       assert.doesNotMatch(option, forbidden, `${e.id}: usage option still contains definition-matching prose`);
       assert.ok(e.anchor.some((idiom) => option.includes(idiom)), `${e.id}: option has no anchored idiom / ${option}`);
     }
+    assert.equal(new Set(e.options.map((option) => option.slice(0, 4))).size, 4, `${e.id}: four options repeat the same scene opening`);
     const used = new Set(e.options.flatMap((option) => e.anchor.filter((idiom) => option.includes(idiom))));
     assert.deepEqual(used, new Set(e.anchor), `${e.id}: anchor must list every idiom used by the options`);
     assert.match(e.note, /誤用：/, `${e.id}: note must explain the misuse`);
   }
+});
+
+test('round-three usage rewrite preserves id, anchor, qformat, and question exactly', () => {
+  const immutableProjection = chengyuJunior
+    .filter((entry) => ['usage-judge', 'usage-wrong'].includes(entry.qformat))
+    .map(({ id, anchor, qformat, question }) => ({ id, anchor, qformat, question }));
+  const digest = createHash('sha256').update(JSON.stringify(immutableProjection)).digest('hex');
+  assert.equal(digest, '5be71538e84f34ff623ee460d7880295eda97953ae8a841e9dea4b964469d6da');
 });
 
 test('fill and story blanks do not contain the round-two meta-writing templates', () => {
