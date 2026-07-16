@@ -24,13 +24,13 @@ async function open() {
 
 function close() { closeOverlay($('pearls-overlay')); }
 
-function labelOf(entry) {
+export function labelOf(entry) {
   if (!entry) return null;
   if (entry.type === '字音') {
     const m = entry.question.match(/「[^」]+」的「([^」]+)」/);
     if (m) return m[1];
   }
-  return entry.answer;
+  return entry.anchor?.[0] ?? entry.answer;
 }
 
 async function render() {
