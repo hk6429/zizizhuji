@@ -176,6 +176,56 @@ test('new-format stories and direct idiom choices satisfy their content contract
   }
 });
 
+test('usage questions use natural contextual sentences instead of definition matching', () => {
+  const forbidden = /可用來(?:表示|概括|表達)|釋義|同學讀到|引號中的意思|形容|比喻|用來|…/;
+  for (const e of chengyuJunior.filter((entry) => ['usage-judge', 'usage-wrong'].includes(entry.qformat))) {
+    assert.match(e.question, /^下列成語的運用，何者(?:使用正確|使用不恰當)？$/, `${e.id}: usage stem is not concise`);
+    for (const option of e.options) {
+      assert.ok(option.length >= 15 && option.length <= 40, `${e.id}: usage option must be 15-40 characters / ${option}`);
+      assert.doesNotMatch(option, forbidden, `${e.id}: usage option still contains definition-matching prose`);
+      assert.ok(e.anchor.some((idiom) => option.includes(idiom)), `${e.id}: option has no anchored idiom / ${option}`);
+    }
+    const used = new Set(e.options.flatMap((option) => e.anchor.filter((idiom) => option.includes(idiom))));
+    assert.deepEqual(used, new Set(e.anchor), `${e.id}: anchor must list every idiom used by the options`);
+    assert.match(e.note, /誤用：/, `${e.id}: note must explain the misuse`);
+  }
+});
+
+test('fill and story blanks do not contain the round-two meta-writing templates', () => {
+  for (const e of chengyuJunior.filter((entry) => ['fill-blank', 'story-blank'].includes(entry.qformat))) {
+    assert.doesNotMatch(e.question, /資料先交代|濃縮成一句旁白/, `${e.id}: meta-writing template remains`);
+  }
+});
+
+test('audited zixing ambiguities are resolved by context or unambiguous distractors', () => {
+  const replaced = {
+    'zy-中-1715': ['糖類'], 'zy-中-1758': ['隕落'], 'zy-中-1776': ['迴游', '回游'],
+    'zy-中-1785': ['凹地'], 'zy-中-1825': ['混濁'], 'zy-中-1945': ['樹幹'],
+    'zy-中-2002': ['挨過'], 'zy-中-2032': ['摂取', '攝取'], 'zy-中-2298': ['桐林'],
+    'zy-中-2308': ['桔子'], 'zy-中-2507': ['顛峰'], 'zy-中-2575': ['精英'],
+    'zy-中-2614': ['二心'], 'zy-中-2660': ['糟蹋'], 'zy-中-2746': ['刮風'],
+    'zy-中-2760': ['糊口'], 'zy-中-2821': ['金雕'], 'zy-中-2903': ['璀燦'],
+    'zy-中-2974': ['艋甲'], 'zy-中-3054': ['嘩然'],
+  };
+  for (const [id, oldForms] of Object.entries(replaced)) {
+    const entry = ziyinJunior.find((item) => item.id === id);
+    const serialized = JSON.stringify(entry);
+    for (const oldForm of oldForms) assert.ok(!serialized.includes(oldForm), `${id}: ambiguous old form remains / ${oldForm}`);
+  }
+  const contextualized = [
+    'zy-中-1637', 'zy-中-1670', 'zy-中-1675', 'zy-中-1779', 'zy-中-1857',
+    'zy-中-2042', 'zy-中-2075', 'zy-中-2093', 'zy-中-2099', 'zy-中-2101',
+    'zy-中-2114', 'zy-中-2236', 'zy-中-2289', 'zy-中-2379', 'zy-中-2490',
+    'zy-中-2492', 'zy-中-2657', 'zy-中-2670', 'zy-中-2706', 'zy-中-2775',
+    'zy-中-2857', 'zy-中-2970', 'zy-中-2979', 'zy-中-3022',
+  ];
+  for (const id of contextualized) {
+    const entry = ziyinJunior.find((item) => item.id === id);
+    assert.match(entry.question, /（.+）$/, `${id}: disambiguating context is missing`);
+  }
+  assert.match(ziyinJunior.find((item) => item.id === 'zy-中-3003').question, /冰塊.*固態冰變成液態/, 'zy-中-3003: melt context is missing');
+});
+
 test('answer position within options is not skewed toward any single slot', () => {
   const banks = { ziyin, chengyu, ziyinJunior, chengyuJunior };
   for (const [name, entries] of Object.entries(banks)) {
