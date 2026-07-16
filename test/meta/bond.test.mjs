@@ -7,16 +7,16 @@ import {
 
 const D = '2026-07-14';
 
-test('5 stages × 6 situations × 2 lines = 60 lines built in', () => {
+test('5 stages × 6 situations × 3 lines = 90 lines built in', () => {
   assert.equal(STAGES.length, 5);
   let count = 0;
   for (const stage of LINES) {
     for (const key of ['open', 'correct', 'combo3', 'wrong', 'win', 'lose']) {
-      assert.ok(Array.isArray(stage[key]) && stage[key].length === 2, `missing lines for ${key}`);
+      assert.ok(Array.isArray(stage[key]) && stage[key].length === 3, `missing lines for ${key}`);
       count += stage[key].length;
     }
   }
-  assert.equal(count, 60);
+  assert.equal(count, 90); // de48229 台詞擴充後每情境 3 句
 });
 
 test('bond gains: battle +2, win +1, combo5 +2, dailyFirst +3 (once a day)', () => {
@@ -81,7 +81,7 @@ test('pickLine returns a string from the right stage/situation pool', () => {
   const line = pickLine(0, 'open', () => 0);
   assert.equal(line, LINES[0].open[0]);
   const line2 = pickLine(4, 'win', () => 0.9);
-  assert.equal(line2, LINES[4].win[1]);
+  assert.equal(line2, LINES[4].win[2]); // 0.9 × 3 句 → 取最後一句
 });
 
 test('claimGift refuses below threshold or double-claim', () => {
