@@ -112,8 +112,22 @@ await page.click('#btn-practice');
 await page.waitForSelector('#options button');
 const practiceOptionCount = await page.$$eval('#options button', els => els.length);
 
+// 數字鍵 1-4 快捷作答：按下 2 應等同點擊第二個選項
+await page.keyboard.press('2');
+await page.waitForSelector('#options button.correct, #options button.wrong');
+const kbSecondOptionAnswered = await page.$eval(
+  '#options button:nth-child(2)',
+  (el) => el.classList.contains('correct') || el.classList.contains('wrong'),
+);
+const kbButtonsDisabled = await page.$$eval('#options button', (els) => els.every((b) => b.disabled));
+await page.waitForTimeout(900); // 等 FEEDBACK_DELAY(800ms) 換下一題，避免影響後續流程
+await page.waitForSelector('#options button');
+
 // 新版畫卷式版面：答題中首頁收起，需先「收卷回首頁」才能切到對戰
+// 剛才用數字鍵答過題，收卷會跳戰報卷軸，需先關掉才能點下一個功能
 await page.click('#btn-back');
+await page.waitForSelector('#summary-scroll:not([hidden])');
+await page.click('#summary-close');
 await page.waitForSelector('#btn-battle', { state: 'visible' });
 await page.click('#btn-battle');
 await page.waitForSelector('#options button');
@@ -139,6 +153,8 @@ if (linkTileCount !== 16) throw new Error(`連連看應鋪 16 張，實際 ${lin
 if (sgMenuCount !== 3) throw new Error(`積分競技應有 3 種模式，實際 ${sgMenuCount}`);
 if (sgOptionCount !== 4) throw new Error(`積分競技選項數應為 4，實際 ${sgOptionCount}`);
 if (practiceOptionCount !== 4) throw new Error(`練習模式選項數應為4，實際 ${practiceOptionCount}`);
+if (!kbSecondOptionAnswered) throw new Error('按數字鍵 2 應觸發第二個選項作答（correct/wrong class）');
+if (!kbButtonsDisabled) throw new Error('數字鍵作答後所有選項應被 disabled');
 if (!shareCardBtnExists) throw new Error('分享圖卡按鈕 #summary-share-card 應存在於 DOM');
 if (battleOptionCount !== 4) throw new Error(`對戰模式選項數應為4，實際 ${battleOptionCount}`);
 if (!hudVisible) throw new Error('對戰模式狀態列 #battle-hud 應顯示');

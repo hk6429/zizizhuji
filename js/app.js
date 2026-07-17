@@ -207,6 +207,26 @@ function renderQuestion(entry) {
   attachReportButton(entry);
 }
 
+// 數字鍵 1-4 對應選項順位；輸入框有焦點時不攔截，避免打斷回報/存檔代碼輸入
+const OPTIONS_CONTAINER_IDS = ['options', 'sg-options'];
+document.addEventListener('keydown', (ev) => {
+  const key = ev.key;
+  if (key < '1' || key > '4') return;
+  const active = document.activeElement;
+  if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
+  const idx = Number(key) - 1;
+  for (const id of OPTIONS_CONTAINER_IDS) {
+    const container = document.getElementById(id);
+    if (!container || container.offsetParent === null) continue;
+    const btn = container.children[idx];
+    if (btn && !btn.disabled) {
+      btn.click();
+      ev.preventDefault();
+    }
+    break;
+  }
+});
+
 function bindAnswer(entry, mySession, onDone) {
   const optionsEl = $('options');
   optionsEl.onclick = (ev) => {
