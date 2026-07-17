@@ -34,6 +34,13 @@ input:focus-visible,
   outline-offset: 2px;
 }
 
+/* 選項按鈕作答前不能用跟「答對」同色系的外框，否則手機點按/滾動時的殘留
+   focus 外框會被誤認成洩題（灰色虛線，跟 .correct 的青色實體外框明顯不同） */
+#options button:focus-visible {
+  outline: 2px dashed #8a94a3;
+  outline-offset: 2px;
+}
+
 html { -webkit-text-size-adjust: 100%; }
 
 body {
