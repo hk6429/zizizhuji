@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS saves (
+  code TEXT PRIMARY KEY,
+  data TEXT NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS report_rl (
+  ip TEXT PRIMARY KEY,
+  window_start INTEGER NOT NULL,
+  count INTEGER NOT NULL
+);

@@ -13,6 +13,7 @@ import { initScoreGame } from './scoregame-ui.js';
 import { initAchievementsUI } from './achievements-ui.js';
 import { initPearlsUI } from './pearls-ui.js';
 import { initSaveSyncUI } from './save-sync-ui.js';
+import { initReportUI, attachReportButton } from './report.js';
 import { saveMeta } from './meta/store.js';
 import { checkWelcomeBack } from './meta/welcome-back.js';
 import { shuffle } from './shuffle.js';
@@ -203,6 +204,7 @@ function renderQuestion(entry) {
     btn.dataset.value = opt;
     optionsEl.appendChild(btn);
   });
+  attachReportButton(entry);
 }
 
 function bindAnswer(entry, mySession, onDone) {
@@ -442,6 +444,7 @@ initSaveSyncUI({
   getMeta: () => getCtx()?.meta,
   onLoaded: (data) => { saveMeta(data); location.reload(); },
 });
+initReportUI();
 initMetaLayer().then(() => {
   maybeShowWelcomeBack();
   maybeShowTermsIntro();

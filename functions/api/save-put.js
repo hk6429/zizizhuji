@@ -1,7 +1,5 @@
-import { getStore } from '@netlify/blobs';
-
-// 跨裝置存檔同步：POST /.netlify/functions/save-put?code=XXXXXX
-// body: { data, updatedAt }。code 是前端隨機產生的存取金鑰，非帳號密碼。
+// 跨裝置存檔同步：POST /api/save-put?code=XXXXXX  body: { data, updatedAt }
+// Cloudflare Pages Function，D1 綁定名稱 zizizhuji_db（見 wrangler.toml）。
 const CODE_RE = /^[A-Z0-9]{6}$/;
 const MAX_BYTES = 300_000;
 
@@ -12,13 +10,12 @@ const CORS = {
   'Cache-Control': 'no-store',
 };
 
-export default async (req) => {
-  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
-  if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'POST only' }), { status: 405, headers: CORS });
-  }
+export async function onRequestOptions() {
+  return new Response(null, { status: 204, headers: CORS });
+}
 
-  const url = new URL(req.url);
+export async function onRequestPost({ request, env }) {
+  const url = new URL(request.url);
   const code = String(url.searchParams.get('code') || '');
   if (!CODE_RE.test(code)) {
     return new Response(JSON.stringify({ error: 'bad code' }), { status: 400, headers: CORS });
@@ -26,7 +23,7 @@ export default async (req) => {
 
   let body;
   try {
-    body = await req.json();
+    body = await request.json();
   } catch {
     return new Response(JSON.stringify({ error: 'bad json' }), { status: 400, headers: CORS });
   }
@@ -40,12 +37,15 @@ export default async (req) => {
     return new Response(JSON.stringify({ error: 'bad updatedAt' }), { status: 400, headers: CORS });
   }
 
-  const payload = JSON.stringify({ data, updatedAt });
+  const payload = JSON.stringify(data);
   if (payload.length > MAX_BYTES) {
     return new Response(JSON.stringify({ error: 'too large' }), { status: 413, headers: CORS });
   }
 
-  const store = getStore('zizizhuji-saves');
-  await store.set(code, payload);
+  await env.zizizhuji_db
+    .prepare('INSERT INTO saves (code, data, updated_at) VALUES (?1, ?2, ?3) ON CONFLICT(code) DO UPDATE SET data=?2, updated_at=?3')
+    .bind(code, payload, updatedAt)
+    .run();
+
   return new Response(JSON.stringify({ ok: true }), { status: 200, headers: CORS });
-};
+}

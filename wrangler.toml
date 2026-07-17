@@ -1,0 +1,7 @@
+name = "zizizhuji"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "zizizhuji_db"
+database_name = "zizizhuji-db"
+database_id = "f5a3c53e-ea32-4e39-8f03-31ea8005d971"

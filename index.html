@@ -230,6 +230,7 @@
         <div class="quiz-card">
           <img class="card-seal" src="assets/web/emblem.jpg" alt="" aria-hidden="true" loading="lazy">
           <span id="mode-tag" class="mode-tag" aria-hidden="true"></span>
+          <button id="report-btn" class="report-btn" type="button" hidden aria-label="回報這一題有問題" title="回報這一題有問題">🚩</button>
           <p id="question-text"></p>
           <div id="options"></div>
         </div>
@@ -344,6 +345,20 @@
       <div class="summary-actions">
         <button id="nodamage-yes" class="overlay-ghost-btn" type="button">開啟無傷模式</button>
         <button id="nodamage-no" class="overlay-ghost-btn" type="button">維持現狀</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 題目回報：題目有問題（洩題/答案錯/選項怪）時，一鍵送到老師 Telegram -->
+  <div id="report-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="report-title">
+    <div class="meta-overlay__card">
+      <h2 id="report-title" class="overlay-title">🚩 回報這一題</h2>
+      <p>發現題目有洩題、答案錯誤或選項怪怪的嗎？告訴我們吧！</p>
+      <textarea id="report-note" class="report-note" maxlength="200" placeholder="想補充說明嗎？（選填）"></textarea>
+      <div id="report-msg" style="text-align:center;min-height:18px;font-size:13px;color:#888"></div>
+      <div class="summary-actions">
+        <button id="report-go" class="overlay-ghost-btn" type="button">送出回報</button>
+        <button id="report-cancel" class="overlay-ghost-btn" type="button">取消</button>
       </div>
     </div>
   </div>
