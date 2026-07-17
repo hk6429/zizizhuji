@@ -20,6 +20,13 @@ import { shuffle } from './shuffle.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
 import { initNoDamagePrompt, maybeOfferNoDamage } from './nodamage-prompt.js';
 import { initTermsHelp, maybeShowTermsIntro } from './terms-intro.js';
+import { playCorrect, playWrong, playCombo, isSoundOn, setSoundOn } from './sound.js';
+
+// 每連對 3 題加碼一次連擊音效（呼應連對獎勵遞增，見 js/meta/kernel.js 的 XP_COMBO_BONUS）
+function maybePlayCombo(ctx) {
+  const combo = ctx.session.combo;
+  if (combo > 0 && combo % 3 === 0) playCombo();
+}
 
 const FEEDBACK_DELAY = 800; // 等墨暈／潑濺動畫播完再進下一題（對齊 goldGlow/inkBloom .8s）
 
@@ -40,6 +47,12 @@ if (ndToggle) {
     noDamageMode = ndToggle.checked;
     localStorage.setItem(NODAMAGE_KEY, noDamageMode ? '1' : '0');
   });
+}
+// 音效開關：預設開啟，Web Audio 合成短音（見 js/sound.js），不載外部音檔
+const soundToggle = document.getElementById('toggle-sound');
+if (soundToggle) {
+  soundToggle.checked = isSoundOn();
+  soundToggle.addEventListener('change', () => setSoundOn(soundToggle.checked));
 }
 // 首次低血/斷燈時的一次性提示：學生同意就當場開啟無傷模式並同步勾選狀態
 initNoDamagePrompt(() => {
@@ -193,17 +206,24 @@ function backHome() {
 $('btn-back').addEventListener('click', backHome);
 
 /* ---------- 出題與回饋 ---------- */
+// 選項本來就用甲乙丙丁編號（css counter(opt, cjk-heavenly-stem)），數字鍵 1-4 快捷鍵要對得上，
+// 靠 aria-label 把「甲」與「快捷鍵 1」講清楚，畫面上不再疊一個衝突的「1.」數字
+const STEMS = ['甲', '乙', '丙', '丁'];
 function renderQuestion(entry) {
   $('question-text').textContent = entry.question;
   const optionsEl = $('options');
   optionsEl.innerHTML = '';
-  shuffle(entry.options).forEach((opt) => {
+  shuffle(entry.options).forEach((opt, i) => {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.textContent = opt;
     btn.dataset.value = opt;
+    btn.setAttribute('aria-keyshortcuts', String(i + 1));
+    btn.setAttribute('aria-label', `${STEMS[i] || i + 1}、${opt}（快捷鍵 ${i + 1}）`);
     optionsEl.appendChild(btn);
   });
+  const feedbackEl = $('answer-feedback');
+  if (feedbackEl) { feedbackEl.hidden = true; feedbackEl.textContent = ''; }
   attachReportButton(entry);
 }
 
@@ -237,10 +257,20 @@ function bindAnswer(entry, mySession, onDone) {
     const buttons = optionsEl.querySelectorAll('button');
     buttons.forEach((b) => { b.disabled = true; });
     btn.classList.add(correct ? 'correct' : 'wrong');
+    if (correct) playCorrect(); else playWrong();
     if (!correct) {
       for (const b of buttons) {
         if (b.dataset.value === entry.answer) { b.classList.add('reveal'); break; }
       }
+    }
+    const feedbackEl = $('answer-feedback');
+    if (feedbackEl) {
+      const idx = Array.isArray(entry.explain) ? entry.options.indexOf(btn.dataset.value) : -1;
+      const explainText = idx >= 0 ? entry.explain[idx] : '';
+      feedbackEl.textContent = correct
+        ? `答對了！${explainText}`
+        : `答錯了，正解是「${entry.answer}」。${explainText}`;
+      feedbackEl.hidden = false;
     }
     setTimeout(() => {
       if (mySession !== session) return; // 已收卷或重新開局
@@ -300,13 +330,14 @@ async function startPractice() {
   function nextRound() {
     // 排除剛答過的那題再選，避免它是唯一低盒題時立刻重複
     const pool = ids.length > 1 ? ids.filter((x) => x !== lastId) : ids;
-    const id = nextQuestionId(state, pool);
+    const id = nextQuestionId(state, pool, byId);
     const entry = byId.get(id);
     renderQuestion(entry);
     bindAnswer(entry, mySession, (correct) => {
       // kernel 內部已呼叫 leitner.recordAnswer ＋持久化，此處不可再 recordAnswer
       const { events } = kernel.onPracticeAnswer(ctx, id, correct);
       renderEvents(events);
+      maybePlayCombo(ctx);
       syncPets(); // 精通題數可能剛跨過解鎖門檻
       lastId = id;
       nextRound();
@@ -405,6 +436,7 @@ async function startBattle() {
       // kernel 經 battle-adapter 呼叫 applyAnswer 並疊加法寶/護符/奇遇，不可再自己 applyAnswer
       const rA = kernel.onBattleAnswer(ctx, state, 'A', correct, entry.id);
       renderEvents(rA.events);
+      maybePlayCombo(ctx);
       for (const e of rA.events) {
         const p = e.payload || {};
         if (e.type === 'encounter' && p.effect && p.effect.type === 'challenge') pendingChallenge = p.effect;

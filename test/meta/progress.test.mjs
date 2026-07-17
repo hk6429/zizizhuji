@@ -3,10 +3,11 @@ import assert from 'node:assert/strict';
 import { defaultMeta } from '../../js/meta/store.js';
 import { RANKS, addXp, getProgress } from '../../js/meta/progress.js';
 
-test('eight ranks with the designed thresholds', () => {
-  assert.deepEqual(RANKS.map(r => r.threshold), [0, 100, 300, 700, 1500, 3000, 5500, 9000]);
+test('ten ranks with the designed thresholds', () => {
+  assert.deepEqual(RANKS.map(r => r.threshold), [0, 100, 300, 700, 1500, 3000, 5500, 9000, 15000, 24000]);
   assert.equal(RANKS[0].name, '蒙童');
   assert.equal(RANKS[7].name, '翰林');
+  assert.equal(RANKS[9].name, '文曲星');
 });
 
 test('addXp accumulates and levels up exactly at thresholds', () => {
@@ -31,8 +32,12 @@ test('getProgress reports next threshold, null at max rank', () => {
   const meta = defaultMeta();
   assert.equal(getProgress(meta).nextThreshold, 100);
   addXp(meta, 10000);
-  const p = getProgress(meta);
+  let p = getProgress(meta);
   assert.equal(p.rankName, '翰林');
+  assert.equal(p.nextThreshold, 15000);
+  addXp(meta, 20000); // 累計 30000，超過文曲星門檻，應到頂
+  p = getProgress(meta);
+  assert.equal(p.rankName, '文曲星');
   assert.equal(p.nextThreshold, null);
 });
 

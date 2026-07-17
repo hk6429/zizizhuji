@@ -82,6 +82,8 @@ function renderPets() {
     $('pet-nickname-input').placeholder = `幫「${active.name}」取暱稱（1–8 字，清空＝回本名）`;
   }
 
+  $('pet-progress-count').textContent = pets.filter((p) => p.unlocked).length;
+
   const grid = $('pet-grid');
   grid.innerHTML = '';
   for (const p of pets) {

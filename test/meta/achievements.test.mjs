@@ -10,11 +10,16 @@ function emptyStats() {
   };
 }
 
-test('17 achievements, combo-10 is hidden with the 文曲星降臨 title', () => {
-  assert.equal(ACHIEVEMENTS.length, 17);
+test('18 achievements, combo-10 is hidden with the 文曲星降臨 title', () => {
+  assert.equal(ACHIEVEMENTS.length, 18);
   const hidden = ACHIEVEMENTS.find(a => a.id === 'combo-10');
   assert.equal(hidden.hidden, true);
   assert.equal(hidden.title, '文曲星降臨');
+});
+
+test('pets-12: collecting all 12 山海神獸 unlocks 山海神獸・大成', () => {
+  assert.ok(!checkAchievements({ ...emptyStats(), petsUnlocked: 11 }).includes('pets-12'));
+  assert.ok(checkAchievements({ ...emptyStats(), petsUnlocked: 12 }).includes('pets-12'));
 });
 
 test('checkAchievements is pure and threshold-exact', () => {

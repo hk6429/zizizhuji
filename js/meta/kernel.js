@@ -13,6 +13,7 @@ import * as daily from './daily.js';
 import * as bond from './bond.js';
 import * as arena from './arena.js';
 import * as ach from './achievements.js';
+import * as pet from './pet.js';
 import * as summaryMod from './summary.js';
 import * as adapter from './battle-adapter.js';
 import { recordAnswer } from '../leitner.js';
@@ -20,6 +21,7 @@ import { recordAnswer } from '../leitner.js';
 const XP_PRACTICE = 10;
 const XP_BATTLE = 15;
 const XP_COMBO_BONUS = 5;
+const XP_COMBO_BONUS_CAP = 25; // 連對加碼隨連對數遞增，避免連對 3 跟連對 20 拿一樣多，但仍設上限防止暴走
 const XP_WRONG = 2; // 安慰值
 const PEARL_FORGE = 3;
 const PEARL_POLISH = 2;
@@ -99,7 +101,11 @@ export function initSession(today, banks = null, opts = {}) {
 
 function pushAchievements(ctx, events) {
   const meta = ctx.meta;
-  const stats = { ...meta.ach.stats, lanternBest: Math.max(meta.ach.stats.lanternBest || 0, meta.daily.best) };
+  const stats = {
+    ...meta.ach.stats,
+    lanternBest: Math.max(meta.ach.stats.lanternBest || 0, meta.daily.best),
+    petsUnlocked: pet.listPets(meta).filter((p) => p.unlocked).length,
+  };
   const ids = ach.checkAchievements(stats);
   const { newlyUnlocked } = ach.unlock(meta, ids);
   for (const def of newlyUnlocked) {
@@ -141,7 +147,9 @@ function processAnswer(ctx, id, correct, mode) {
 
   // 文氣
   let xp = correct ? (mode === 'battle' ? XP_BATTLE : XP_PRACTICE) : XP_WRONG;
-  if (correct && s.combo >= 3) xp += XP_COMBO_BONUS;
+  if (correct && s.combo >= 3) {
+    xp += Math.min(XP_COMBO_BONUS + (s.combo - 3) * 2, XP_COMBO_BONUS_CAP);
+  }
   xp = Math.round(xp * mults.xp);
   const xpRes = progress.addXp(meta, xp);
   s.xp += xp;
@@ -152,7 +160,7 @@ function processAnswer(ctx, id, correct, mode) {
 
   // 字珠
   if (correct) {
-    let pearls = 1 + (s.combo >= 3 ? 1 : 0); // 連對第 3 題起每題加碼 +1
+    let pearls = 1 + (s.combo >= 3 ? Math.min(1 + Math.floor((s.combo - 3) / 3), 4) : 0); // 連對第 3 題起加碼，之後每 3 連對再 +1，封頂 +4
     if (mode === 'practice') pearls += mults.practicePearlBonus; // 靜心日
     pearls *= mults.pearl; // 珠豐日 ×2
     if (ctx.doublePearlNext) {

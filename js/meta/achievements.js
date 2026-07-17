@@ -1,6 +1,8 @@
 // M11 成就冊：成就定義（含隱藏成就）、純函式判定、解鎖記錄與累計統計。
 // checkAchievements(stats) 為純函式，回傳「條件已達成」的成就 id 清單；unlock 負責過濾已解鎖。
 
+import { listPets } from './pet.js';
+
 export const ACHIEVEMENTS = [
   { id: 'first-win', name: '初戰告捷', desc: '贏得第一場對戰', pearls: 10, hidden: false },
   { id: 'combo-3', name: '三連珠', desc: '單場連對 3 題', pearls: 5, hidden: false },
@@ -20,6 +22,7 @@ export const ACHIEVEMENTS = [
   { id: 'forge-ziyin-250', name: '字音圓滿', desc: '字音字形 250 顆字珠全數煉成', pearls: 40, hidden: false },
   { id: 'forge-chengyu-435', name: '成語圓滿', desc: '成語 435 顆字珠全數煉成', pearls: 60, hidden: false },
   { id: 'forge-685', name: '字字珠璣・大成', desc: '685 顆字珠全數煉成，寶典圓滿', pearls: 100, hidden: false },
+  { id: 'pets-12', name: '山海神獸・大成', desc: '集齊 12 隻山海神獸', pearls: 50, hidden: false },
 ];
 
 const CONDITIONS = {
@@ -40,6 +43,7 @@ const CONDITIONS = {
   'forge-ziyin-250': s => s.forgedZiyin >= 250,
   'forge-chengyu-435': s => s.forgedChengyu >= 435,
   'forge-685': s => s.forgedCount >= 685,
+  'pets-12': s => s.petsUnlocked >= 12,
 };
 
 // 累計統計：計數欄位相加，bestCombo / lanternBest 取最大值。
@@ -94,6 +98,7 @@ const PROGRESS_FIELD = {
   'forge-ziyin-250': ['forgedZiyin', 250],
   'forge-chengyu-435': ['forgedChengyu', 435],
   'forge-685': ['forgedCount', 685],
+  'pets-12': ['petsUnlocked', 12],
 };
 
 function progressFor(id, stats) {
@@ -103,9 +108,9 @@ function progressFor(id, stats) {
   return { current: Math.min(stats[key] || 0, target), target };
 }
 
-// 讀取端總覽：不動任何既有解鎖邏輯，純粹整理 17 個成就的顯示資訊供 UI 渲染。
+// 讀取端總覽：不動任何既有解鎖邏輯，純粹整理 18 個成就的顯示資訊供 UI 渲染。
 export function getAchievementsOverview(meta) {
-  const stats = meta.ach.stats;
+  const stats = { ...meta.ach.stats, petsUnlocked: listPets(meta).filter((p) => p.unlocked).length };
   return ACHIEVEMENTS.map((a) => {
     const unlockedAt = meta.ach.unlocked[a.id] || null;
     const isHiddenLocked = a.hidden && !unlockedAt;

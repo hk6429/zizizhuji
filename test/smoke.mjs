@@ -51,7 +51,7 @@ await page.click('#btn-back');
 await page.click('#level-elem');
 await page.waitForSelector('#level-elem.is-active');
 
-// 「更多功能」預設收合（漸進揭露），要先展開才點得到寵物閣／自學／積分競技
+// 「更多功能」預設收合（漸進揭露），要先展開才點得到寵物閣／自學／文氣爭鋒
 await page.click('.more-section > summary');
 await page.waitForSelector('#btn-pet', { state: 'visible' });
 
@@ -68,7 +68,7 @@ const pearlsCountChips = await page.$$eval('#pearls-counts .pearls-count', els =
 const pearlsEmptyShown = await page.$eval('#pearls-empty', el => !el.hidden);
 await page.click('#pearls-close');
 
-// 成就總覽：開啟後應渲染 17 個成就卡
+// 成就總覽：開啟後應渲染 18 個成就卡
 await page.click('#btn-achievements');
 await page.waitForSelector('#ach-overlay:not([hidden])');
 const achCount = await page.$$eval('#ach-grid .ach-item', els => els.length);
@@ -99,7 +99,7 @@ const linkTileCount = await page.$$eval('#ss-board .link-tile:not(.is-empty)', e
 await page.click('#ss-back');
 await page.click('#ss-close');
 
-// 積分競技：三種模式；進「獨自衝分」應出 4 選項
+// 文氣爭鋒：三種模式；進「獨自衝分」應出 4 選項
 await page.click('#btn-scoregame');
 await page.waitForSelector('#scoregame-overlay:not([hidden])');
 const sgMenuCount = await page.$$eval('#sg-menu .sg-menu-card', els => els.length);
@@ -120,6 +120,7 @@ const kbSecondOptionAnswered = await page.$eval(
   (el) => el.classList.contains('correct') || el.classList.contains('wrong'),
 );
 const kbButtonsDisabled = await page.$$eval('#options button', (els) => els.every((b) => b.disabled));
+const answerFeedbackShown = await page.$eval('#answer-feedback', (el) => !el.hidden && el.textContent.trim().length > 0);
 await page.waitForTimeout(900); // 等 FEEDBACK_DELAY(800ms) 換下一題，避免影響後續流程
 await page.waitForSelector('#options button');
 
@@ -143,18 +144,19 @@ server.close();
 if (!levelDefaultActive) throw new Error('預設應為國小學制（#level-elem.is-active）');
 if (juniorPracticeOptionCount !== 4) throw new Error(`國中練習模式選項數應為4，實際 ${juniorPracticeOptionCount}`);
 if (petCount !== 12) throw new Error(`寵物閣應有 12 隻神獸，實際 ${petCount}`);
-if (achCount !== 17) throw new Error(`成就總覽應有 17 個成就，實際 ${achCount}`);
+if (achCount !== 18) throw new Error(`成就總覽應有 18 個成就，實際 ${achCount}`);
 if (pearlsCountChips !== 4) throw new Error(`字珠寶殿應有 4 個品階統計，實際 ${pearlsCountChips}`);
 if (!pearlsEmptyShown) throw new Error('新玩家的字珠寶殿應顯示空狀態文案');
 if (!/^[A-Z0-9]{6}$/.test(savesyncCode)) throw new Error(`雲端存檔代碼格式應為 6 碼英數，實際「${savesyncCode}」`);
 if (ssMenuCount !== 4) throw new Error(`自學選單應有 4 款遊戲，實際 ${ssMenuCount}`);
 if (memCardCount !== 16) throw new Error(`記憶配對牌應鋪 16 張，實際 ${memCardCount}`);
 if (linkTileCount !== 16) throw new Error(`連連看應鋪 16 張，實際 ${linkTileCount}`);
-if (sgMenuCount !== 3) throw new Error(`積分競技應有 3 種模式，實際 ${sgMenuCount}`);
-if (sgOptionCount !== 4) throw new Error(`積分競技選項數應為 4，實際 ${sgOptionCount}`);
+if (sgMenuCount !== 3) throw new Error(`文氣爭鋒應有 3 種模式，實際 ${sgMenuCount}`);
+if (sgOptionCount !== 4) throw new Error(`文氣爭鋒選項數應為 4，實際 ${sgOptionCount}`);
 if (practiceOptionCount !== 4) throw new Error(`練習模式選項數應為4，實際 ${practiceOptionCount}`);
 if (!kbSecondOptionAnswered) throw new Error('按數字鍵 2 應觸發第二個選項作答（correct/wrong class）');
 if (!kbButtonsDisabled) throw new Error('數字鍵作答後所有選項應被 disabled');
+if (!answerFeedbackShown) throw new Error('作答後 #answer-feedback 應顯示答對/答錯回饋文字');
 if (!shareCardBtnExists) throw new Error('分享圖卡按鈕 #summary-share-card 應存在於 DOM');
 if (battleOptionCount !== 4) throw new Error(`對戰模式選項數應為4，實際 ${battleOptionCount}`);
 if (!hudVisible) throw new Error('對戰模式狀態列 #battle-hud 應顯示');

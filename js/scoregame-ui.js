@@ -14,6 +14,7 @@ import { openOverlay, closeOverlay } from './overlay-a11y.js';
 import { buildHotseatShareText } from './meta/summary.js';
 import { rushRankName } from './meta/rank-tier.js';
 import { shouldCheckpoint } from './session-checkpoint.js';
+import { playCorrect, playWrong } from './sound.js';
 
 const CLASS_RE = /^[\w一-鿿]{1,20}$/;
 const NICK_MAX = 12;
@@ -48,8 +49,8 @@ const cheerCounts = new Map();
 
 const MODES = [
   { id: 'solo',    name: '獨自衝分', icon: '🎯', desc: '一路答下去衝高分，答錯會扣分，隨時結束' },
-  { id: 'vscpu',   name: '對電腦',   icon: '🤖', desc: `跟墨靈電腦各答 ${ROUNDS} 題，比總分` },
-  { id: 'hotseat', name: '兩人對戰', icon: '🆚', desc: `同一台輪流作答，各 ${ROUNDS} 題定勝負` },
+  { id: 'vscpu',   name: '戰墨靈',   icon: '🤖', desc: `跟墨靈電腦各答 ${ROUNDS} 題，比總分` },
+  { id: 'hotseat', name: '同硯對決', icon: '🆚', desc: `同一台輪流作答，各 ${ROUNDS} 題定勝負` },
 ];
 
 let deps = {};
@@ -292,11 +293,21 @@ function renderAllBoards(host, code, { rScore, rProgress, rStreak }, onClose) {
 }
 
 /* ---------- 電腦回合 ---------- */
+// 電腦命中率不再是固定值：依真人玩家目前的正確率浮動，玩家越強電腦跟著變強，樣本太少（<3題）先用預設值墊底
+const CPU_ACC_MIN = 0.35;
+const CPU_ACC_MAX = 0.85;
+function dynamicCpuAcc(p) {
+  const human = state.players.find((h) => !h.ai);
+  if (!human || human.answered < 3) return p.acc;
+  const humanAcc = human.score.correct / human.answered;
+  return Math.max(CPU_ACC_MIN, Math.min(CPU_ACC_MAX, humanAcc));
+}
+
 function aiTurn(p) {
   $('sg-question').textContent = `${p.name}作答中…`;
   $('sg-options').innerHTML = '';
   later(() => {
-    const correct = Math.random() < p.acc;
+    const correct = Math.random() < dynamicCpuAcc(p);
     const r = answer(p.score, correct);
     p.score = r.state;
     p.answered += 1;
@@ -315,12 +326,17 @@ function humanTurn(p) {
   $('sg-question').textContent = q.question;
   const optionsEl = $('sg-options');
   optionsEl.innerHTML = '';
-  for (const opt of shuffle(q.options)) {
-    const btn = el('button', 'sg-opt', opt);
+  shuffle(q.options).forEach((opt, i) => {
+    const btn = el('button', 'sg-opt', null);
     btn.type = 'button';
     btn.dataset.value = opt;
+    btn.setAttribute('aria-keyshortcuts', String(i + 1));
+    const num = el('span', 'opt-num', `${i + 1}.`);
+    num.setAttribute('aria-hidden', 'true');
+    btn.appendChild(num);
+    btn.appendChild(document.createTextNode(` ${opt}`));
     optionsEl.appendChild(btn);
-  }
+  });
   optionsEl.onclick = (ev) => {
     const btn = ev.target.closest('button');
     if (!btn || btn.disabled) return;
@@ -331,6 +347,7 @@ function humanTurn(p) {
       if (b.dataset.value === q.answer) b.classList.add('is-correct');
       else if (b === btn) b.classList.add('is-wrong');
     }
+    if (correct) playCorrect(); else playWrong();
     const r = answer(p.score, correct);
     p.score = r.state;
     p.answered += 1;

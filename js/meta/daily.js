@@ -19,6 +19,7 @@ export const LANTERN_TIERS = [
   { tier: 1, name: '銅燈', minStreak: 7 },
   { tier: 2, name: '琉璃燈', minStreak: 21 },
   { tier: 3, name: '七寶燈', minStreak: 49 },
+  { tier: 4, name: '不滅聖燈', minStreak: 100 },
 ];
 
 export const LANTERN_MILESTONES = [
@@ -27,6 +28,9 @@ export const LANTERN_MILESTONES = [
   { days: 14, pearls: 30, title: '燈火不熄' },
   { days: 30, pearls: 60, title: '墨燈長明' },
   { days: 60, pearls: 100, title: '長明書燈' },
+  { days: 100, pearls: 150, title: '百日不滅' },
+  { days: 180, pearls: 220, title: '半載守燈人' },
+  { days: 365, pearls: 400, title: '週年聖燈' },
 ];
 
 export const OMENS = [

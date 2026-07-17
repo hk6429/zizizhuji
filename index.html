@@ -143,9 +143,13 @@
           <input type="checkbox" id="toggle-nodamage">
           <span>無傷模式（對戰時關閉連擊嗆聲與低血警示，減輕挫折感）</span>
         </label>
-        <p class="mode-hint">想要排行榜與計分？「更多功能」裡的積分競技也是對戰玩法。</p>
+        <label class="nodamage-toggle">
+          <input type="checkbox" id="toggle-sound" checked>
+          <span>答題音效</span>
+        </label>
+        <p class="mode-hint">想要排行榜與計分？「更多功能」裡的文氣爭鋒也是對戰玩法。</p>
 
-        <!-- 更多功能（漸進揭露：山海寵物／自學／積分競技，收合減少首頁決策點） -->
+        <!-- 更多功能（漸進揭露：山海寵物／自學／文氣爭鋒，收合減少首頁決策點） -->
         <details class="more-section">
           <summary class="section-title section-title--toggle"><i aria-hidden="true"></i><span class="toggle-label">更多功能</span><i aria-hidden="true"></i></summary>
 
@@ -159,7 +163,7 @@
             <span class="pet-entry__arrow" aria-hidden="true">›</span>
           </button>
 
-          <!-- 自學・墨池 ＆ 積分競技 -->
+          <!-- 自學・墨池 ＆ 文氣爭鋒 -->
           <div class="extra-grid">
             <button id="btn-selfstudy" class="extra-entry extra-entry--study" type="button">
               <span class="extra-entry__icon" aria-hidden="true">墨</span>
@@ -172,8 +176,8 @@
             <button id="btn-scoregame" class="extra-entry extra-entry--score" type="button">
               <span class="extra-entry__icon" aria-hidden="true">積</span>
               <span class="extra-entry__body">
-                <span class="extra-entry__title">積分競技（對戰玩法）</span>
-                <span class="extra-entry__sub">衝分・對電腦・兩人對戰</span>
+                <span class="extra-entry__title">文氣爭鋒（對戰玩法）</span>
+                <span class="extra-entry__sub">衝分・戰墨靈・同硯對決</span>
               </span>
               <span class="pet-entry__arrow" aria-hidden="true">›</span>
             </button>
@@ -233,6 +237,7 @@
           <button id="report-btn" class="report-btn" type="button" hidden aria-label="回報這一題有問題" title="回報這一題有問題">🚩</button>
           <p id="question-text"></p>
           <div id="options"></div>
+          <div id="answer-feedback" class="answer-feedback" hidden aria-live="polite"></div>
         </div>
         <button id="btn-back" class="back-btn" type="button">⟲ 收卷回首頁</button>
       </section>
@@ -275,6 +280,15 @@
     </div>
   </div>
 
+  <!-- 墨靈身世小故事（羈絆 40 贈禮） -->
+  <div id="story-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="story-title">
+    <div class="meta-overlay__card oath-card">
+      <h2 id="story-title" class="overlay-title">墨靈的身世</h2>
+      <div id="story-story"></div>
+      <button id="story-close" class="overlay-ghost-btn" type="button">收下這份心意</button>
+    </div>
+  </div>
+
   <!-- 戰報卷軸（結算卡） -->
   <div id="summary-scroll" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="summary-title">
     <div id="summary-card" class="meta-overlay__card summary-card scroll-unroll">
@@ -301,6 +315,7 @@
         <button class="pet-tab" data-tab="equip" type="button" role="tab" aria-selected="false" aria-controls="pet-panel-equip" id="pet-tab-equip">寵物設備</button>
       </div>
       <div id="pet-panel-pets" class="pet-panel" role="tabpanel" aria-labelledby="pet-tab-pets">
+        <p class="pet-progress">已集齊 <b id="pet-progress-count">0</b> / 12 隻山海神獸</p>
         <div id="pet-nickname-row" class="pet-nickname-row" hidden>
           <input id="pet-nickname-input" type="text" maxlength="8" placeholder="幫出戰神獸取暱稱（1–8 字）" aria-label="寵物暱稱">
           <button id="pet-nickname-save" class="pet-equip-btn" type="button">取名</button>
@@ -363,7 +378,7 @@
     </div>
   </div>
 
-  <!-- 成就總覽：17 個成就的已解鎖/未解鎖/進度 -->
+  <!-- 成就總覽：18 個成就的已解鎖/未解鎖/進度 -->
   <div id="ach-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="ach-title">
     <div class="meta-overlay__card ach-card">
       <h2 id="ach-title" class="overlay-title">成就總覽</h2>
@@ -426,10 +441,10 @@
     </div>
   </div>
 
-  <!-- 積分競技：衝分／對電腦／兩人對戰 -->
+  <!-- 文氣爭鋒：衝分／戰墨靈／同硯對決 -->
   <div id="scoregame-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="sg-title">
     <div class="meta-overlay__card sg-card">
-      <h2 id="sg-title" class="overlay-title">積分競技</h2>
+      <h2 id="sg-title" class="overlay-title">文氣爭鋒</h2>
       <div id="sg-classbar" class="sg-classbar"></div>
       <div id="sg-lb" class="sg-lb" hidden></div>
       <div id="sg-menu" class="sg-menu"></div>

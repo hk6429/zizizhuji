@@ -9,7 +9,8 @@ import { getProgress, RANKS } from './meta/progress.js';
 import { getLanternState, getBoxState, openBox } from './meta/daily.js';
 import * as oath from './meta/oath.js';
 import { markMilestoneSeen } from './meta/world.js';
-import { getBond, pickLine } from './meta/bond.js';
+import { getBond, pickLine, MOLING_STORY } from './meta/bond.js';
+import { playLevelUp } from './sound.js';
 import {
   createBattleContext, createBattleStateEx, takeEliminate, isOverEx,
 } from './meta/battle-adapter.js';
@@ -115,6 +116,20 @@ function showOathOverlay(intro) {
   };
   $('oath-skip').onclick = skip;
   openOverlay(overlay, skip);
+}
+
+function showStoryOverlay() {
+  const overlay = $('story-overlay');
+  const story = $('story-story');
+  story.innerHTML = '';
+  for (const card of MOLING_STORY) {
+    const p = document.createElement('p');
+    p.textContent = card.text;
+    story.appendChild(p);
+  }
+  const close = () => closeOverlay(overlay);
+  $('story-close').onclick = close;
+  openOverlay(overlay, close);
 }
 
 // 首頁常駐誓言列可點擊重開誓言卡（回顧誓詞／滿 30 天可換誓）
@@ -250,8 +265,10 @@ export function hideMolingBubble() {
 
 /* ---------- 事件渲染 ---------- */
 
-const TOAST_MS = 3600;
-const TOAST_GAP = 500;
+// 原本 3600/500ms：一連對觸發燈階/開匣/成就等多個事件時，佇列要 6–8 秒才清空，
+// 玩家早就翻過 2、3 題（FEEDBACK_DELAY 只有 800ms），舊訊息還在飄。縮短兩者讓佇列跟得上答題節奏。
+const TOAST_MS = 2400;
+const TOAST_GAP = 220;
 let toastQueue = [];
 let toastPumping = false;
 
@@ -293,7 +310,7 @@ export function renderEvents(events) {
         floatText(`＋${p.amount} 珠`, 'pearl');
         if (p.capped) toast('今日字珠已滿 120，明日再煉');
         break;
-      case 'levelUp':       toast(`開悟！晉升「${p.name}」——${p.blessing}`, 'levelup'); break;
+      case 'levelUp':       toast(`開悟！晉升「${p.name}」——${p.blessing}`, 'levelup'); playLevelUp(); break;
       case 'purified':      break; // 靜默：進度已入帳，避免每題洗版
       case 'worldLetter':   toast(`墨界回信・${p.title}｜${p.text}`, 'letter'); break;
       case 'pearlForged':   toast(`煉成${p.gradeName}！`, 'forge'); break;
@@ -324,7 +341,10 @@ export function renderEvents(events) {
       case 'reflect':          toast(`${p.gear}反彈 ${p.dmg} 傷`, 'battle'); break;
       case 'bondLine':         showMolingLine(p.line); break;
       case 'bondStageUp':      toast(`羈絆升階——「${p.stageName}」`, 'bond'); break;
-      case 'gift':             toast(`墨靈贈禮：${p.desc}`, 'bond'); break;
+      case 'gift':
+        if (p.type === 'story') { toast('墨靈贈禮：墨靈的身世小故事', 'bond'); showStoryOverlay(); }
+        else toast(`墨靈贈禮：${p.desc}`, 'bond');
+        break;
       case 'artUnlocked':      toast(`新訣解鎖「${p.name}」：${p.desc}`, 'levelup'); break;
       case 'petUnlocked':      toast(`山海神獸「${p.name}」現身入閣！去寵物閣選牠出戰`, 'pet'); break;
       default: break;

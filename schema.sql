@@ -9,3 +9,13 @@ CREATE TABLE IF NOT EXISTS report_rl (
   window_start INTEGER NOT NULL,
   count INTEGER NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS leaderboard (
+  board TEXT NOT NULL,
+  name TEXT NOT NULL,
+  score INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  PRIMARY KEY (board, name)
+);
+
+CREATE INDEX IF NOT EXISTS idx_leaderboard_board_score ON leaderboard(board, score DESC);

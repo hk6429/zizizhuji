@@ -872,6 +872,19 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 }
 #options button.reveal::before { background: var(--teal-deep); }
 
+/* 答題解析卡：答完題後顯示，兼作螢幕報讀機的 aria-live 播報內容 */
+.answer-feedback {
+  margin-top: 10px;
+  padding: 10px 12px;
+  font-family: var(--kai);
+  font-size: .88rem;
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--paper-dim);
+  border: 1px solid rgba(43,58,74,.22);
+  border-radius: 10px;
+}
+
 /* 對戰結束的徽章 */
 .result-emblem {
   display: block;
@@ -1239,7 +1252,7 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
   color: var(--rouge-deep);
   letter-spacing: .3em;
 }
-#oath-story p {
+#oath-story p, #story-story p {
   margin: 0 0 8px;
   font-size: .85rem;
   line-height: 1.7;
@@ -1403,6 +1416,8 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 /* ---- overlay 卡 ---- */
 .pet-card { max-width: 560px; width: 92vw; max-height: 88vh; display: flex; flex-direction: column; }
 .pet-hint { margin: 2px 0 12px; font-size: .82rem; color: var(--ink-soft); line-height: 1.5; }
+.pet-progress { margin: 0 0 10px; font-size: .85rem; color: var(--ink); }
+.pet-progress b { color: var(--teal-deep); font-size: 1rem; }
 
 .pet-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
 .pet-tab {
@@ -1659,6 +1674,7 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
   background: var(--paper-hi); border: 1px solid rgba(46,143,138,.5); font-family: var(--serif);
 }
 .sg-opt:active { background: var(--paper-dim); }
+.sg-opt .opt-num { font-weight: 700; color: var(--teal-deep); margin-right: 2px; }
 .sg-opt.is-correct { background: linear-gradient(180deg, #d8efe0, #bfe6cf); border-color: var(--teal); color: var(--teal-deep); font-weight: 700; }
 .sg-opt.is-wrong { background: #f2dcd6; border-color: var(--rouge); color: var(--rouge-deep); }
 

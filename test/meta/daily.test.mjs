@@ -136,8 +136,8 @@ test('week rollover clears weekOpenDays', () => {
   assert.equal(getBoxState(meta, '2026-07-20').weekOpenDays.length, 0); // next ISO week
 });
 
-test('lantern tiers ladder is 油燈→銅燈(7)→琉璃燈(21)→七寶燈(49)', () => {
-  assert.deepEqual(LANTERN_TIERS.map(t => t.minStreak), [0, 7, 21, 49]);
+test('lantern tiers ladder is 油燈→銅燈(7)→琉璃燈(21)→七寶燈(49)→不滅聖燈(100)', () => {
+  assert.deepEqual(LANTERN_TIERS.map(t => t.minStreak), [0, 7, 21, 49, 100]);
 });
 
 test('getOmen is deterministic for the same date and covers 7 omens', () => {

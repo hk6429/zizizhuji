@@ -9,6 +9,8 @@ export const RANKS = [
   { name: '舉人', threshold: 3000, blessing: '文氣沖霄，墨界震動。' },
   { name: '貢士', threshold: 5500, blessing: '殿前對答，字字珠璣。' },
   { name: '翰林', threshold: 9000, blessing: '執掌文脈，護典有你。' },
+  { name: '大學士', threshold: 15000, blessing: '學貫古今，眾人景仰。' },
+  { name: '文曲星', threshold: 24000, blessing: '星輝墨海，文脈由你傳承萬世。' },
 ];
 
 function rankOf(xpValue) {
