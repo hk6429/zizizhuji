@@ -20,6 +20,25 @@ const CLASS_RE = /^[\w一-鿿]{1,20}$/;
 const NICK_MAX = 12;
 let metaRef = null; // 開站後由 ensureCtx 灌入，供班級設定讀寫
 
+// 排行榜隱藏／自己比模式：裝置層級設定，怕排名造成後段孩子壓力的家長可開啟
+const HIDE_RANKING_KEY = 'zizhu:hideRanking';
+function hideRankingOn() {
+  try { return localStorage.getItem(HIDE_RANKING_KEY) === '1'; } catch { return false; }
+}
+function setHideRanking(v) {
+  try { localStorage.setItem(HIDE_RANKING_KEY, v ? '1' : '0'); } catch { /* 隱私模式下僅本次生效 */ }
+}
+function selfScoreKey(board) { return `zizhu:selfBestScore:${board}`; }
+function getSelfPrevScore(board) {
+  try {
+    const n = Number(localStorage.getItem(selfScoreKey(board)));
+    return Number.isFinite(n) && n > 0 ? n : null;
+  } catch { return null; }
+}
+function recordSelfScore(board, score) {
+  try { localStorage.setItem(selfScoreKey(board), String(score)); } catch {}
+}
+
 const $ = (id) => document.getElementById(id);
 function el(tag, cls, txt) {
   const n = document.createElement(tag);
@@ -201,6 +220,17 @@ function classInfo() {
   return { code: (ss && ss.classCode) || '', nick: (ss && ss.nick) || '' };
 }
 
+function appendHideRankingToggle(bar) {
+  const wrap = el('label', 'sg-classbar__hide');
+  const cb = document.createElement('input');
+  cb.type = 'checkbox';
+  cb.checked = hideRankingOn();
+  cb.addEventListener('change', () => setHideRanking(cb.checked));
+  wrap.appendChild(cb);
+  wrap.appendChild(document.createTextNode('只看自己進步（隱藏排名）'));
+  bar.appendChild(wrap);
+}
+
 function renderClassbar() {
   const bar = $('sg-classbar');
   bar.innerHTML = '';
@@ -218,6 +248,7 @@ function renderClassbar() {
     set.addEventListener('click', renderClassForm);
     bar.appendChild(set);
   }
+  appendHideRankingToggle(bar);
 }
 
 function renderClassForm() {
@@ -253,8 +284,25 @@ async function showLeaderboard(code) {
   renderAllBoards(lb, code, { rScore, rProgress, rStreak }, () => { lb.hidden = true; $('sg-menu').hidden = false; });
 }
 
-function renderLeaderboard(host, title, r) {
+function renderLeaderboard(host, title, r, opts = {}) {
   host.appendChild(el('div', 'sg-lb__title', title));
+  if (hideRankingOn()) {
+    const { board, myScore } = opts;
+    const prev = getSelfPrevScore(board);
+    const best = Math.max(prev || 0, myScore || 0);
+    let deltaTxt = '';
+    if (prev != null && myScore != null) {
+      const delta = myScore - prev;
+      deltaTxt = delta > 0 ? `（本次 ${myScore} 分，較上次 +${delta}）`
+        : delta < 0 ? `（本次 ${myScore} 分，較上次 ${delta}）`
+        : `（本次 ${myScore} 分，跟上次一樣）`;
+    } else if (myScore != null) {
+      deltaTxt = `（本次 ${myScore} 分）`;
+    }
+    host.appendChild(el('p', 'sg-lb__self', best > 0 ? `你的最佳：${best} 分${deltaTxt}` : '還沒有紀錄，練習看看吧！'));
+    if (myScore != null) recordSelfScore(board, myScore);
+    return;
+  }
   if (!r.ok) {
     host.appendChild(el('p', 'sg-lb__load', '排行榜暫時無法連線，稍後再試。'));
   } else if (!r.top.length) {
@@ -280,11 +328,11 @@ function renderLeaderboard(host, title, r) {
   }
 }
 
-function renderAllBoards(host, code, { rScore, rProgress, rStreak }, onClose) {
+function renderAllBoards(host, code, { rScore, rProgress, rStreak }, onClose, myScores = {}) {
   host.innerHTML = '';
-  renderLeaderboard(host, `分數榜・${code}`, rScore);
-  renderLeaderboard(host, `進步量榜・${code}（單場進步最多）`, rProgress);
-  renderLeaderboard(host, `連續守燈榜・${code}（連續天數）`, rStreak);
+  renderLeaderboard(host, `分數榜・${code}`, rScore, { board: code, myScore: myScores.score });
+  renderLeaderboard(host, `進步量榜・${code}（單場進步最多）`, rProgress, { board: boardKey(code, 'progress'), myScore: myScores.progress });
+  renderLeaderboard(host, `連續守燈榜・${code}（連續天數）`, rStreak, { board: boardKey(code, 'streak'), myScore: myScores.streak });
   if (onClose) {
     const back = el('button', 'ss-again', '關閉班級榜'); back.type = 'button';
     back.addEventListener('click', onClose);
@@ -459,7 +507,11 @@ async function results(early) {
       fetchTop(boardKey(code, 'progress')),
       fetchTop(boardKey(code, 'streak')),
     ]);
-    renderAllBoards(lbBox, code, { rScore, rProgress, rStreak }, null);
+    renderAllBoards(lbBox, code, { rScore, rProgress, rStreak }, null, {
+      score: human.score.score,
+      progress: progress > 0 ? progress : undefined,
+      streak: streak > 0 ? streak : undefined,
+    });
     if (uploadFailed) {
       lbBox.appendChild(el('p', 'sg-lb__load', '本場分數目前僅記錄本機，班級榜暫時連不上，下次連線後再上傳。'));
     }

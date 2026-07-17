@@ -14,6 +14,7 @@ import * as bond from './bond.js';
 import * as arena from './arena.js';
 import * as ach from './achievements.js';
 import * as pet from './pet.js';
+import * as weakness from './weakness.js';
 import * as summaryMod from './summary.js';
 import * as adapter from './battle-adapter.js';
 import { recordAnswer } from '../leitner.js';
@@ -56,6 +57,9 @@ export function initSession(today, banks = null, opts = {}) {
 
   const zoneOfId = new Map();
   const typeOfId = new Map();
+  // 弱點分類專用：保留 entry.type 原始值（成語庫細分 意義/近似成語/錯別字），
+  // 跟 typeOfId 分開是因為 typeOfId 把成語庫全併成'成語'給對戰法寶加傷用，語意不同不能共用。
+  const weakTypeOfId = new Map();
   const totals = { yin: 0, xing: 0, chengyu: 0 };
   let allIds = [];
   if (banks) {
@@ -64,6 +68,7 @@ export function initSession(today, banks = null, opts = {}) {
       const zone = world.zoneOf(entry);
       zoneOfId.set(entry.id, zone);
       typeOfId.set(entry.id, zone === 'chengyu' ? '成語' : entry.type);
+      weakTypeOfId.set(entry.id, entry.type);
       totals[zone] += 1;
     }
     allIds = entries.map(e => e.id);
@@ -80,6 +85,7 @@ export function initSession(today, banks = null, opts = {}) {
     totals,
     zoneOfId,
     typeOfId,
+    weakTypeOfId,
     omen,
     rng: opts.rng ?? Math.random,
     leitner: banks ? collection.loadLeitnerState(meta, allIds) : null,
@@ -209,7 +215,13 @@ function processAnswer(ctx, id, correct, mode) {
   // 累計統計 ＋ 每日三事
   ach.recordStats(meta, { totalAnswered: 1, totalCorrect: correct ? 1 : 0, bestCombo: s.combo });
   const dr = daily.recordDailyCorrect(meta, correct ? 1 : 0, today);
+  daily.recordDailyAnswered(meta, today);
   events.push(...dr.events);
+
+  // 弱點分類（家長儀表板用）
+  if (id && ctx.weakTypeOfId && ctx.weakTypeOfId.has(id)) {
+    weakness.recordWeakness(meta, ctx.weakTypeOfId.get(id), correct);
+  }
 
   // 成就（連對/累計題數/守燈類會在答題中途成立）
   pushAchievements(ctx, events);

@@ -3,6 +3,7 @@
 
 import { generateCode, pushSave, pullSave } from './save-sync.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
+import { getDailyLimit, setDailyLimit } from './daily-limit.js';
 
 const $ = (id) => document.getElementById(id);
 const CODE_KEY = 'zizhu:saveCode';
@@ -23,14 +24,23 @@ function myCode() {
   return code;
 }
 
+function lastSyncedTs() {
+  try { return Number(localStorage.getItem(SYNCED_KEY)) || null; } catch { return null; }
+}
+
 function lastSyncedText() {
-  let ts = null;
-  try { ts = Number(localStorage.getItem(SYNCED_KEY)); } catch {}
+  const ts = lastSyncedTs();
   if (!ts) return '尚未同步過';
   const mins = Math.max(0, Math.round((Date.now() - ts) / 60000));
   if (mins < 1) return '上次同步：剛剛';
   if (mins < 60) return `上次同步：${mins} 分鐘前`;
   return `上次同步：${Math.round(mins / 60)} 小時前`;
+}
+
+function daysSinceSync() {
+  const ts = lastSyncedTs();
+  if (!ts) return Infinity;
+  return (Date.now() - ts) / 86400000;
 }
 
 export function initSaveSyncUI(opts) {
@@ -44,6 +54,8 @@ export function initSaveSyncUI(opts) {
   $('savesync-pull-cancel').addEventListener('click', resetPullConfirm);
   $('savesync-regen').addEventListener('click', handleRegen);
   $('savesync-regen-cancel').addEventListener('click', resetRegenConfirm);
+  $('savesync-copy').addEventListener('click', handleCopy);
+  $('savesync-daily-limit-save').addEventListener('click', handleDailyLimitSave);
 }
 
 function open() {
@@ -56,9 +68,42 @@ function close() { closeOverlay($('savesync-overlay')); }
 
 function render() {
   $('savesync-code').textContent = myCode();
-  $('savesync-status').textContent = lastSyncedText();
+  applyBackupStatus();
+  const limit = getDailyLimit();
+  $('savesync-daily-limit').value = limit > 0 ? String(limit) : '';
   resetPullConfirm();
   resetRegenConfirm();
+}
+
+// 有實質進度且超過 7 天沒同步（或從未同步）時，把狀態文字改成警示提醒（非強制彈窗）
+function applyBackupStatus() {
+  const statusEl = $('savesync-status');
+  const meta = getMeta();
+  const totalAnswered = meta?.xp?.totalAnswered || 0;
+  const needsBackup = totalAnswered > 0 && daysSinceSync() >= 7;
+  statusEl.classList.toggle('savesync-status--warn', needsBackup);
+  statusEl.textContent = needsBackup
+    ? `${lastSyncedText()}——好一段時間沒備份了，記得複製代碼存起來`
+    : lastSyncedText();
+}
+
+async function handleCopy() {
+  const btn = $('savesync-copy');
+  try {
+    await navigator.clipboard.writeText(myCode());
+    btn.textContent = '已複製！';
+  } catch {
+    btn.textContent = '複製失敗，手動抄下代碼';
+  }
+  setTimeout(() => { btn.textContent = '複製代碼'; }, 1500);
+}
+
+function handleDailyLimitSave() {
+  const raw = $('savesync-daily-limit').value.trim();
+  setDailyLimit(raw ? parseInt(raw, 10) : 0);
+  const btn = $('savesync-daily-limit-save');
+  btn.textContent = '已儲存';
+  setTimeout(() => { btn.textContent = '儲存'; }, 1200);
 }
 
 async function handlePush() {

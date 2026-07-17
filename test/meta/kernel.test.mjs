@@ -73,6 +73,25 @@ test('wrong answer still gives consolation xp, no pearls, no purify', () => {
   assert.ok(!types.includes('purified'));
 });
 
+test('practice answers update meta.weak keyed by entry.type', () => {
+  const { ctx } = initSession(D, BANKS, { rng: NO_ENCOUNTER });
+  onPracticeAnswer(ctx, 'zy-1', true); // 字音
+  onPracticeAnswer(ctx, 'zy-3', false); // 字形
+  onPracticeAnswer(ctx, 'cy-1', true); // 意義（chengyu 細分，非合併的 typeOfId）
+  const saved = loadMeta();
+  assert.deepEqual(saved.weak['字音'], { correct: 1, wrong: 0 });
+  assert.deepEqual(saved.weak['字形'], { correct: 0, wrong: 1 });
+  assert.deepEqual(saved.weak['意義'], { correct: 1, wrong: 0 });
+  assert.equal(saved.weak['成語'], undefined); // 弱點分類保留細分，不走 typeOfId 的合併桶
+});
+
+test('practice answers also accumulate meta.daily.todayAnswered regardless of correctness', () => {
+  const { ctx } = initSession(D, BANKS, { rng: NO_ENCOUNTER });
+  onPracticeAnswer(ctx, 'zy-1', true);
+  onPracticeAnswer(ctx, 'zy-2', false);
+  assert.equal(loadMeta().daily.todayAnswered, 2);
+});
+
 test('4 straight corrects forge a gold pearl (+3 pearls) through the kernel', () => {
   const { ctx } = initSession(D, BANKS, { rng: NO_ENCOUNTER });
   let events;
@@ -175,6 +194,14 @@ test('opponent (side B) answers do not feed player pearls/xp', () => {
   assert.equal(r.state.hpA, 90);
   assert.ok(!r.events.some(e => e.type === 'pearlEarned'));
   assert.equal(loadMeta().xp.value, 0);
+});
+
+test('battle answers (side A) also update meta.weak', () => {
+  const { ctx } = initSession(D, BANKS, { rng: NO_ENCOUNTER });
+  let state = createBattleStateEx({ mods: { maxHp: 100 } });
+  onBattleAnswer(ctx, state, 'A', true, 'zy-1');
+  const saved = loadMeta();
+  assert.deepEqual(saved.weak['字音'], { correct: 1, wrong: 0 });
 });
 
 test('practice end returns a practice summary card and resets the session', () => {

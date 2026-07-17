@@ -89,6 +89,13 @@ export function rolloverDaily(meta, today) {
   const events = [];
   if (d.date === today) return events;
 
+  // 家長儀表板用的每日快照：把即將被重置的前一天答題量存進 trend（上限 30 筆）
+  if (d.date) {
+    if (!Array.isArray(meta.trend)) meta.trend = [];
+    meta.trend.push({ date: d.date, answered: d.todayAnswered || 0, correct: d.todayCorrect || 0 });
+    if (meta.trend.length > 30) meta.trend.shift();
+  }
+
   // 斷守判定：上次點燈到今天之間有沒有漏掉的整天
   if (d.lastLit && d.lastLit !== today) {
     const missed = dayDiff(d.lastLit, today) - 1;
@@ -129,6 +136,7 @@ export function rolloverDaily(meta, today) {
 
   d.date = today;
   d.todayCorrect = 0;
+  d.todayAnswered = 0;
   d.boxOpened = false;
   return events;
 }
@@ -180,6 +188,12 @@ export function recordDailyCorrect(meta, n, today) {
     }
   }
   return { meta, events };
+}
+
+// 每答一題（不論對錯）呼叫一次，供家長「每日練習題數上限」與趨勢圖使用（todayCorrect 只計答對）。
+export function recordDailyAnswered(meta, today) {
+  rolloverDaily(meta, today);
+  meta.daily.todayAnswered += 1;
 }
 
 // ---- getter ----

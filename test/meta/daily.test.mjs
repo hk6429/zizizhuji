@@ -4,7 +4,7 @@ import { defaultMeta } from '../../js/meta/store.js';
 import {
   DAILY_GOAL, LANTERN_TIERS, OMENS,
   dayDiff, isoWeekKey, isSunday,
-  recordDailyCorrect, getLanternState, getBoxState, openBox, getOmen,
+  recordDailyCorrect, recordDailyAnswered, getLanternState, getBoxState, openBox, getOmen,
 } from '../../js/meta/daily.js';
 
 function lightDay(meta, day) {
@@ -150,4 +150,36 @@ test('getOmen is deterministic for the same date and covers 7 omens', () => {
   const seen = new Set();
   for (let i = 1; i <= 30; i++) seen.add(getOmen(`2026-06-${String(i).padStart(2, '0')}`).omenId);
   assert.ok(seen.size > 1);
+});
+
+test('recordDailyAnswered accumulates regardless of correctness', () => {
+  const meta = defaultMeta();
+  recordDailyAnswered(meta, '2026-07-14');
+  recordDailyAnswered(meta, '2026-07-14');
+  recordDailyAnswered(meta, '2026-07-14');
+  assert.equal(meta.daily.todayAnswered, 3);
+  assert.equal(meta.daily.todayCorrect, 0); // 沒呼叫 recordDailyCorrect 不會動到
+});
+
+test('rolloverDaily pushes previous day snapshot into trend and resets todayAnswered', () => {
+  const meta = defaultMeta();
+  recordDailyAnswered(meta, '2026-07-14');
+  recordDailyAnswered(meta, '2026-07-14');
+  recordDailyCorrect(meta, 1, '2026-07-14');
+  // 跨日：任何 rolloverDaily 觸發點都可以（這裡用 recordDailyAnswered 觸發）
+  recordDailyAnswered(meta, '2026-07-15');
+  assert.equal(meta.trend.length, 1);
+  assert.deepEqual(meta.trend[0], { date: '2026-07-14', answered: 2, correct: 1 });
+  assert.equal(meta.daily.todayAnswered, 1); // 跨日重置後這次呼叫算 1
+});
+
+test('trend array caps at 30 entries, shifting out the oldest', () => {
+  const meta = defaultMeta();
+  for (let i = 1; i <= 32; i++) {
+    const day = `2026-07-${String(i).padStart(2, '0')}`;
+    recordDailyAnswered(meta, day);
+  }
+  assert.equal(meta.trend.length, 30);
+  assert.equal(meta.trend[0].date, '2026-07-02'); // 前兩天被 shift 掉
+  assert.equal(meta.trend[meta.trend.length - 1].date, '2026-07-31');
 });

@@ -50,10 +50,14 @@ export function defaultMeta() {
     gear: { owned: [], loadout: [] },
     arts: { unlocked: [], equipped: null, battlesWon: 0 },
     daily: {
-      date: '', todayCorrect: 0, streak: 0, best: 0, tier: 0, boxOpened: false,
+      date: '', todayCorrect: 0, todayAnswered: 0, streak: 0, best: 0, tier: 0, boxOpened: false,
       lastLit: '', weekKey: '', weekOpenDays: [], liuliOpened: false, liuliHalfOpened: false,
       charms: 0, milestonesClaimed: [],
     },
+    // 近 30 天答題快照（家長儀表板的趨勢圖用），每次跨日 rollover 時 push 前一天
+    trend: [],
+    // 弱點分類統計：{ [entry.type，如 字音/字形/意義/近似成語/錯別字]: { correct, wrong } }
+    weak: {},
     bond: { value: 0, lastDailyBonus: '', giftsClaimed: [] },
     encounter: { sinceLast: 0, lastEventId: null, totalCount: 0 },
     arena: { week: '', entries: [], history: [] },

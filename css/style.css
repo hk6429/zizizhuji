@@ -1293,12 +1293,13 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 
 /* ---------- 雲端存檔 ---------- */
 .savesync-hint { margin: 0 0 10px; font-size: .8rem; line-height: 1.6; color: var(--ink-soft); }
-.savesync-code-block { display: flex; justify-content: center; margin-bottom: 10px; }
+.savesync-code-block { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
 .savesync-code {
   font-family: monospace; font-size: 1.6rem; font-weight: 700; letter-spacing: .2em;
   padding: 8px 16px; border-radius: 10px; color: var(--rouge-deep);
   background: var(--paper-hi); border: 1px dashed rgba(201,162,39,.6);
 }
+.savesync-copy-btn { width: auto; padding: 6px 12px; font-size: .8rem; }
 .savesync-btn {
   display: block; width: 100%; margin-bottom: 6px; padding: 9px 12px;
   font-family: var(--kai); font-size: .88rem; color: var(--paper-hi);
@@ -1306,6 +1307,7 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 }
 .savesync-btn:disabled { background: var(--paper-dim); color: var(--ink-soft); cursor: default; }
 .savesync-status { margin: 0 0 6px; font-size: .76rem; text-align: center; color: var(--ink-soft); }
+.savesync-status--warn { color: var(--rouge-deep); font-weight: 600; }
 .savesync-divider { border: none; border-top: 1px dashed rgba(85,99,111,.3); margin: 12px 0; }
 .savesync-pull-row { display: flex; gap: 6px; }
 .savesync-input {
@@ -1512,7 +1514,7 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 .extra-entry {
   display: flex; align-items: center; gap: 8px; text-align: left;
   padding: 10px 10px; border-radius: 14px; cursor: pointer;
-  font-family: var(--sans); color: var(--ink);
+  font-family: var(--sans); color: var(--ink); text-decoration: none;
   border: 1px solid rgba(201,162,39,.5);
 }
 .extra-entry:active { transform: scale(.98); }
@@ -1732,6 +1734,15 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
   color: var(--ink); min-width: 0; flex: 1 1 96px;
 }
 .sg-classbar__err { flex-basis: 100%; font-size: .8rem; color: var(--rouge-deep); }
+.sg-classbar__hide {
+  display: flex; align-items: center; gap: 6px; font-size: .8rem; color: var(--ink-soft);
+  flex-basis: 100%; cursor: pointer;
+}
+
+.sg-lb__self {
+  text-align: center; font-family: var(--kai); font-weight: 700; font-size: 1rem;
+  color: var(--teal-deep); padding: 14px 0;
+}
 
 .sg-lb {
   padding: 12px; border-radius: 12px; background: var(--paper-hi);

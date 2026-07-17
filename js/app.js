@@ -21,6 +21,7 @@ import { openOverlay, closeOverlay } from './overlay-a11y.js';
 import { initNoDamagePrompt, maybeOfferNoDamage } from './nodamage-prompt.js';
 import { initTermsHelp, maybeShowTermsIntro } from './terms-intro.js';
 import { playCorrect, playWrong, playCombo, isSoundOn, setSoundOn } from './sound.js';
+import { isDailyLimitReached, bypassLimitOnce } from './daily-limit.js';
 
 // 每連對 3 題加碼一次連擊音效（呼應連對獎勵遞增，見 js/meta/kernel.js 的 XP_COMBO_BONUS）
 function maybePlayCombo(ctx) {
@@ -205,6 +206,25 @@ function backHome() {
 }
 $('btn-back').addEventListener('click', backHome);
 
+// 家長每日練習題數上限：達標時攔下一題，改顯示提示卡（軟性提醒，可「再練一下下」解除當次）
+let dailyLimitContinueCb = null;
+function showDailyLimitOverlay(onContinue) {
+  dailyLimitContinueCb = onContinue;
+  openOverlay($('daily-limit-overlay'), () => closeOverlay($('daily-limit-overlay')));
+}
+$('daily-limit-continue').addEventListener('click', () => {
+  bypassLimitOnce();
+  closeOverlay($('daily-limit-overlay'));
+  const cb = dailyLimitContinueCb;
+  dailyLimitContinueCb = null;
+  if (cb) cb();
+});
+$('daily-limit-home').addEventListener('click', () => {
+  closeOverlay($('daily-limit-overlay'));
+  dailyLimitContinueCb = null;
+  backHome();
+});
+
 /* ---------- 出題與回饋 ---------- */
 // 選項本來就用甲乙丙丁編號（css counter(opt, cjk-heavenly-stem)），數字鍵 1-4 快捷鍵要對得上，
 // 靠 aria-label 把「甲」與「快捷鍵 1」講清楚，畫面上不再疊一個衝突的「1.」數字
@@ -328,6 +348,7 @@ async function startPractice() {
   let lastId = null;
 
   function nextRound() {
+    if (isDailyLimitReached(ctx.meta)) { showDailyLimitOverlay(nextRound); return; }
     // 排除剛答過的那題再選，避免它是唯一低盒題時立刻重複
     const pool = ids.length > 1 ? ids.filter((x) => x !== lastId) : ids;
     const id = nextQuestionId(state, pool, byId);
@@ -404,6 +425,7 @@ async function startBattle() {
   }
 
   function nextRound() {
+    if (isDailyLimitReached(ctx.meta)) { showDailyLimitOverlay(nextRound); return; }
     if (battleOver(state) || idx >= queue.length) {
       endBattle();
       return;

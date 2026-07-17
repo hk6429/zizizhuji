@@ -205,6 +205,14 @@
               </span>
               <span class="pet-entry__arrow" aria-hidden="true">›</span>
             </button>
+            <a id="btn-parent-dashboard" class="extra-entry extra-entry--sync" href="parent.html" target="_blank" rel="noopener">
+              <span class="extra-entry__icon" aria-hidden="true">親</span>
+              <span class="extra-entry__body">
+                <span class="extra-entry__title">家長儀表板</span>
+                <span class="extra-entry__sub">開新分頁查練習量／弱點，不影響目前進度</span>
+              </span>
+              <span class="pet-entry__arrow" aria-hidden="true">›</span>
+            </a>
           </div>
         </details>
       </section>
@@ -364,6 +372,18 @@
     </div>
   </div>
 
+  <!-- 家長設定的每日練習上限：達標時攔下一題，改顯示這張卡（軟性提醒，非強制鎖） -->
+  <div id="daily-limit-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="daily-limit-title">
+    <div class="meta-overlay__card">
+      <h2 id="daily-limit-title" class="overlay-title">今天練習夠多囉！</h2>
+      <p id="daily-limit-msg">今天已經練習不少題目了，明天再來挑戰吧！</p>
+      <div class="summary-actions">
+        <button id="daily-limit-continue" class="overlay-ghost-btn" type="button">再練一下下</button>
+        <button id="daily-limit-home" class="overlay-ghost-btn" type="button">回首頁</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 題目回報：題目有問題（洩題/答案錯/選項怪）時，一鍵送到老師 Telegram -->
   <div id="report-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="report-title">
     <div class="meta-overlay__card">
@@ -406,6 +426,7 @@
         手機時輸入同一組代碼就能接續進度。</p>
       <div class="savesync-code-block">
         <span id="savesync-code" class="savesync-code"></span>
+        <button id="savesync-copy" class="overlay-ghost-btn savesync-copy-btn" type="button">複製代碼</button>
       </div>
       <button id="savesync-regen" class="overlay-ghost-btn" type="button">換一組代碼</button>
       <button id="savesync-regen-cancel" class="overlay-ghost-btn" type="button" hidden>取消</button>
@@ -419,6 +440,13 @@
         <button id="savesync-pull" class="savesync-btn" type="button">載入</button>
       </div>
       <button id="savesync-pull-cancel" class="overlay-ghost-btn" type="button" hidden>取消</button>
+      <hr class="savesync-divider">
+      <p class="savesync-hint">家長設定：每天最多練習幾題？（留空＝不限制）</p>
+      <div class="savesync-pull-row">
+        <input id="savesync-daily-limit" class="savesync-input" type="number" min="1" step="1"
+          placeholder="不限制" aria-label="每日練習題數上限">
+        <button id="savesync-daily-limit-save" class="savesync-btn" type="button">儲存</button>
+      </div>
       <button id="savesync-close" class="overlay-ghost-btn" type="button">收起</button>
     </div>
   </div>
