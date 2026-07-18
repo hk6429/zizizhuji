@@ -244,6 +244,8 @@ function renderQuestion(entry) {
   });
   const feedbackEl = $('answer-feedback');
   if (feedbackEl) { feedbackEl.hidden = true; feedbackEl.textContent = ''; }
+  const nextBtn = $('answer-next-btn');
+  if (nextBtn) { nextBtn.hidden = true; nextBtn.onclick = null; }
   attachReportButton(entry);
 }
 
@@ -267,7 +269,7 @@ document.addEventListener('keydown', (ev) => {
   }
 });
 
-function bindAnswer(entry, mySession, onDone) {
+function bindAnswer(entry, mySession, onDone, opts = {}) {
   const optionsEl = $('options');
   optionsEl.onclick = (ev) => {
     const btn = ev.target.closest('button');
@@ -291,6 +293,22 @@ function bindAnswer(entry, mySession, onDone) {
         ? `答對了！${explainText}`
         : `答錯了，正解是「${entry.answer}」。${explainText}`;
       feedbackEl.hidden = false;
+    }
+    if (opts.manual) {
+      // 練習模式：老師反饋解說一閃即逝來不及看，改手動點「下一題」才前進
+      const nextBtn = $('answer-next-btn');
+      if (nextBtn) {
+        nextBtn.hidden = false;
+        nextBtn.onclick = () => {
+          nextBtn.hidden = true;
+          nextBtn.onclick = null;
+          if (mySession !== session) return; // 已收卷或重新開局
+          onDone(correct);
+        };
+      } else {
+        onDone(correct); // 找不到按鈕的防呆退回自動前進
+      }
+      return;
     }
     setTimeout(() => {
       if (mySession !== session) return; // 已收卷或重新開局
@@ -362,7 +380,7 @@ async function startPractice() {
       syncPets(); // 精通題數可能剛跨過解鎖門檻
       lastId = id;
       nextRound();
-    });
+    }, { manual: true });
   }
   nextRound();
 }

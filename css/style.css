@@ -885,6 +885,21 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
   border-radius: 10px;
 }
 
+/* 練習模式手動前進：讀完解析卡再按，取代原本的自動倒數 */
+.answer-next-btn {
+  display: block;
+  margin: 10px 0 0 auto;
+  padding: 8px 20px;
+  font-family: var(--kai);
+  font-size: .9rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--ink);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
 /* 對戰結束的徽章 */
 .result-emblem {
   display: block;
