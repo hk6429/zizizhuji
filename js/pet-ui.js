@@ -3,11 +3,16 @@
 
 import { saveMeta } from './meta/store.js';
 import {
-  PET_EQUIP, EQUIP_SLOTS,
+  PET_EQUIP, EQUIP_SLOTS, EQUIP_MAX_LEVEL,
   listPets, setActivePet, buyEquip, installEquip, uninstallEquip, setPetNickname,
+  setSubPet, clearSubPet, upgradeEquip, getEquipLevel,
 } from './meta/pet.js';
 import { getBalance } from './meta/economy.js';
+import { getWeaknessSummary } from './meta/weakness.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
+
+const BOND_EMOJI = ['😐', '🙂', '😄'];
+let expandedBioId = null;
 
 const $ = (id) => document.getElementById(id);
 const EQUIP_BY_ID = new Map(PET_EQUIP.map((e) => [e.id, e]));
@@ -87,10 +92,13 @@ function renderPets() {
   const grid = $('pet-grid');
   grid.innerHTML = '';
   for (const p of pets) {
-    const card = document.createElement('button');
-    card.type = 'button';
+    const card = document.createElement('div');
     card.className = `pet-card-item${p.unlocked ? '' : ' is-locked'}${p.active ? ' is-active' : ''}`;
-    card.disabled = !p.unlocked;
+
+    const main = document.createElement('button');
+    main.type = 'button';
+    main.className = 'pet-card-item__main';
+    main.disabled = !p.unlocked;
 
     const img = document.createElement('img');
     img.className = 'pet-card-item__img';
@@ -103,25 +111,83 @@ function renderPets() {
     const status = p.unlocked
       ? `${p.level} 級｜精通 ${p.mastery}${p.nextAt === null ? '（已滿級）' : ` / ${p.nextAt}`}`
       : `精通 ${p.category} ${p.unlockAt} 題解鎖`;
+    const bondEmoji = p.unlocked ? BOND_EMOJI[p.bondStage] : '';
+    const badgeCount = p.badges.length;
     body.innerHTML =
-      `<span class="pet-card-item__name">${p.nickname ? `${esc(p.nickname)}・${p.name}` : p.name}` +
+      `<span class="pet-card-item__name">${p.nickname ? `${esc(p.nickname)}・${p.name}` : p.name} ${bondEmoji}` +
       `<span class="pet-card-item__cat">${p.category}</span></span>` +
       `<span class="pet-card-item__status">${p.unlocked ? '' : '🔒 '}${status}</span>` +
       `<span class="pet-track"><span class="pet-track__fill" style="width:${p.unlocked ? pctToNext(p) : 0}%"></span></span>` +
+      (p.unlocked ? `<span class="pet-card-item__bond">${p.bondStageName}${badgeCount ? `｜🏅×${badgeCount}` : ''}</span>` : '') +
       (p.active ? '<span class="pet-card-item__badge">出戰中</span>'
-                : (p.unlocked ? '<span class="pet-card-item__hint">點我出戰</span>' : ''));
+                : (p.isSub ? '<span class="pet-card-item__badge pet-card-item__badge--sub">副寵</span>'
+                : (p.unlocked ? '<span class="pet-card-item__hint">點我出戰</span>' : '')));
 
-    card.append(img, body);
+    main.append(img, body);
     if (p.unlocked && !p.active) {
-      card.addEventListener('click', () => {
+      main.addEventListener('click', () => {
         setActivePet(meta, p.id);
         saveMeta(meta);
         onChange();
         render();
       });
     }
+    card.appendChild(main);
+
+    if (p.unlocked) {
+      const actions = document.createElement('div');
+      actions.className = 'pet-card-item__actions';
+
+      const subBtn = document.createElement('button');
+      subBtn.type = 'button';
+      subBtn.className = 'pet-card-item__sub-btn';
+      subBtn.disabled = p.active;
+      subBtn.textContent = p.isSub ? '取消副寵' : '設副寵';
+      subBtn.addEventListener('click', () => {
+        if (p.isSub) clearSubPet(meta); else setSubPet(meta, p.id);
+        saveMeta(meta);
+        onChange();
+        render();
+      });
+
+      const bioBtn = document.createElement('button');
+      bioBtn.type = 'button';
+      bioBtn.className = 'pet-card-item__bio-btn';
+      bioBtn.textContent = expandedBioId === p.id ? '收合小傳' : '查看小傳';
+      bioBtn.addEventListener('click', () => {
+        expandedBioId = expandedBioId === p.id ? null : p.id;
+        renderPets();
+      });
+
+      actions.append(subBtn, bioBtn);
+      card.appendChild(actions);
+
+      if (expandedBioId === p.id) card.appendChild(renderBio(meta, p));
+    }
+
     grid.appendChild(card);
   }
+}
+
+function renderBio(meta, p) {
+  const box = document.createElement('div');
+  box.className = 'pet-card-item__bio';
+  const unlockedDate = p.unlockedAt ? new Date(p.unlockedAt).toLocaleDateString('zh-TW') : '未知';
+  const weakSummary = getWeaknessSummary(meta).filter((w) => petCategoryTypes(p.category).includes(w.type));
+  const weakLine = weakSummary.length
+    ? `本週正確率最低：${weakSummary[0].type}（${Math.round(weakSummary[0].accuracy * 100)}%）`
+    : '本週尚無弱點紀錄';
+  box.innerHTML =
+    `<p>「${esc(p.line)}」</p>` +
+    `<p>解鎖於 ${unlockedDate}｜羈絆階段：${p.bondStageName}｜徽章 ${p.badges.length} 枚</p>` +
+    `<p>${weakLine}</p>`;
+  return box;
+}
+
+function petCategoryTypes(category) {
+  if (category === '字音') return ['字音', '字形'];
+  if (category === '成語') return ['意義', '近似成語', '錯別字'];
+  return ['字音', '字形', '意義', '近似成語', '錯別字'];
 }
 
 function renderEquip() {
@@ -147,9 +213,12 @@ function renderEquip() {
     icon.src = `assets/web/pet-equip-${e.id}.jpg`;
     icon.alt = '';
     icon.loading = 'lazy';
+    const level = getEquipLevel(meta, e.id);
     const info = document.createElement('div');
     info.className = 'pet-equip-item__info';
-    info.innerHTML = `<b>${e.name} <span class="pet-equip-item__tier">${e.tier}</span></b><span>${e.desc}</span>`;
+    info.innerHTML = `<b>${e.name} <span class="pet-equip-item__tier">${e.tier}</span>` +
+      (owned.has(e.id) ? ` <span class="pet-equip-item__lv">Lv.${level}</span>` : '') +
+      `</b><span>${e.desc}</span>`;
 
     const action = document.createElement('div');
     action.className = 'pet-equip-item__action';
@@ -177,6 +246,22 @@ function renderEquip() {
       });
     }
     action.appendChild(btn);
+
+    if (owned.has(e.id) && level < EQUIP_MAX_LEVEL) {
+      const gate = e.upgradeGate[level - 1];
+      const cost = e.upgradeCost[level - 1];
+      const upBtn = document.createElement('button');
+      upBtn.type = 'button';
+      upBtn.className = 'pet-equip-upgrade-btn';
+      const best = Math.max(...listPets(meta).map((p) => p.mastery));
+      upBtn.textContent = `升級 Lv.${level + 1}（${cost} 珠｜精通 ${gate}）`;
+      upBtn.disabled = getBalance(meta) < cost || best < gate;
+      upBtn.addEventListener('click', () => {
+        if (upgradeEquip(meta, e.id).ok) { saveMeta(meta); onChange(); renderEquip(); }
+      });
+      action.appendChild(upBtn);
+    }
+
     row.append(icon, info, action);
     grid.appendChild(row);
   }

@@ -55,10 +55,12 @@ await page.waitForSelector('#level-elem.is-active');
 await page.click('.more-section > summary');
 await page.waitForSelector('#btn-pet', { state: 'visible' });
 
-// 寵物閣：開啟後應渲染 12 隻神獸格
+// 寵物閣：開啟後應渲染 12 隻神獸格；已解鎖的（unlockAt 0）要有羈絆階段文字與小傳按鈕
 await page.click('#btn-pet');
 await page.waitForSelector('#pet-overlay:not([hidden])');
 const petCount = await page.$$eval('#pet-grid .pet-card-item', els => els.length);
+const bondTextShown = await page.$('#pet-grid .pet-card-item__bond') !== null;
+const bioBtnShown = await page.$('#pet-grid .pet-card-item__bio-btn') !== null;
 await page.click('#pet-close');
 
 // 字珠寶殿：開啟後顯示品階統計列（新玩家 0 顆 → 空狀態文案）
@@ -161,6 +163,8 @@ server.close();
 if (!levelDefaultActive) throw new Error('預設應為國小學制（#level-elem.is-active）');
 if (juniorPracticeOptionCount !== 4) throw new Error(`國中練習模式選項數應為4，實際 ${juniorPracticeOptionCount}`);
 if (petCount !== 12) throw new Error(`寵物閣應有 12 隻神獸，實際 ${petCount}`);
+if (!bondTextShown) throw new Error('已解鎖寵物卡片應顯示羈絆階段文字 .pet-card-item__bond');
+if (!bioBtnShown) throw new Error('已解鎖寵物卡片應有「查看小傳」按鈕 .pet-card-item__bio-btn');
 if (achCount !== 18) throw new Error(`成就總覽應有 18 個成就，實際 ${achCount}`);
 if (pearlsCountChips !== 4) throw new Error(`字珠寶殿應有 4 個品階統計，實際 ${pearlsCountChips}`);
 if (!pearlsEmptyShown) throw new Error('新玩家的字珠寶殿應顯示空狀態文案');

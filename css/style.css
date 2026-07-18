@@ -1403,6 +1403,11 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
   color: var(--ink);
 }
 .pet-entry:active { transform: scale(.99); }
+.pet-entry--glow { animation: pet-entry-glow 2s ease-in-out infinite; }
+@keyframes pet-entry-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201,162,39,0); }
+  50% { box-shadow: 0 0 14px 2px rgba(201,162,39,.55); }
+}
 .pet-entry__img {
   width: 52px; height: 52px; flex: none;
   object-fit: cover; border-radius: 50%;
@@ -1434,12 +1439,17 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 /* ---- 神獸格 ---- */
 .pet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .pet-card-item {
-  display: flex; gap: 10px; align-items: center; text-align: left;
+  display: flex; flex-direction: column; gap: 6px; text-align: left;
   padding: 8px; border: 1px solid rgba(201,162,39,.4); border-radius: 12px;
-  background: var(--paper-hi); cursor: pointer; font-family: var(--sans); color: var(--ink);
+  background: var(--paper-hi); font-family: var(--sans); color: var(--ink);
 }
 .pet-card-item.is-active { border-color: var(--rouge); box-shadow: 0 0 0 2px rgba(193,75,75,.35); }
-.pet-card-item.is-locked { opacity: .55; cursor: default; filter: grayscale(.6); }
+.pet-card-item.is-locked { opacity: .55; filter: grayscale(.6); }
+.pet-card-item__main {
+  display: flex; gap: 10px; align-items: center; text-align: left; width: 100%;
+  border: none; background: none; padding: 0; cursor: pointer; font: inherit; color: inherit;
+}
+.pet-card-item.is-locked .pet-card-item__main { cursor: default; }
 .pet-card-item__img {
   width: 56px; height: 56px; flex: none; object-fit: cover; border-radius: 10px;
   background: var(--paper-dim);
@@ -1450,8 +1460,22 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 .pet-card-item__status { font-size: .72rem; color: var(--ink-soft); }
 .pet-track { display: block; height: 5px; border-radius: 3px; background: var(--paper-dim); overflow: hidden; }
 .pet-track__fill { display: block; height: 100%; background: linear-gradient(90deg, var(--teal), var(--gold)); }
+.pet-card-item__bond { font-size: .68rem; color: var(--teal-deep); }
 .pet-card-item__badge { font-size: .7rem; color: var(--rouge-deep); font-weight: 800; }
+.pet-card-item__badge--sub { color: var(--teal-deep); }
 .pet-card-item__hint { font-size: .7rem; color: var(--gold-text); }
+.pet-card-item__actions { display: flex; gap: 6px; }
+.pet-card-item__sub-btn, .pet-card-item__bio-btn {
+  flex: 1; padding: 5px 0; border: 1px solid rgba(43,58,74,.2); border-radius: 8px;
+  background: var(--paper-dim); color: var(--ink); font-size: .7rem; cursor: pointer;
+}
+.pet-card-item__sub-btn:disabled { opacity: .5; cursor: default; }
+.pet-card-item__bio {
+  font-size: .74rem; color: var(--ink-soft); line-height: 1.5;
+  background: var(--paper-dim); border-radius: 8px; padding: 6px 8px;
+}
+.pet-card-item__bio p { margin: 0 0 3px; }
+.pet-card-item__bio p:last-child { margin-bottom: 0; }
 
 /* ---- 寵物設備 ---- */
 .pet-equip-balance { font-size: .84rem; color: var(--ink-soft); margin: 0 0 10px; }
@@ -1474,6 +1498,14 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 }
 .pet-equip-btn:disabled { background: var(--paper-dim); color: var(--ink-soft); cursor: default; }
 .pet-equip-btn.is-installed { background: var(--rouge-deep); }
+.pet-equip-item__lv { font-size: .68rem; font-weight: 700; color: var(--teal-deep); margin-left: 4px; }
+.pet-equip-item__action { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+.pet-equip-upgrade-btn {
+  flex: none; padding: 5px 10px; border: 1px solid rgba(43,58,74,.2); border-radius: 8px;
+  background: var(--paper-dim); color: var(--ink); font-weight: 700; font-size: .7rem; cursor: pointer;
+  white-space: nowrap;
+}
+.pet-equip-upgrade-btn:disabled { opacity: .5; cursor: default; }
 
 @media (max-width: 360px) { .pet-grid { grid-template-columns: 1fr; } }
 

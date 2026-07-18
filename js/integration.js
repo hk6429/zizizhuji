@@ -194,6 +194,8 @@ export function refreshPetEntry() {
     sub.textContent = '選一隻山海神獸出戰';
     if (img) img.src = 'assets/web/pet-baize.jpg';
   }
+  const entry = $('btn-pet');
+  if (entry) entry.classList.toggle('pet-entry--glow', (ctx.meta.daily.todayCorrect || 0) > 0);
 }
 
 // 答題後掃描新解鎖的神獸，發現身 toast 並存檔。
@@ -341,6 +343,7 @@ export function renderEvents(events) {
       case 'reflect':          toast(`${p.gear}反彈 ${p.dmg} 傷`, 'battle'); break;
       case 'bondLine':         showMolingLine(p.line); break;
       case 'bondStageUp':      toast(`羈絆升階——「${p.stageName}」`, 'bond'); break;
+      case 'petBondStageUp':   toast(`與寵物的羈絆升階——「${p.name}」`, 'pet'); break;
       case 'gift':
         if (p.type === 'story') { toast('墨靈贈禮：墨靈的身世小故事', 'bond'); showStoryOverlay(); }
         else toast(`墨靈贈禮：${p.desc}`, 'bond');

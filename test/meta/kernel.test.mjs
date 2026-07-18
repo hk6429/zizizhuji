@@ -5,6 +5,7 @@ import {
   initSession, onPracticeAnswer, onBattleAnswer, onBattleEnd, onPracticeEnd,
 } from '../../js/meta/kernel.js';
 import { createBattleStateEx } from '../../js/meta/battle-adapter.js';
+import { setActivePet } from '../../js/meta/pet.js';
 
 function createMockStorage() {
   const map = new Map();
@@ -223,6 +224,33 @@ test('encounter fires through the kernel with an injected rng', () => {
   const enc = events.find(e => e.type === 'encounter');
   assert.ok(enc);
   assert.equal(enc.payload.id, 'wenqu');
+});
+
+test('correct answers accrue per-pet bond for the active pet, decoupled from meta.bond (moling)', () => {
+  const { ctx } = initSession(D, BANKS, { rng: NO_ENCOUNTER });
+  setActivePet(ctx.meta, 'baize'); // 字音類，unlockAt 0，開局即解鎖
+  onPracticeAnswer(ctx, 'zy-1', true);
+  onPracticeAnswer(ctx, 'zy-2', false); // 答錯不加羈絆
+  const saved = loadMeta();
+  assert.equal(saved.pet.bond.baize, 1);
+  assert.equal(saved.bond.value, 0); // 墨靈羈絆只在對戰結算才動，跟寵物羈絆是兩條資料線
+});
+
+test('lantern tier-up awards a permanent badge to the active pet', () => {
+  const { ctx } = initSession(D, BANKS, { rng: NO_ENCOUNTER });
+  setActivePet(ctx.meta, 'baize');
+  let all = [];
+  // 連續 7 天各答對 10 題 → streak 7 → tier 1（銅燈）
+  for (let day = 0; day < 7; day++) {
+    ctx.today = `2026-07-${String(14 + day).padStart(2, '0')}`;
+    for (let i = 0; i < 10; i++) {
+      const { events } = onPracticeAnswer(ctx, i % 2 ? 'zy-1' : 'cy-1', true);
+      all = all.concat(events);
+    }
+  }
+  assert.ok(all.some(e => e.type === 'lanternTierUp' && e.payload.tier === 1));
+  const saved = loadMeta();
+  assert.deepEqual(saved.pet.badges.baize, [1]);
 });
 
 test('second visit does not show intro again after markIntroSeen was persisted', () => {

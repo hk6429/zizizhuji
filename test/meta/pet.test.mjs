@@ -2,9 +2,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { defaultMeta } from '../../js/meta/store.js';
 import {
-  PETS, PET_EQUIP, LEVEL_STEP, MAX_LEVEL, EQUIP_SLOTS,
+  PETS, PET_EQUIP, LEVEL_STEP, MAX_LEVEL, EQUIP_SLOTS, EQUIP_MAX_LEVEL, PET_BOND_MAX,
   categoryMastery, petLevel, isUnlocked, listPets, syncUnlocks,
   setActivePet, buyEquip, installEquip, uninstallEquip, getPetBattleMods, setPetNickname,
+  addPetBond, getPetBondStage, upgradeEquip, getEquipLevel, setSubPet, clearSubPet, awardPetBadge,
 } from '../../js/meta/pet.js';
 
 // 造一個帶 N 顆已煉成字珠的 meta。prefix 'zy-'＝字音、'cy-'＝成語。
@@ -118,7 +119,98 @@ test('uninstallEquip 卸下後欄位空出', () => {
 });
 
 test('defaultMeta 內含 pet 初始狀態', () => {
-  assert.deepEqual(defaultMeta().pet, { seen: {}, active: null, ownedEquip: [], equipped: {}, nicknames: {} });
+  assert.deepEqual(defaultMeta().pet, {
+    seen: {}, active: null, ownedEquip: [], equipped: {}, nicknames: {},
+    bond: {}, unlockedAt: {}, badges: {}, equipLevel: {}, subActive: null,
+  });
+});
+
+test('弱點加權：曾答錯過（wrong>0）才煉成的題，精通貢獻 1.5 倍', () => {
+  const meta = defaultMeta();
+  for (let i = 0; i < 10; i++) {
+    meta.collection[`zy-clean${i}`] = { grade: 0, wrong: 0, earnedAt: '2026-01-01', dusty: false, polish: 0, streak: 0 };
+  }
+  for (let i = 0; i < 10; i++) {
+    meta.collection[`zy-weak${i}`] = { grade: 0, wrong: 1, earnedAt: '2026-01-01', dusty: false, polish: 0, streak: 0 };
+  }
+  // 10 題乾淨(×1) + 10 題曾答錯(×1.5) = 25
+  assert.equal(categoryMastery(meta, '字音'), 25);
+  const baize = PETS.find((p) => p.id === 'baize');
+  assert.equal(petLevel(meta, baize), 1); // floor(25/20) = 1，比純 20 題（0 級）提早升級
+});
+
+test('addPetBond / getPetBondStage：三階段跨階、封頂 100', () => {
+  const meta = metaWithForged('zy-', 0);
+  assert.equal(getPetBondStage(meta, 'baize').stage, 0);
+  let r = addPetBond(meta, 'baize', 30);
+  assert.equal(r.stageUp, false);
+  assert.equal(getPetBondStage(meta, 'baize').value, 30);
+  r = addPetBond(meta, 'baize', 10); // 30+10=40 ≥ 34，跨到「漸熟」
+  assert.equal(r.stageUp, true);
+  assert.equal(getPetBondStage(meta, 'baize').name, '漸熟');
+  addPetBond(meta, 'baize', 30); // 40+30=70 ≥ 67，跨到「知己」
+  assert.equal(getPetBondStage(meta, 'baize').name, '知己');
+  addPetBond(meta, 'baize', 9999);
+  assert.equal(getPetBondStage(meta, 'baize').value, PET_BOND_MAX);
+});
+
+test('upgradeEquip：字珠不足擋下、精通門檻未達擋下、成功升級後戰鬥加成按等級倍率增加、滿級不可再升', () => {
+  const meta = metaWithForged('zy-', 0);
+  meta.pearls.balance = 1000;
+  setActivePet(meta, 'baize');
+  buyEquip(meta, 'wo'); // damageBonus 1, upgradeGate [10,30], upgradeCost [80,160]
+  installEquip(meta, 'baize', 'wo');
+  assert.equal(getEquipLevel(meta, 'wo'), 1);
+  assert.deepEqual(getPetBattleMods(meta), { damageBonus: 1, freeEliminate: 0 }); // lv1 ×1
+
+  assert.equal(upgradeEquip(meta, 'wo').reason, 'gate'); // 精通 0 < 10
+  meta.collection['zy-a'] = { grade: 0, wrong: 0, earnedAt: '2026-01-01', dusty: false, polish: 0, streak: 0 };
+  for (let i = 0; i < 10; i++) meta.collection[`zy-b${i}`] = { grade: 0, wrong: 0, earnedAt: '2026-01-01', dusty: false, polish: 0, streak: 0 };
+  assert.equal(upgradeEquip(meta, 'wo').ok, true); // 精通 11 ≥ 10，升到 Lv.2
+  assert.equal(getEquipLevel(meta, 'wo'), 2);
+  assert.deepEqual(getPetBattleMods(meta), { damageBonus: 2, freeEliminate: 0 }); // 1*1.5 round = 2
+
+  meta.pearls.balance = 0;
+  assert.equal(upgradeEquip(meta, 'wo').reason, 'gate'); // 精通仍 <30，門檻先擋（不論字珠）
+  for (let i = 0; i < 20; i++) meta.collection[`zy-c${i}`] = { grade: 0, wrong: 0, earnedAt: '2026-01-01', dusty: false, polish: 0, streak: 0 };
+  assert.equal(upgradeEquip(meta, 'wo').reason, 'pearls'); // 精通已達 30+，換成字珠不足
+  meta.pearls.balance = 1000;
+  assert.equal(upgradeEquip(meta, 'wo').ok, true); // 升到 Lv.3
+  assert.equal(getEquipLevel(meta, 'wo'), EQUIP_MAX_LEVEL);
+  assert.equal(upgradeEquip(meta, 'wo').reason, 'max-level');
+});
+
+test('setSubPet / clearSubPet：不可與主寵相同，getPetBattleMods 副寵加成封頂 +3', () => {
+  const meta = metaWithForged('zy-', LEVEL_STEP * 3); // 白澤 3 級
+  meta.collection['cy-a'] = { grade: 0, wrong: 0, earnedAt: '2026-01-01', dusty: false, polish: 0, streak: 0 }; // 鳳凰(成語) 解鎖
+  setActivePet(meta, 'baize');
+  assert.equal(setSubPet(meta, 'baize').ok, false); // 不可與主寵相同
+  assert.equal(setSubPet(meta, 'fenghuang').ok, true);
+  assert.deepEqual(getPetBattleMods(meta), { damageBonus: 3, freeEliminate: 0 }); // 副寵 0 級 → +0
+  assert.equal(setActivePet(meta, 'fenghuang').ok, true); // 把副寵直接扶正為主寵，應自動清空 subActive
+  assert.equal(meta.pet.subActive, null);
+  clearSubPet(meta); // no-op，確認可安全重複呼叫
+  assert.equal(meta.pet.subActive, null);
+});
+
+test('syncUnlocks 寫入 unlockedAt：解鎖當下有值、之後不重複覆寫', () => {
+  const meta = metaWithForged('zy-', 0);
+  const before = syncUnlocks(meta);
+  assert.ok(before.meta.pet.unlockedAt.baize);
+  const stamp = meta.pet.unlockedAt.baize;
+  syncUnlocks(meta); // 再掃一次不應覆寫
+  assert.equal(meta.pet.unlockedAt.baize, stamp);
+});
+
+test('awardPetBadge：里程碑 tier 觸發時 active pet 拿到徽章、無 active pet 時 no-op、重複 tier 不重複 push', () => {
+  const meta = metaWithForged('zy-', 0);
+  assert.equal(awardPetBadge(meta, 1).awarded, false); // 無 active pet
+  setActivePet(meta, 'baize');
+  assert.equal(awardPetBadge(meta, 1).awarded, true);
+  assert.deepEqual(meta.pet.badges.baize, [1]);
+  assert.equal(awardPetBadge(meta, 1).awarded, false); // 重複 tier
+  assert.equal(awardPetBadge(meta, 2).awarded, true);
+  assert.deepEqual(meta.pet.badges.baize, [1, 2]);
 });
 
 test('setPetNickname：1–8 字入檔、太長拒收、空字串清除、鎖住的不能取名', () => {

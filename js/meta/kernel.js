@@ -217,6 +217,17 @@ function processAnswer(ctx, id, correct, mode) {
   const dr = daily.recordDailyCorrect(meta, correct ? 1 : 0, today);
   daily.recordDailyAnswered(meta, today);
   events.push(...dr.events);
+  for (const ev of dr.events) {
+    if (ev.type === 'lanternTierUp') pet.awardPetBadge(meta, ev.payload.tier);
+  }
+
+  // 寵物羈絆：答對且有出戰寵物時累加，脫鉤於類別精通等級（與 js/meta/bond.js 的墨靈羈絆分開）
+  if (correct && meta.pet.active) {
+    const pr = pet.addPetBond(meta, meta.pet.active, 1);
+    if (pr.stageUp) {
+      events.push({ type: 'petBondStageUp', payload: pet.getPetBondStage(meta, meta.pet.active), fx: 'pet-bond-bloom' });
+    }
+  }
 
   // 弱點分類（家長儀表板用）
   if (id && ctx.weakTypeOfId && ctx.weakTypeOfId.has(id)) {
