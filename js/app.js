@@ -279,6 +279,17 @@ document.addEventListener('keydown', (ev) => {
   }
 });
 
+// 部分題庫的 note 欄位只是資料來源標註（非逐選項辨析），不該當解說顯示給使用者：
+// chengyu-elementary 全數是「XX年國中基測/會考國文第X題」考題出處；
+// chengyu-junior 的 def-pick 題型全數是「教育部重編國語辭典＋g0v moedict成語詞頭錨定【T?】」錨定標籤。
+const CITATION_ONLY_NOTE_RES = [
+  /^\d+年國中(基測|會考)國文第\d+題$/,
+  /^教育部重編國語辭典＋g0v moedict成語詞頭錨定【T\d+】$/,
+];
+function isCitationOnlyNote(note) {
+  return CITATION_ONLY_NOTE_RES.some((re) => re.test(note));
+}
+
 function bindAnswer(entry, mySession, onDone, opts = {}) {
   const optionsEl = $('options');
   optionsEl.onclick = (ev) => {
@@ -298,7 +309,12 @@ function bindAnswer(entry, mySession, onDone, opts = {}) {
     const feedbackEl = $('answer-feedback');
     if (feedbackEl) {
       const idx = Array.isArray(entry.explain) ? entry.options.indexOf(btn.dataset.value) : -1;
-      const explainText = idx >= 0 ? entry.explain[idx] : '';
+      let explainText = idx >= 0 ? entry.explain[idx] : '';
+      // 成語題（尤其「何者使用正確」這類 usage-judge/usage-wrong）沒有逐選項 explain 陣列，
+      // 但 note 欄位本身就是完整的辨析內容（各選項誤用原因），只是原本沒被讀出來顯示。
+      if (!explainText && entry.note && !isCitationOnlyNote(entry.note)) {
+        explainText = entry.note;
+      }
       feedbackEl.textContent = correct
         ? `答對了！${explainText}`
         : `答錯了，正解是「${entry.answer}」。${explainText}`;

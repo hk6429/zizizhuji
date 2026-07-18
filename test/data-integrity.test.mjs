@@ -256,3 +256,24 @@ test('answer position within options is not skewed toward any single slot', () =
     }
   }
 });
+
+// js/app.js 用同一組 regex 判斷 note 是不是純資料出處標註（不該當辨析顯示）；
+// 這裡鎖住兩件事：規則本身要能辨識現有的兩種出處格式，且非 def-pick 的成語題要真的帶得出辨析內容
+// 給答題頁顯示，避免資料改版後 bindAnswer() 的 note fallback 又悄悄退化成空白。
+const CITATION_ONLY_NOTE_RES = [
+  /^\d+年國中(基測|會考)國文第\d+題$/,
+  /^教育部重編國語辭典＋g0v moedict成語詞頭錨定【T\d+】$/,
+];
+function isCitationOnlyNote(note) {
+  return CITATION_ONLY_NOTE_RES.some((re) => re.test(note));
+}
+
+test('chengyu-elementary note 全數是考題出處標註，不會被誤當辨析顯示', () => {
+  const bad = chengyu.filter((e) => e.note && !isCitationOnlyNote(e.note));
+  assert.deepEqual(bad.map((e) => e.id), []);
+});
+
+test('chengyu-junior 除了 def-pick，其餘 qformat 都要帶有可顯示的辨析 note', () => {
+  const missing = chengyuJunior.filter((e) => e.qformat !== 'def-pick' && (!e.note || isCitationOnlyNote(e.note)));
+  assert.deepEqual(missing.map((e) => e.id), []);
+});
