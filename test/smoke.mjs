@@ -68,6 +68,12 @@ await page.click('#btn-pearls');
 await page.waitForSelector('#pearls-overlay:not([hidden])');
 const pearlsCountChips = await page.$$eval('#pearls-counts .pearls-count', els => els.length);
 const pearlsEmptyShown = await page.$eval('#pearls-empty', el => !el.hidden);
+const pearlsStatRows = await page.$$eval('#pearls-stats .pearls-stat-row', els => els.length);
+if (pearlsStatRows !== 2) throw new Error(`expected 2 pearls-stat-row (字音字形/成語), got ${pearlsStatRows}`);
+const pearlsStatText = await page.$eval('#pearls-stats', el => el.textContent);
+if (!pearlsStatText.includes('已認識') || !pearlsStatText.includes('還剩')) {
+  throw new Error(`pearls-stats missing progress numbers: ${pearlsStatText}`);
+}
 await page.click('#pearls-close');
 
 // 成就總覽：開啟後應渲染 18 個成就卡

@@ -118,6 +118,21 @@ export function getPolishTasks(meta) {
   return tasks;
 }
 
+// 學習進度總覽：某題庫（如目前學制的字音或成語庫）已認識／精熟的題數。
+// 已認識＝煉成（earnedAt 有值，第一次滿盒即算）；精熟＝青珠以上（grade ≥ 1，過程中錯 0～1 次）。
+export function getMasteryStats(meta, bank) {
+  let known = 0;
+  let mastered = 0;
+  for (const e of bank) {
+    const r = meta.collection[e.id];
+    if (r && r.earnedAt) {
+      known += 1;
+      if (r.grade >= 1) mastered += 1;
+    }
+  }
+  return { total: bank.length, known, mastered, remaining: bank.length - known };
+}
+
 // 常錯字複習：回傳答錯次數最多的前 n 題（不限已煉成/未煉成），供自學模組主動推題。
 export function getMostWrong(meta, bank, n = 15) {
   const byId = new Map(bank.map((e) => [e.id, e]));

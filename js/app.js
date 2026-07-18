@@ -557,6 +557,11 @@ initPearlsUI({
     const banks = await Promise.all(srcs.map((s) => fetchBank(s.path, s.kind)));
     return new Map(banks.flat().map((e) => [e.id, e]));
   },
+  // 進度總覽只看「目前學制」的題庫（國小/國中各自的字音庫、成語庫不混算）
+  loadLevelBanks: async () => {
+    const [ziyin, chengyu] = await Promise.all([loadBank('ziyin'), loadBank('chengyu')]);
+    return { ziyin, chengyu };
+  },
 });
 initSaveSyncUI({
   getMeta: () => getCtx()?.meta,

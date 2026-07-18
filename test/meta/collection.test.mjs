@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { defaultMeta } from '../../js/meta/store.js';
 import {
   GRADES, loadLeitnerState, persistLeitner, onQuestionResult, getCollection, getPolishTasks,
+  getMasteryStats,
 } from '../../js/meta/collection.js';
 import { createLeitnerState, recordAnswer } from '../../js/leitner.js';
 
@@ -103,4 +104,19 @@ test('getCollection tallies grades', () => {
   assert.equal(c.earned.length, 2);
   assert.equal(c.counts[2], 1); // 金
   assert.equal(c.counts[1], 1); // 青
+});
+
+test('getMasteryStats: 已認識＝煉成、精熟＝青珠以上，題庫外的 id 不計入', () => {
+  const meta = defaultMeta();
+  forgeGold(meta, 'q1'); // 金珠（精熟）
+  onQuestionResult(meta, 'q2', false, 1);
+  for (const box of [2, 3, 4, 5]) onQuestionResult(meta, 'q2', true, box); // 青珠（精熟）
+  onQuestionResult(meta, 'q3', false, 1);
+  onQuestionResult(meta, 'q3', false, 2);
+  for (const box of [3, 4, 5]) onQuestionResult(meta, 'q3', true, box); // 白珠（已認識但未精熟）
+  onQuestionResult(meta, 'not-in-bank', false, 1); // 已練但不在傳入題庫內，不應計入
+
+  const bank = [{ id: 'q1' }, { id: 'q2' }, { id: 'q3' }, { id: 'q4' }];
+  const stats = getMasteryStats(meta, bank);
+  assert.deepEqual(stats, { total: 4, known: 3, mastered: 2, remaining: 1 });
 });

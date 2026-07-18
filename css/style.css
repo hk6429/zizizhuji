@@ -1824,6 +1824,29 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 .extra-entry--pearls { background: linear-gradient(120deg, rgba(160,82,45,.14), rgba(201,162,39,.12)); }
 .extra-entry--pearls .extra-entry__icon { background: radial-gradient(circle at 30% 30%, #f5e6c8, #c9a227); }
 .pearls-card { max-width: 560px; }
+.pearls-stats {
+  display: flex; flex-direction: column; gap: 8px;
+  margin: 0 0 14px; padding: 10px 12px;
+  background: rgba(46,143,138,.06); border-radius: 12px;
+}
+.pearls-stat-row {
+  display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; align-items: center;
+}
+.pearls-stat-label {
+  font-family: var(--kai); font-weight: 700; font-size: .85rem; color: var(--ink);
+}
+.pearls-stat-nums {
+  font-family: var(--kai); font-size: .78rem; color: var(--ink-soft);
+  grid-column: 2; text-align: right;
+}
+.pearls-stat-bar {
+  grid-column: 1 / -1; display: block; height: 6px; border-radius: 999px;
+  background: rgba(0,0,0,.08); overflow: hidden;
+}
+.pearls-stat-bar__fill {
+  display: block; height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, #2e8f8a, #c9a227);
+}
 .pearls-counts {
   display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;
   margin: 0 0 12px;
