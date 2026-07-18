@@ -249,13 +249,23 @@ function renderQuestion(entry) {
   attachReportButton(entry);
 }
 
-// 數字鍵 1-4 對應選項順位；輸入框有焦點時不攔截，避免打斷回報/存檔代碼輸入
+// 數字鍵 1-4 對應選項順位；空白鍵＝練習模式手動下一題；輸入框有焦點時不攔截，避免打斷回報/存檔代碼輸入
 const OPTIONS_CONTAINER_IDS = ['options', 'sg-options'];
 document.addEventListener('keydown', (ev) => {
-  const key = ev.key;
-  if (key < '1' || key > '4') return;
   const active = document.activeElement;
   if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
+
+  if (ev.key === ' ') {
+    const nextBtn = $('answer-next-btn');
+    if (nextBtn && !nextBtn.hidden) {
+      nextBtn.click();
+      ev.preventDefault();
+    }
+    return;
+  }
+
+  const key = ev.key;
+  if (key < '1' || key > '4') return;
   const idx = Number(key) - 1;
   for (const id of OPTIONS_CONTAINER_IDS) {
     const container = document.getElementById(id);

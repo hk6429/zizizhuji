@@ -130,7 +130,8 @@ const answerFeedbackShown = await page.$eval('#answer-feedback', (el) => !el.hid
 const nextBtnShownBeforeClick = await page.$eval('#answer-next-btn', (el) => !el.hidden);
 await page.waitForTimeout(900); // 確認過了原本 FEEDBACK_DELAY(800ms) 仍停在同一題，不會自動前進
 const stillSameOptionsAfterDelay = await page.$eval('#options button:first-child', (el) => el.disabled);
-await page.click('#answer-next-btn');
+// 空白鍵＝手動前進的快捷鍵，等同點擊「下一題」
+await page.keyboard.press(' ');
 await page.waitForSelector('#options button:not([disabled])');
 
 // 新版畫卷式版面：答題中首頁收起，需先「收卷回首頁」才能切到對戰
