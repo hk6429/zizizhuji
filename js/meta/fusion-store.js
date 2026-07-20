@@ -103,3 +103,80 @@ export function canFusePair(meta, petIdA, petIdB) {
   if (!e.reasons.accuracy) return { ok: false, reason: 'accuracy' };
   return { ok: true, reason: null };
 }
+
+// —— 融合核心：成功路徑出稚靈，雙親永不消耗 ——
+
+export const FUSE_COST = 30;  // 一次融合 30 墨晶（＝攻克 30 題弱點、至少 3 天積累）
+export const FAIL_RATE = 0.2; // 20% 失敗率——失敗只損墨晶（時間成本），見 Task 4
+
+// 稚靈全庫：山海經幼獸，每類別 2 隻依 order 出庫。
+// bornLine 扣連 bond.js 濁墨世界觀：融合＝修復被濁墨吞噬的神獸血脈。
+export const CUBS = [
+  { id: 'tiangou', name: '天狗', category: '字音', order: 1,
+    titles: ['吠月童子', '守夜小尉', '辨聲小靈'],
+    desc: '狀如狸而白首的守夜幼獸，吠聲能辨天下之音。',
+    bornLine: '一聲清吠破開濁墨——被吞噬的辨音血脈，在你手中重新接上了。' },
+  { id: 'zhujian', name: '諸犍', category: '字音', order: 2,
+    titles: ['聽風小豹', '留聲小史'],
+    desc: '人面豹身的幼獸，善聽善記，過耳之音永不忘。',
+    bornLine: '牠豎起耳朵聽見了你答對的每一題——諸犍的血脈，從濁墨裡被你喚醒了。' },
+  { id: 'hundun', name: '混沌', category: '成語', order: 1,
+    titles: ['渾沌小初', '無面小仙', '歌舞小童'],
+    desc: '渾敦無面目而識歌舞，是一切典故最初的模樣。',
+    bornLine: '濁墨散去，混沌睜開了不存在的眼睛——典故之源的血脈，由你修復。' },
+  { id: 'xiezhi', name: '獬豸', category: '成語', order: 2,
+    titles: ['辨言小判', '正字小御'],
+    desc: '獨角神羊之幼，能辨是非曲直，錯別字無所遁形。',
+    bornLine: '小小的獨角頂開了濁墨——辨正之獸的血脈，因你的成語功底而重生。' },
+  { id: 'zhuyin', name: '燭陰', category: '混合', order: 1,
+    titles: ['燭夜小龍', '晝夜小衡', '照幽小靈'],
+    desc: '燭九陰之幼龍，睜眼為晝、閉眼為夜，照徹墨界幽暗。',
+    bornLine: '幼龍睜眼的一瞬，墨界亮了——燭陰的血脈穿過濁墨，回到了人間。' },
+  { id: 'jingwei', name: '精衛', category: '混合', order: 2,
+    titles: ['填海小衛', '不悔小羽'],
+    desc: '銜木石以填滄海的幼鳥，一題一石，永不言棄。',
+    bornLine: '牠銜著第一顆小石落在你肩上——精衛不悔的血脈，被你的堅持修復了。' },
+];
+
+const CUB_BY_ID = new Map(CUBS.map((c) => [c.id, c]));
+
+export function nextCubFor(meta, category) {
+  const s = ensureFusionState(meta);
+  const pool = CUBS.filter((c) => c.category === category).sort((a, b) => a.order - b.order);
+  return pool.find((c) => !s.cubs[c.id]) || null;
+}
+
+export function fuse(meta, petIdA, petIdB, { rng = Math.random, today = '' } = {}) {
+  const s = ensureFusionState(meta);
+  const gate = canFusePair(meta, petIdA, petIdB);
+  if (!gate.ok) return { meta, ok: false, reason: gate.reason };
+  const category = PET_BY_ID.get(petIdA).category;
+  const cubDef = nextCubFor(meta, category);
+  if (!cubDef) return { meta, ok: false, reason: 'all-owned' };
+  const paid = spendCrystals(meta, FUSE_COST);
+  if (!paid.ok) return { meta, ok: false, reason: 'crystals' };
+  // （Task 4 在此插入失敗分支）
+  const title = cubDef.titles[Math.floor(rng() * cubDef.titles.length)];
+  s.cubs[cubDef.id] = {
+    bornAt: new Date().toISOString(),
+    parents: [petIdA, petIdB],
+    title, passive: null, nickname: null,
+  };
+  return {
+    meta, ok: true, result: 'success',
+    cub: { id: cubDef.id, name: cubDef.name, category, title, bornLine: cubDef.bornLine, parents: [petIdA, petIdB] },
+  };
+}
+
+export function listCubs(meta) {
+  const s = ensureFusionState(meta);
+  return CUBS.filter((c) => s.cubs[c.id]).map((c) => {
+    const r = s.cubs[c.id];
+    return {
+      id: c.id, name: c.name, category: c.category, desc: c.desc,
+      title: r.title, nickname: r.nickname, displayName: r.nickname || c.name,
+      passive: r.passive, parents: r.parents.slice(), bornAt: r.bornAt,
+      isActive: s.activeCub === c.id,
+    };
+  });
+}
