@@ -105,6 +105,29 @@ export async function marketOp(redis, body, ctx, nowMs = Date.now()) {
     await redis.set(ITEM(id), JSON.stringify(rec), { ex: ITEM_TTL });
     return { ok: 1, gearId: rec.gearId, price: rec.price };
   }
+
+  const TAX = 0.1;
+
+  if (op === 'cancel') {
+    const rec = parse(await redis.get(ITEM(body.id)));
+    if (!rec || rec.claimKey !== body.claimKey) return { ok: 0, error: '找不到掛單' };
+    if (rec.sold) return { ok: 0, error: '已售出，請領貨款' };
+    await redis.zrem(ZCLASS(rec.classCode), memberOf(rec));
+    if (rec.pub) await redis.zrem(ZPUB, memberOf(rec));
+    await redis.del(ITEM(body.id));
+    return { ok: 1, gearId: rec.gearId };
+  }
+
+  if (op === 'claim') {
+    const rec = parse(await redis.get(ITEM(body.id)));
+    if (!rec || rec.claimKey !== body.claimKey) return { ok: 0, error: '找不到掛單' };
+    if (!rec.sold) return { ok: 0, sold: 0 };
+    if (rec.claimed) return { ok: 0, error: '貨款已領過' };
+    rec.claimed = 1;
+    await redis.set(ITEM(body.id), JSON.stringify(rec), { ex: ITEM_TTL });
+    return { ok: 1, pearls: Math.floor(rec.price * (1 - TAX)), buyer: rec.buyer || '', card: rec.card || 0 };
+  }
+
   return { ok: 0, error: 'bad op' };
 }
 

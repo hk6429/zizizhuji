@@ -148,3 +148,30 @@ test('buy：非開市時段拒買', async () => {
   const d = await marketOp(r, { op: 'buy', id: a.id, nick: '小華', classCode: 'demo' }, { ...ENV, forceOpen: false }, Date.UTC(2026, 6, 22, 4, 0));
   assert.equal(d.ok, 0);
 });
+
+test('cancel：憑 claimKey 下架拿回；錯的 claimKey 拒絕；售出後不可下架', async () => {
+  const r = fakeRedis();
+  const a = await marketOp(r, { op: 'post', gearId: 'duanyan', price: 100, seller: '小明', classCode: 'demo' }, ENV, OPEN_TS);
+  assert.equal((await marketOp(r, { op: 'cancel', id: a.id, claimKey: 'wrong' }, ENV, OPEN_TS)).ok, 0);
+  const c = await marketOp(r, { op: 'cancel', id: a.id, claimKey: a.claimKey }, ENV, OPEN_TS);
+  assert.equal(c.ok, 1); assert.equal(c.gearId, 'duanyan');
+  assert.equal((await marketOp(r, { op: 'list', classCode: 'demo', scope: 'class' }, ENV, OPEN_TS)).list.length, 0);
+});
+test('claim：售出後領款＝floor(price*0.9)、附買家與小卡；重複領拒絕；未售出回 sold:0', async () => {
+  const r = fakeRedis();
+  const a = await marketOp(r, { op: 'post', gearId: 'sheyan', price: 333, seller: '小明', classCode: 'demo' }, ENV, OPEN_TS);
+  assert.equal((await marketOp(r, { op: 'claim', id: a.id, claimKey: a.claimKey }, ENV, OPEN_TS)).sold, 0);
+  await marketOp(r, { op: 'buy', id: a.id, nick: '小華', classCode: 'demo', cardId: 5 }, ENV, OPEN_TS);
+  const k = await marketOp(r, { op: 'claim', id: a.id, claimKey: a.claimKey }, ENV, OPEN_TS);
+  assert.equal(k.ok, 1);
+  assert.equal(k.pearls, 299);           // floor(333*0.9)
+  assert.equal(k.buyer, '小華');
+  assert.equal(k.card, 5);
+  assert.match((await marketOp(r, { op: 'claim', id: a.id, claimKey: a.claimKey }, ENV, OPEN_TS)).error, /領過/);
+});
+test('claim/cancel：非開市時段也可用', async () => {
+  const r = fakeRedis();
+  const a = await marketOp(r, { op: 'post', gearId: 'langhao', price: 50, seller: '小明', classCode: 'demo' }, ENV, OPEN_TS);
+  const c = await marketOp(r, { op: 'cancel', id: a.id, claimKey: a.claimKey }, { ...ENV, forceOpen: false }, Date.UTC(2026, 6, 22, 4, 0));
+  assert.equal(c.ok, 1);
+});
