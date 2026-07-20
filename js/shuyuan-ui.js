@@ -142,6 +142,14 @@ function bindDrag(scene) {
       openStylePicker(id.slice(0, id.lastIndexOf('-'))); // 原地點擊＝換樣式
     }
   });
+  // 鍵盤操作：ARIA 承諾「點擊換樣式」，Enter／Space 要能達成同樣效果
+  scene.addEventListener('keydown', (ev) => {
+    if (ev.key !== 'Enter' && ev.key !== ' ' && ev.key !== 'Spacebar') return;
+    const el = ev.target.closest('.sy-decor');
+    if (!el) return;
+    if (ev.key !== 'Enter') ev.preventDefault(); // Space 預設會滾動頁面
+    openStylePicker(el.dataset.decor.slice(0, el.dataset.decor.lastIndexOf('-')));
+  });
 }
 
 function openStylePicker(kind) {
