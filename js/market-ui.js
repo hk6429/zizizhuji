@@ -8,7 +8,7 @@ import { getToday } from './integration.js';
 import {
   tierOf, TIER_LABEL, isMarketOpen, nextOpenText, bandOf, sellableGear,
   removeGear, grantGear, payForBuy, buysToday, bumpBuys, addClaim, removeClaim,
-  getClaims, recordEverOwned, settleSale, THANKS_CARDS, DAILY_BUY_CAP,
+  getClaims, recordEverOwned, getEverOwned, settleSale, THANKS_CARDS, DAILY_BUY_CAP,
 } from './market-store.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
 
@@ -23,7 +23,7 @@ const $ = (id) => document.getElementById(id);
 
 let getMeta = () => null;
 let saveMeta = () => {};
-let scope = 'class'; // 'class' | 'pub'
+let scope = 'class'; // 'class' | 'pub' | 'stars' | 'ever'
 let selectedSellGear = null; // 上架流程：目前選定要賣的裝備 { id, name, price, tier, tierLabel, grade }
 let pendingBuy = null; // 購買流程：等待挑感謝小卡的掛單 { id, gearId, price, seller }
 let claimState = {}; // 我的掛單：{ [claimId]: 'unsold' }，檢查後發現未售出時記住，讓下架鈕出現
@@ -44,6 +44,8 @@ export function initMarketUI(opts) {
   $('market-close').addEventListener('click', close);
   $('mkt-tab-class').addEventListener('click', () => switchTab('class'));
   $('mkt-tab-pub').addEventListener('click', () => switchTab('pub'));
+  $('mkt-tab-stars').addEventListener('click', () => switchTab('stars'));
+  $('mkt-tab-ever').addEventListener('click', () => switchTab('ever'));
 }
 
 // 上架區／我的掛單區／感謝小卡對話框：index.html 本來沒有這些節點，動態建立一次即可（冪等）。
@@ -151,6 +153,8 @@ function close() { closeOverlay($('market-overlay')); }
 function updateTabs() {
   $('mkt-tab-class').classList.toggle('is-active', scope === 'class');
   $('mkt-tab-pub').classList.toggle('is-active', scope === 'pub');
+  $('mkt-tab-stars').classList.toggle('is-active', scope === 'stars');
+  $('mkt-tab-ever').classList.toggle('is-active', scope === 'ever');
 }
 
 async function switchTab(next) {
@@ -254,8 +258,26 @@ async function render() {
 
   const list = $('mkt-list');
   const empty = $('mkt-empty');
+  const starsBox = $('mkt-stars');
+  const everBox = $('mkt-ever');
   list.innerHTML = '';
   empty.hidden = true;
+  starsBox.hidden = true;
+  everBox.hidden = true;
+  list.hidden = false;
+
+  if (scope === 'ever') {
+    list.hidden = true;
+    everBox.hidden = false;
+    renderEver(everBox);
+    return;
+  }
+  if (scope === 'stars') {
+    list.hidden = true;
+    starsBox.hidden = false;
+    await renderStars(meta, starsBox);
+    return;
+  }
 
   const classCode = meta.selfstudy.classCode;
   if (scope === 'class' && !classCode) {
@@ -287,6 +309,97 @@ async function render() {
     return;
   }
   for (const item of items) list.appendChild(renderCard(meta, item));
+}
+
+/* ---------------- 🏆 本班集市達人：前 10 名成交量排行（只列筆數不列金額）---------------- */
+
+async function renderStars(meta, box) {
+  box.innerHTML = '';
+  const classCode = meta.selfstudy.classCode;
+  if (!classCode) {
+    const p = document.createElement('p');
+    p.className = 'mkt-empty';
+    p.textContent = '先到積分競技設定班級代碼與暱稱，才能看集市達人榜';
+    box.appendChild(p);
+    return;
+  }
+  const res = await callMarket({ op: 'stars', classCode });
+  const top = res && res.ok ? (res.top || []) : [];
+  if (top.length === 0) {
+    const p = document.createElement('p');
+    p.className = 'mkt-empty';
+    p.textContent = '本週還沒有人成交——當第一個吧！';
+    box.appendChild(p);
+    return;
+  }
+  const ol = document.createElement('ol');
+  ol.className = 'mkt-stars-list';
+  top.slice(0, 10).forEach((s, i) => {
+    const li = document.createElement('li');
+    li.className = 'mkt-stars-row';
+
+    const rank = document.createElement('span');
+    rank.className = 'mkt-stars-row__rank';
+    rank.textContent = String(i + 1);
+
+    const name = document.createElement('span');
+    name.className = 'mkt-stars-row__name';
+    name.textContent = s.name;
+
+    const deals = document.createElement('span');
+    deals.className = 'mkt-stars-row__deals';
+    deals.textContent = `成交 ${s.deals} 筆`;
+
+    li.appendChild(rank);
+    li.appendChild(name);
+    li.appendChild(deals);
+
+    if (i === 0) {
+      const badge = document.createElement('span');
+      badge.className = 'mkt-stars-row__badge';
+      badge.textContent = '🏆 本班集市達人';
+      li.appendChild(badge);
+    }
+    ol.appendChild(li);
+  });
+  box.appendChild(ol);
+}
+
+/* ---------------- 📜 曾經持有：時間倒序收藏冊，賣掉的寶物留痕 ---------------- */
+
+function renderEver(box) {
+  box.innerHTML = '';
+  const entries = getEverOwned();
+  if (entries.length === 0) {
+    const p = document.createElement('p');
+    p.className = 'mkt-empty';
+    p.textContent = '還沒有交易紀錄，去集市逛逛吧';
+    box.appendChild(p);
+    return;
+  }
+  for (const entry of entries) {
+    const gear = GEAR_LIST.find((g) => g.id === entry.gearId);
+    const card = document.createElement('div');
+    card.className = 'mkt-ever-card';
+
+    const name = document.createElement('span');
+    name.className = 'mkt-ever-card__name';
+    name.textContent = gear ? gear.name : entry.gearId;
+
+    const peer = document.createElement('span');
+    peer.className = 'mkt-ever-card__peer';
+    const verb = entry.dir === 'sold' ? '售予' : '購自';
+    peer.textContent = `${verb} ${entry.peer || '匿名同學'}`;
+
+    const date = document.createElement('span');
+    date.className = 'mkt-ever-card__date';
+    date.textContent = new Date(entry.ts).toLocaleDateString('zh-TW');
+
+    card.appendChild(name);
+    card.appendChild(peer);
+    card.appendChild(date);
+    box.appendChild(card);
+  }
 }
 
 /* ---------------- 上架：📤 我要上架 ---------------- */
