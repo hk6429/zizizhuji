@@ -64,7 +64,7 @@ function fakeRedis() {
     async get(k) { return kv.has(k) ? kv.get(k) : null; },
     async set(k, v) { kv.set(k, typeof v === 'string' ? v : JSON.stringify(v)); return 'OK'; },
     async del(...ks) { ks.forEach(k => kv.delete(k)); return ks.length; },
-    async incr(k) { const n = (counters.get(k) || 0) + 1; counters.set(k, n); return n; },
+    async incr(k, ttl) { const n = (counters.get(k) || 0) + 1; counters.set(k, n); return n; },
     async zadd(k, { score, member }) { const m = zsets.get(k) || new Map(); m.set(member, score); zsets.set(k, m); return 1; },
     async zrange(k, s, e, opts) {
       const m = [...(zsets.get(k) || new Map()).entries()].sort((a, b) => (opts && opts.rev) ? b[1] - a[1] : a[1] - b[1]);
@@ -107,4 +107,44 @@ test('post：非開市時段拒收（forceOpen=false）', async () => {
   const d = await marketOp(r, { op: 'post', gearId: 'langhao', price: 50, seller: '小明', classCode: 'demo' }, { ...ENV, forceOpen: false }, Date.UTC(2026, 6, 22, 4, 0));
   assert.equal(d.ok, 0);
   assert.match(d.error, /開市/);
+});
+
+test('buy：合法購買回 gearId+price；掛單從 list 消失；感謝小卡存檔', async () => {
+  const r = fakeRedis();
+  const a = await marketOp(r, { op: 'post', gearId: 'langhao', price: 50, seller: '小明', classCode: 'demo' }, ENV, OPEN_TS);
+  const b = await marketOp(r, { op: 'buy', id: a.id, nick: '小華', classCode: 'demo', cardId: 3 }, ENV, OPEN_TS);
+  assert.equal(b.ok, 1);
+  assert.equal(b.gearId, 'langhao');
+  assert.equal(b.price, 50);
+  const l = await marketOp(r, { op: 'list', classCode: 'demo', scope: 'class' }, ENV, OPEN_TS);
+  assert.equal(l.list.length, 0);
+  const rec = JSON.parse(await r.get(`mkt:item:${a.id}`));
+  assert.equal(rec.sold, 1); assert.equal(rec.buyer, '小華'); assert.equal(rec.card, 3);
+});
+
+test('buy：不能買自己的、重複買、簽章竄改全拒', async () => {
+  const r = fakeRedis();
+  const a = await marketOp(r, { op: 'post', gearId: 'langhao', price: 50, seller: '小明', classCode: 'demo' }, ENV, OPEN_TS);
+  assert.equal((await marketOp(r, { op: 'buy', id: a.id, nick: '小明', classCode: 'demo' }, ENV, OPEN_TS)).ok, 0);
+  const rec = JSON.parse(await r.get(`mkt:item:${a.id}`)); rec.price = 1;   // 竄改價格 → 簽章失效
+  await r.set(`mkt:item:${a.id}`, JSON.stringify(rec));
+  assert.match((await marketOp(r, { op: 'buy', id: a.id, nick: '小華', classCode: 'demo' }, ENV, OPEN_TS)).error, /簽章/);
+});
+
+test('buy：每日限購 3 件伺服器硬擋；失敗的購買不燒配額', async () => {
+  const r = fakeRedis();
+  const ids = [];
+  for (let i = 0; i < 4; i++) ids.push((await marketOp(r, { op: 'post', gearId: 'langhao', price: 50, seller: `賣家${i}`, classCode: 'demo' }, ENV, OPEN_TS)).id);
+  await marketOp(r, { op: 'buy', id: 'no-such-id', nick: '小華', classCode: 'demo' }, ENV, OPEN_TS); // 失敗不計
+  for (let i = 0; i < 3; i++) assert.equal((await marketOp(r, { op: 'buy', id: ids[i], nick: '小華', classCode: 'demo' }, ENV, OPEN_TS)).ok, 1);
+  const d = await marketOp(r, { op: 'buy', id: ids[3], nick: '小華', classCode: 'demo' }, ENV, OPEN_TS);
+  assert.equal(d.ok, 0);
+  assert.match(d.error, /限購/);
+});
+
+test('buy：非開市時段拒買', async () => {
+  const r = fakeRedis();
+  const a = await marketOp(r, { op: 'post', gearId: 'langhao', price: 50, seller: '小明', classCode: 'demo' }, ENV, OPEN_TS);
+  const d = await marketOp(r, { op: 'buy', id: a.id, nick: '小華', classCode: 'demo' }, { ...ENV, forceOpen: false }, Date.UTC(2026, 6, 22, 4, 0));
+  assert.equal(d.ok, 0);
 });

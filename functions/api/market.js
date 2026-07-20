@@ -56,6 +56,8 @@ const parse = (x) => { try { return typeof x === 'string' ? JSON.parse(x) : x; }
 export async function marketOp(redis, body, ctx, nowMs = Date.now()) {
   const { op } = body || {};
   const open = ctx.forceOpen || isMarketOpen(nowMs);
+  const DAILY_BUY_CAP = 3;
+  const dayStr = (ms) => new Date(ms + 8 * 3600 * 1000).toISOString().slice(0, 10); // 台灣日界線
 
   if (op === 'list') {
     const scope = body.scope === 'pub' ? 'pub' : 'class';
@@ -82,6 +84,26 @@ export async function marketOp(redis, body, ctx, nowMs = Date.now()) {
     await redis.zadd(ZCLASS(classCode), { score: price, member: memberOf(rec) });
     if (rec.pub) await redis.zadd(ZPUB, { score: price, member: memberOf(rec) });
     return { ok: 1, id, claimKey };
+  }
+
+  if (op === 'buy') {
+    if (!open) return { ok: 0, error: '集市尚未開市（每週五 16:00 至週日夜間）' };
+    const { id, nick, classCode } = body;
+    if (typeof id !== 'string' || !okNick(nick) || !okClass(classCode)) return { ok: 0, error: '參數不合法' };
+    const rec = parse(await redis.get(ITEM(id)));
+    if (!rec || rec.sold) return { ok: 0, error: '這件已被買走或下架了' };
+    if (rec.seller === nick.trim()) return { ok: 0, error: '不能買自己的掛單' };
+    if (rec.classCode !== classCode && !rec.pub) return { ok: 0, error: '這是別班集市的掛單' };
+    if (rec.reserveFor && rec.reserveFor !== nick.trim()) return { ok: 0, error: `這是保留給 ${rec.reserveFor} 的` };
+    if (sigOf({ gearId: rec.gearId, price: rec.price, seller: rec.seller, id: rec.id }, ctx.secret) !== rec.sig) return { ok: 0, error: '簽章不符，掛單作廢' };
+    const buys = await redis.incr(`mkt:buys:${nick.trim()}:${dayStr(nowMs)}`, 86400);
+    if (buys > DAILY_BUY_CAP) return { ok: 0, error: '每日限購 3 件（保護自己練功的樂趣）' };
+    const cardId = Number.isInteger(body.cardId) && body.cardId >= 1 && body.cardId <= 6 ? body.cardId : 0;
+    await redis.zrem(ZCLASS(rec.classCode), memberOf(rec));
+    if (rec.pub) await redis.zrem(ZPUB, memberOf(rec));
+    rec.sold = 1; rec.soldTs = nowMs; rec.buyer = nick.trim(); rec.card = cardId;
+    await redis.set(ITEM(id), JSON.stringify(rec), { ex: ITEM_TTL });
+    return { ok: 1, gearId: rec.gearId, price: rec.price };
   }
   return { ok: 0, error: 'bad op' };
 }
