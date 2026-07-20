@@ -4,6 +4,8 @@
 import { RANKS } from './progress.js';
 import * as world from './world.js';
 import { getCollection } from './collection.js';
+import { listPets } from './pet.js';
+import { getAchievementsOverview } from './achievements.js';
 
 export const SHUYUAN_KEY = 'zz_shuyuan';
 export const SHUYUAN_VERSION = 1;
@@ -226,4 +228,56 @@ export function setCouplet(state, coupletId) {
 
 export function getCouplet(state) {
   return state.couplet ? COUPLET_BY_ID.get(state.couplet) : null;
+}
+
+// ── 慶典佇列：升境／神獸解鎖各慶祝一次（只加不扣，白帽） ──
+export function pendingCelebrations(meta, state) {
+  const out = [];
+  const topRank = Math.max(0, Math.min(RANKS.length - 1, meta.xp.rank | 0));
+  for (let r = 1; r <= topRank; r++) {
+    const id = `rank-${r}`;
+    if (!state.celebrated.includes(id)) {
+      out.push({ id, type: 'rank', title: `升境・${RANKS[r].name}`, text: RANKS[r].blessing });
+    }
+  }
+  for (const p of listPets(meta)) {
+    if (!p.unlocked) continue;
+    const id = `pet-${p.id}`;
+    if (!state.celebrated.includes(id)) {
+      out.push({ id, type: 'pet', title: `神獸入駐・${p.name}`, text: `${p.name}在書院後山安了家，雕像列陣又添一分氣勢。` });
+    }
+  }
+  return out;
+}
+
+export function markCelebrated(state, celebId) {
+  if (!state.celebrated.includes(celebId)) state.celebrated.push(celebId);
+  return state;
+}
+
+// 首次開院：既有進度全部靜默入帳，之後的新進度才放慶典
+export function seedCelebrated(meta, state) {
+  for (const p of pendingCelebrations(meta, state)) markCelebrated(state, p.id);
+  state.seeded = true;
+  return state;
+}
+
+// ── 成就牆：只陳列已解鎖榮譽（不催促未完成項——白帽） ──
+export function getWallEntries(meta) {
+  return getAchievementsOverview(meta)
+    .filter((a) => a.unlocked)
+    .map((a) => ({ id: a.id, name: a.name, desc: a.desc, unlocked: true, unlockedAt: a.unlockedAt }));
+}
+
+// ── 整包視圖：UI 渲染一次拿齊 ──
+export function getShuyuanView(meta, state, totals) {
+  const plaques = {};
+  for (const t of PLAQUE_TARGETS) plaques[t] = getPlaqueText(state, t);
+  return {
+    gate: getGateStage(meta),
+    courtyards: getCourtyards(meta, totals),
+    decorations: getDecorations(meta, state),
+    plaques,
+    couplet: getCouplet(state),
+  };
 }

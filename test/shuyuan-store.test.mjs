@@ -7,6 +7,7 @@ import {
   defaultPos, placeDecoration, resetPlacements,
   PLAQUE_TARGETS, PLAQUE_BANK, PLAQUE_MIN, PLAQUE_MAX,
   setPlaque, getPlaqueText, COUPLET_BANK, setCouplet, getCouplet,
+  pendingCelebrations, markCelebrated, seedCelebrated, getWallEntries, getShuyuanView,
 } from '../js/meta/shuyuan-store.js';
 import { defaultMeta } from '../js/meta/store.js';
 
@@ -203,4 +204,53 @@ test('setCouplet 掛對聯／取下；非法 id 擋下', () => {
   assert.equal(setCouplet(s, 'nope').ok, false);
   assert.equal(setCouplet(s, null).ok, true);
   assert.equal(getCouplet(s), null);
+});
+
+test('pendingCelebrations 列出未慶祝的升境與神獸；markCelebrated 去重', () => {
+  const m = defaultMeta();
+  m.xp.rank = 2; // 蒙童→識字生→抄書郎：兩次升境
+  const s = defaultShuyuan();
+  let pend = pendingCelebrations(m, s);
+  const rankIds = pend.filter((p) => p.type === 'rank').map((p) => p.id);
+  assert.deepEqual(rankIds, ['rank-1', 'rank-2']);
+  // 精通 0 也有 unlockAt:0 的神獸（白澤/鳳凰/窮奇）→ 會出現在 pet 慶典
+  assert.ok(pend.some((p) => p.id === 'pet-baize'));
+  markCelebrated(s, 'rank-1');
+  markCelebrated(s, 'rank-1'); // 重複標記不重複塞
+  assert.equal(s.celebrated.filter((x) => x === 'rank-1').length, 1);
+  pend = pendingCelebrations(m, s);
+  assert.ok(!pend.some((p) => p.id === 'rank-1'));
+});
+
+test('seedCelebrated 把既有進度靜默標記、之後才有新慶典', () => {
+  const m = defaultMeta();
+  m.xp.rank = 3;
+  const s = defaultShuyuan();
+  seedCelebrated(m, s);
+  assert.equal(s.seeded, true);
+  assert.deepEqual(pendingCelebrations(m, s), []);
+  m.xp.rank = 4; // 事後再升境 → 只慶祝新的
+  const pend = pendingCelebrations(m, s);
+  assert.deepEqual(pend.map((p) => p.id), ['rank-4']);
+  assert.equal(pend[0].title.includes('秀才'), true);
+});
+
+test('getWallEntries 只回已解鎖成就', () => {
+  const m = defaultMeta();
+  assert.deepEqual(getWallEntries(m), []);
+  m.ach.unlocked['first-win'] = '2026-07-01';
+  const wall = getWallEntries(m);
+  assert.equal(wall.length, 1);
+  assert.equal(wall[0].name, '初戰告捷');
+});
+
+test('getShuyuanView 一次拿齊整包視圖', () => {
+  const m = defaultMeta();
+  const s = defaultShuyuan();
+  const v = getShuyuanView(m, s, { yin: 10, xing: 10, chengyu: 10 });
+  assert.equal(v.gate.rankName, '蒙童');
+  assert.equal(v.courtyards.length, 3);
+  assert.ok(Array.isArray(v.decorations));
+  assert.equal(v.plaques.gate, '字靈書院');
+  assert.equal(v.couplet, null);
 });
