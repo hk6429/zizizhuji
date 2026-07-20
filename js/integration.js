@@ -15,6 +15,7 @@ import {
   createBattleContext, createBattleStateEx, takeEliminate, isOverEx,
 } from './meta/battle-adapter.js';
 import { getPetBattleMods, syncUnlocks as syncPetUnlocks, listPets } from './meta/pet.js';
+import { getCubBattleMods } from './meta/fusion-store.js';
 import { shouldOfferShareCard, renderShareCard, exportShareCard } from './meta/share-card.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
 import { maybeOfferNoDamage } from './nodamage-prompt.js';
@@ -225,9 +226,10 @@ export function bindDailyBox() {
 export function beginBattle() {
   const eff = ctx.omen ? ctx.omen.effect : {};
   const pet = getPetBattleMods(ctx.meta); // 主寵等級＋設備加成
+  const cub = getCubBattleMods(ctx.meta); // 隨行稚靈被動（神獸融合）
   ctx.battle = createBattleContext(ctx.meta, {
-    damageBonus: (eff.type === 'damageBonus' ? eff.value : 0) + pet.damageBonus,
-    freeEliminate: (eff.type === 'freeEliminate' ? 1 : 0) + pet.freeEliminate,
+    damageBonus: (eff.type === 'damageBonus' ? eff.value : 0) + pet.damageBonus + cub.damageBonus,
+    freeEliminate: (eff.type === 'freeEliminate' ? 1 : 0) + pet.freeEliminate + cub.freeEliminate,
   });
   const state = createBattleStateEx(ctx.battle);
   showMolingLine(pickLine(getBond(ctx.meta).stage, 'open'));

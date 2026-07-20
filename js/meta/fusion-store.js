@@ -213,6 +213,33 @@ export function chooseCubPassive(meta, cubId, passiveId) {
   return { meta, ok: true, reason: null };
 }
 
+// 稚靈隨行：獨立於 pet.js 主寵/副寵的第三個槽位（設計上不動 setActivePet 的驗證，
+// 雙親可同時出戰——呼應「雙親不消耗」的情感邏輯）。加成走 battle-adapter opts 通道，
+// 由 integration.js beginBattle 與主寵 mods 相加，不改 battle.js / battle-adapter.js。
+export function setActiveCub(meta, cubId) {
+  const s = ensureFusionState(meta);
+  if (!s.cubs[cubId]) return { meta, ok: false, reason: 'not-owned' };
+  s.activeCub = cubId;
+  return { meta, ok: true, reason: null };
+}
+
+export function clearActiveCub(meta) {
+  ensureFusionState(meta).activeCub = null;
+  return { meta, ok: true };
+}
+
+export function getCubBattleMods(meta) {
+  const s = ensureFusionState(meta);
+  const mods = { damageBonus: 0, freeEliminate: 0 };
+  const r = s.activeCub ? s.cubs[s.activeCub] : null;
+  if (!r || !r.passive) return mods;
+  const p = PASSIVE_BY_ID.get(r.passive);
+  if (!p) return mods;
+  if (p.effect.damageBonus) mods.damageBonus += p.effect.damageBonus;
+  if (p.effect.freeEliminate) mods.freeEliminate += p.effect.freeEliminate;
+  return mods;
+}
+
 // 配方揭曉隱藏題：答對才公開該類別下一隻稚靈的真身與稱號池（未知性核心）。
 // 答錯鎖到隔天——時間成本型代價，不扣任何資源（白帽原則）。
 export const REVEAL_RIDDLES = [
