@@ -3,6 +3,7 @@
 
 import { RANKS } from './progress.js';
 import * as world from './world.js';
+import { getCollection } from './collection.js';
 
 export const SHUYUAN_KEY = 'zz_shuyuan';
 export const SHUYUAN_VERSION = 1;
@@ -102,4 +103,46 @@ export function getCourtyards(meta, totals) {
     const tier = flourishTier(z.pct);
     return { ...c, done: z.done, total: z.total, pct: z.pct, tier, tierName: FLOURISH_TIERS[tier] };
   });
+}
+
+// ── 字珠實體化：品階顆數 → 庭園裝飾件數（有上限，避免撐爆畫面） ──
+export const DECOR_KINDS = {
+  path:    { name: '白珠鋪路',     grade: 0, per: 10, cap: 12, styles: ['卵石徑', '月牙磚', '流水紋'] },
+  lantern: { name: '青珠燈籠',     grade: 1, per: 5,  cap: 10, styles: ['竹骨紗燈', '荷花宮燈', '螢石吊燈'] },
+  koi:     { name: '金珠錦鯉盆栽', grade: 2, per: 3,  cap: 8,  styles: ['青瓷錦鯉缸', '古松盆景', '金鱗小池'] },
+  statue:  { name: '墨玉神獸雕像', grade: 3, per: 1,  cap: 12, styles: ['墨玉圓雕', '青銅古鑄', '潑墨石刻'] },
+};
+
+export function styleIndexOf(state, kind) {
+  const def = DECOR_KINDS[kind];
+  const idx = state.styles[kind];
+  return def && Number.isInteger(idx) && idx >= 0 && idx < def.styles.length ? idx : 0;
+}
+
+export function setDecorStyle(state, kind, styleIdx) {
+  const def = DECOR_KINDS[kind];
+  if (!def) return { ok: false, msg: '沒有這種裝飾' };
+  if (!Number.isInteger(styleIdx) || styleIdx < 0 || styleIdx >= def.styles.length) {
+    return { ok: false, msg: '沒有這個樣式' };
+  }
+  state.styles[kind] = styleIdx;
+  return { ok: true };
+}
+
+export function getDecorations(meta, state) {
+  const { counts } = getCollection(meta);
+  const out = [];
+  for (const [kind, def] of Object.entries(DECOR_KINDS)) {
+    const n = Math.min(def.cap, Math.floor((counts[def.grade] || 0) / def.per));
+    const styleIdx = styleIndexOf(state, kind);
+    for (let i = 0; i < n; i++) {
+      const id = `${kind}-${i}`;
+      const pos = state.placements[id] || { x: 50, y: 50 }; // Task 4 換成 defaultPos(kind, i)
+      out.push({
+        id, kind, name: def.name, styleIdx, styleName: def.styles[styleIdx],
+        x: pos.x, y: pos.y, custom: !!state.placements[id],
+      });
+    }
+  }
+  return out;
 }
