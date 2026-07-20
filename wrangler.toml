@@ -1,6 +1,11 @@
 name = "zizizhuji"
 pages_build_output_dir = "."
 
+# node:crypto（翰墨集市 HMAC 簽章 createHmac/randomBytes）需要 nodejs_compat，
+# 否則正式 CF Pages Functions 執行 market.js 會直接 500。
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
 [[d1_databases]]
 binding = "zizizhuji_db"
 database_name = "zizizhuji-db"
