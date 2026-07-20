@@ -10,3 +10,4 @@ node_modules/
 scripts/gen_*.log
 scripts/gen_*_stderr.log
 .wrangler/
+.dev.vars

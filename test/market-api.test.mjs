@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { GEAR_WHITELIST, tierOf, validPrice, isMarketOpen, weekKey, okNick, okClass, sigOf, PRICE_BAND } from '../functions/api/market.js';
+import { GEAR_WHITELIST, tierOf, validPrice, isMarketOpen, weekKey, okNick, okClass, sigOf, PRICE_BAND, marketOp } from '../functions/api/market.js';
 import { GEAR_LIST } from '../js/meta/gear.js';
 
 test('GEAR_WHITELIST 與前端 GEAR_LIST 完全同步（防雙表漂移）', () => {
@@ -56,4 +56,55 @@ test('sigOf：同 payload 同 secret 穩定；欄位變動即不同', () => {
   assert.equal(sigOf(p, 's1').length, 24);
   assert.notEqual(sigOf(p, 's1'), sigOf({ ...p, price: 51 }, 's1'));
   assert.notEqual(sigOf(p, 's1'), sigOf(p, 's2'));
+});
+
+function fakeRedis() {
+  const kv = new Map(), zsets = new Map(), counters = new Map();
+  return {
+    async get(k) { return kv.has(k) ? kv.get(k) : null; },
+    async set(k, v) { kv.set(k, typeof v === 'string' ? v : JSON.stringify(v)); return 'OK'; },
+    async del(...ks) { ks.forEach(k => kv.delete(k)); return ks.length; },
+    async incr(k) { const n = (counters.get(k) || 0) + 1; counters.set(k, n); return n; },
+    async zadd(k, { score, member }) { const m = zsets.get(k) || new Map(); m.set(member, score); zsets.set(k, m); return 1; },
+    async zrange(k, s, e, opts) {
+      const m = [...(zsets.get(k) || new Map()).entries()].sort((a, b) => (opts && opts.rev) ? b[1] - a[1] : a[1] - b[1]);
+      const rows = m.slice(s, e === -1 ? undefined : e + 1);
+      return (opts && opts.withScores) ? rows.flat() : rows.map(r => r[0]);
+    },
+    async zrem(k, ...ms) { const m = zsets.get(k); ms.forEach(x => m && m.delete(x)); return ms.length; },
+    async zincrby(k, d, member) { const m = zsets.get(k) || new Map(); m.set(member, (m.get(member) || 0) + d); zsets.set(k, m); return m.get(member); },
+  };
+}
+const ENV = { secret: 'test-secret', forceOpen: true, db: null }; // db=null → roster 驗證由 Task 6 注入
+const OPEN_TS = Date.UTC(2026, 6, 25, 4, 0); // 週六，開市中
+
+test('post：合法上架回 id+claimKey，list 查得到', async () => {
+  const r = fakeRedis();
+  const a = await marketOp(r, { op: 'post', gearId: 'langhao', price: 50, seller: '小明', classCode: 'demo' }, ENV, OPEN_TS);
+  assert.equal(a.ok, 1);
+  assert.equal(typeof a.id, 'string');
+  assert.equal(typeof a.claimKey, 'string');
+  const l = await marketOp(r, { op: 'list', classCode: 'demo', scope: 'class' }, ENV, OPEN_TS);
+  assert.equal(l.list.length, 1);
+  assert.equal(l.list[0].gearId, 'langhao');
+  assert.equal(l.list[0].price, 50);
+});
+test('post：非白名單裝備（神獸）、價格出帶、髒話暱稱全拒', async () => {
+  const r = fakeRedis();
+  assert.equal((await marketOp(r, { op: 'post', gearId: 'qilin', price: 50, seller: '小明', classCode: 'demo' }, ENV, OPEN_TS)).ok, 0);
+  assert.equal((await marketOp(r, { op: 'post', gearId: 'langhao', price: 999, seller: '小明', classCode: 'demo' }, ENV, OPEN_TS)).ok, 0);
+  assert.equal((await marketOp(r, { op: 'post', gearId: 'langhao', price: 50, seller: '笨蛋', classCode: 'demo' }, ENV, OPEN_TS)).ok, 0);
+});
+test('post：同賣家同時最多 3 筆', async () => {
+  const r = fakeRedis();
+  for (let i = 0; i < 3; i++) assert.equal((await marketOp(r, { op: 'post', gearId: 'langhao', price: 50, seller: '小明', classCode: 'demo' }, ENV, OPEN_TS)).ok, 1);
+  const d = await marketOp(r, { op: 'post', gearId: 'langhao', price: 50, seller: '小明', classCode: 'demo' }, ENV, OPEN_TS);
+  assert.equal(d.ok, 0);
+  assert.match(d.error, /3/);
+});
+test('post：非開市時段拒收（forceOpen=false）', async () => {
+  const r = fakeRedis();
+  const d = await marketOp(r, { op: 'post', gearId: 'langhao', price: 50, seller: '小明', classCode: 'demo' }, { ...ENV, forceOpen: false }, Date.UTC(2026, 6, 22, 4, 0));
+  assert.equal(d.ok, 0);
+  assert.match(d.error, /開市/);
 });
