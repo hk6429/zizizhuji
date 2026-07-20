@@ -68,3 +68,27 @@ test('限流：同 IP create 超過 30 次回 429 錯誤', async () => {
   for (let i = 0; i < 31; i++) last = await call(e, { op: 'create', snap: SNAP });
   assert.ok(last.error && last.error.includes('頻繁'));
 });
+
+test('挑戰書：challenge → accept → challengeResult 全流程，7 天 TTL、scope 保形', async () => {
+  const e = env();
+  const scope = { bank: 'chengyu', level: '國中', difficulty: '難' };
+  const c = await call(e, { op: 'challenge', seed: 123456, scope, nick: '甲同學', score: 480 });
+  assert.equal(c.ok, 1);
+  assert.match(c.code, /^[A-Z0-9]{6}$/);
+  const a = await call(e, { op: 'accept', code: c.code.toLowerCase() }); // 小寫也要吃
+  assert.equal(a.ok, 1);
+  assert.equal(a.seed, 123456);
+  assert.deepEqual(a.scope, scope);
+  assert.equal(a.challenger, '甲同學');
+  assert.equal(a.score, 480);
+  const r = await call(e, { op: 'challengeResult', code: c.code, nick: '乙同學', score: 520 });
+  assert.equal(r.ok, 1);
+  assert.deepEqual(r.challenger, { nick: '甲同學', score: 480 });
+  assert.deepEqual(r.accepter, { nick: '乙同學', score: 520 });
+});
+
+test('挑戰書：壞碼/過期碼回 ok:0，不炸 500', async () => {
+  const e = env();
+  assert.equal((await call(e, { op: 'accept', code: 'zz' })).ok, 0);
+  assert.equal((await call(e, { op: 'accept', code: 'AAAAAA' })).ok, 0);
+});

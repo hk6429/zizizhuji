@@ -3,11 +3,24 @@
 // POST { op:'join', code, snap }                → 加入，回 { seed, scope, opp }
 // POST { op:'push', code, role, state }         → 寫入自己的對戰狀態
 // POST { op:'poll', code, role }                → 讀對方狀態（附房間 meta）
-// 移植自 vocab-duel functions/api/room.js（僅 create/join/push/poll，challenge 系列留給 Task 8）。
+// —— 非同步挑戰書（不用同時在線）——
+// POST { op:'challenge', seed, scope, nick, score }   → 發戰帖，回 { code }（6 碼，7 天有效）
+// POST { op:'accept', code }                          → 領戰帖，回 { seed, scope, challenger, score }
+// POST { op:'challengeResult', code, nick, score }    → 回報應戰成績，回 { ok, challenger, accepter }
+// 移植自 vocab-duel functions/api/room.js（create/join/push/poll＋Task 8 追加 challenge 三段）。
 import { kvFor } from './_kv.js';
 
 const TTL = 600; // 房間 10 分鐘
+const CH_TTL = 7 * 86400; // 挑戰書 7 天
 const keyOf = (code) => `rt:room:${code}`;
+const chKey = (code) => `rt:ch:${code}`;
+const okChCode = (c) => typeof c === 'string' && /^[A-Z0-9]{6}$/.test(String(c).trim().toUpperCase());
+const genChCode = () => {
+  const cs = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // 避開易混淆字元
+  let s = '';
+  for (let i = 0; i < 6; i++) s += cs[Math.floor(Math.random() * cs.length)];
+  return s;
+};
 const clamp = (v, max) => Math.max(0, Math.min(max, Math.round(Number(v) || 0)));
 // 暱稱黑名單：常見中英文辱罵字詞（非窮舉），暱稱會顯示在對戰畫面，擋掉明顯攻擊性暱稱
 const BAD_WORDS = /笨蛋|白癡|智障|廢物|去死|三小|幹你|靠北|媽的|垃圾|腦殘|fuck|shit|bitch|asshole|idiot|stupid|retard/i;
@@ -145,6 +158,57 @@ export async function onRequestPost({ request, env }) {
         ok: 1,
         opp: o ? { snap: o.snap, state: o.state, hb: o.hb } : null,
         now: Date.now(),
+      }), { status: 200, headers });
+    }
+
+    if (op === 'challenge') {
+      if (await rateLimited(kv, request, 'room')) return new Response(JSON.stringify({ error: '操作太頻繁，請稍候再試' }), { status: 429, headers });
+      const { seed, nick, score } = body;
+      const scope = cleanScope(body.scope);
+      if (!okNick(nick) || !scope) return new Response(JSON.stringify({ error: 'bad req' }), { status: 400, headers });
+      const rec = {
+        seed: clamp(seed, 1e9),
+        scope,
+        nick: stripBad(nick).trim().slice(0, 12),
+        score: clamp(score, 999999),
+        ts: Date.now(),
+      };
+      if (!rec.nick) return new Response(JSON.stringify({ error: 'bad req' }), { status: 400, headers });
+      // 找一個沒人用的 6 碼戰帖號（最多試 8 次）
+      let code = '';
+      for (let i = 0; i < 8; i++) {
+        const c = genChCode();
+        if (!(await kv.exists(chKey(c)))) { code = c; break; }
+      }
+      if (!code) return new Response(JSON.stringify({ error: 'no code' }), { status: 500, headers });
+      await kv.set(chKey(code), JSON.stringify(rec), { ex: CH_TTL });
+      return new Response(JSON.stringify({ ok: 1, code }), { status: 200, headers });
+    }
+
+    if (op === 'accept') {
+      const code = String(body.code || '').trim().toUpperCase();
+      if (!okChCode(code)) return new Response(JSON.stringify({ ok: 0, error: '戰帖碼格式不對' }), { status: 200, headers });
+      const raw = await kv.get(chKey(code));
+      if (!raw) return new Response(JSON.stringify({ ok: 0, error: '戰帖不存在或已過期' }), { status: 200, headers });
+      const c = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      return new Response(JSON.stringify({ ok: 1, seed: c.seed, scope: c.scope, challenger: c.nick, score: c.score }), { status: 200, headers });
+    }
+
+    if (op === 'challengeResult') {
+      if (await rateLimited(kv, request, 'room')) return new Response(JSON.stringify({ error: '操作太頻繁，請稍候再試' }), { status: 429, headers });
+      const code = String(body.code || '').trim().toUpperCase();
+      const { nick, score } = body;
+      if (!okChCode(code) || !okNick(nick)) return new Response(JSON.stringify({ ok: 0, error: '資料不完整' }), { status: 200, headers });
+      const raw = await kv.get(chKey(code));
+      if (!raw) return new Response(JSON.stringify({ ok: 0, error: '戰帖不存在或已過期' }), { status: 200, headers });
+      const c = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      const accepter = { nick: stripBad(nick).trim().slice(0, 12), score: clamp(score, 999999), ts: Date.now() };
+      c.accepter = accepter; // 保留最近一次應戰結果
+      await kv.set(chKey(code), JSON.stringify(c), { ex: CH_TTL });
+      return new Response(JSON.stringify({
+        ok: 1,
+        challenger: { nick: c.nick, score: c.score },
+        accepter: { nick: accepter.nick, score: accepter.score },
       }), { status: 200, headers });
     }
 

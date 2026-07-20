@@ -8,7 +8,7 @@ import { applyEncounterEffect } from './meta/battle-adapter.js';
 import { getCtx, beginBattle, applyEliminate, showMolingLine, renderEvents } from './integration.js';
 import { saveMeta } from './meta/store.js';
 import * as kernel from './meta/kernel.js';
-import { loadBank, getLevel } from './bank.js';
+import { loadBank, getLevel, setLevel } from './bank.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
 
 const HP_SCALE = 2; // 與 app.js startBattle 的血量倍率一致
@@ -26,6 +26,8 @@ const api = (body) => ZZAPI.call('/api/rt-room', { body });
 let overlay, body, ctx;
 let room = null, my = null, oppSnap = null, qs = [], st = null;
 let pollTimer = 0, tickTimer = 0;
+let mode = 'live'; // 'live'＝即時 1v1（push/poll 同步）；'challenge'＝非同步應戰戰帖（單機打分數比大小）
+let chInfo = null; // 應戰模式：{ code, challenger, score }（戰帖發起人暱稱與其輸出分數）
 
 const gone = () => !body || !body.isConnected || overlay.hidden; // 使用者關閉 overlay 就停表，不留殭屍輪詢
 
@@ -83,8 +85,36 @@ async function join(code) {
   start();
 }
 
+/* 應戰非同步戰帖：取戰帖 seed/scope → 同一套題目與奇遇腳本 → 單機打完 20 題 → 回報比分 */
+async function acceptChallenge(code) {
+  ctx = getCtx();
+  if (!ctx) return offline('遊戲還在載入中，請稍候再試');
+  body.innerHTML = '<div class="rt-card"><p>核對戰帖…</p></div>';
+  const r = await api({ op: 'accept', code });
+  if (gone()) return;
+  if (!r || !r.ok) return offline((r && r.error) || '戰帖碼不對或已過期');
+  if (r.scope && r.scope.level && r.scope.level !== getLevel()) setLevel(r.scope.level);
+  beginBattle();
+  ctx.encounterOff = true;
+  my = mySnap();
+  mode = 'challenge';
+  chInfo = { code, challenger: r.challenger, score: r.score };
+  oppSnap = { nick: r.challenger, petName: '戰帖靈', lv: 1, hp: DUMMY_HP };
+  body.innerHTML = '<div class="rt-card"><p>載入題庫…</p></div>';
+  const bank = await loadBank((r.scope && r.scope.bank) || 'mixed');
+  if (gone()) return;
+  qs = buildQuestions(r.seed, bank, ROUNDS);
+  st = {
+    round: 0, correct: 0, dmg: 0, done: false, locked: false, finished: false,
+    state: { hpA: 100, hpB: DUMMY_HP, comboA: 0, comboB: 0 },
+    oppDmg: 0, oppRound: ROUNDS, oppCombo: 0, oppDone: true, oppHb: Date.now(),
+    q: null, encScript: buildEncounterScript(r.seed),
+  };
+  nextRound();
+}
+
 function renderHome() {
-  room = null; my = null; oppSnap = null; qs = []; st = null;
+  room = null; my = null; oppSnap = null; qs = []; st = null; mode = 'live'; chInfo = null;
   body.innerHTML = `
     <div class="rt-home">
       <button id="rt-create-btn" class="overlay-ghost-btn" type="button">⚔️ 開新房</button>
@@ -93,11 +123,20 @@ function renderHome() {
         <input id="rt-join-code" class="savesync-input" type="text" inputmode="numeric" maxlength="4" placeholder="4 位數房號">
         <button id="rt-join-btn" class="overlay-ghost-btn" type="button">加入</button>
       </div>
+      <p class="shuyuan-hint">收到戰帖？輸入 6 碼應戰：</p>
+      <div class="rt-join-row">
+        <input id="rt-ch-code" class="savesync-input" type="text" maxlength="6" placeholder="6 碼戰帖碼">
+        <button id="rt-ch-btn" class="overlay-ghost-btn" type="button">應戰</button>
+      </div>
     </div>`;
   $('rt-create-btn').addEventListener('click', create);
   $('rt-join-btn').addEventListener('click', () => {
     const code = $('rt-join-code').value.trim();
     if (/^\d{4}$/.test(code)) join(code);
+  });
+  $('rt-ch-btn').addEventListener('click', () => {
+    const code = $('rt-ch-code').value.trim();
+    if (/^[A-Za-z0-9]{6}$/.test(code)) acceptChallenge(code);
   });
 }
 
@@ -151,6 +190,7 @@ function myHp() { return Math.max(0, my.hp - st.oppDmg); }
 function oppHp() { return oppSnap ? Math.max(0, oppSnap.hp - st.dmg) : 0; }
 
 async function push() {
+  if (mode !== 'live') return; // 應戰模式是單機比分數，沒有房間可推送
   await api({
     op: 'push', code: room.code, role: room.role,
     state: { dmg: st.dmg, round: st.round, combo: st.state.comboA, correct: st.correct, done: st.done ? 1 : 0 },
@@ -182,6 +222,7 @@ function nextRound() {
   if (st.finished) return;
   if (st.round >= ROUNDS) {
     st.done = true;
+    if (mode === 'challenge') return finishChallenge();
     push();
     paintWaiting();
     return;
@@ -314,6 +355,51 @@ function finish(verdict) {
     <p>答對 ${st.correct}/${ROUNDS}・總輸出 ${st.dmg}</p>
     ${encourage}
     <button id="rt-again-btn" class="overlay-ghost-btn" type="button">再開一場</button>
+    <button id="rt-challenge-btn" class="overlay-ghost-btn" type="button">📮 發挑戰書</button>
+  </div>`;
+  $('rt-again-btn').addEventListener('click', renderHome);
+  $('rt-challenge-btn').addEventListener('click', sendChallenge);
+}
+
+// 把這場的輸出打包成非同步戰帖：同 seed／同 scope，讓對方之後任何時間單機應戰比分數
+async function sendChallenge() {
+  const btn = $('rt-challenge-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '發送中…'; }
+  const r = await api({ op: 'challenge', seed: room.seed, scope: my.scope, nick: my.nick, score: st.dmg });
+  if (!r || !r.ok) {
+    if (btn) { btn.disabled = false; btn.textContent = '📮 發挑戰書'; }
+    showMolingLine('發戰帖失敗，稍後再試');
+    return;
+  }
+  const text = `⚔️ 字字珠璣挑戰書：${my.nick} 在同一組 20 題打出 ${st.dmg} 輸出——到「即時對戰」輸入挑戰碼 ${r.code} 應戰！（7 天內有效）`;
+  try {
+    await navigator.clipboard.writeText(text);
+    showMolingLine('戰帖已複製到剪貼簿，貼給同學應戰吧！');
+  } catch {
+    showMolingLine(`戰帖碼：${r.code}（複製失敗，手動抄下吧）`);
+  }
+  if (btn) { btn.disabled = false; btn.textContent = '📮 已發送'; }
+}
+
+// 應戰模式收尾：回報成績給伺服器、比大小、顯示雙方輸出
+async function finishChallenge() {
+  if (st.finished) return;
+  st.finished = true;
+  stopTimers();
+  ctx.meta.ach.stats.battles += 1;
+  const win = st.dmg > chInfo.score;
+  const tie = st.dmg === chInfo.score;
+  if (win) ctx.meta.ach.stats.wins += 1;
+  ctx.encounterOff = false;
+  saveMeta(ctx.meta);
+  await api({ op: 'challengeResult', code: chInfo.code, nick: my.nick, score: st.dmg });
+  const line = win ? '應戰成功，打贏了戰帖！' : tie ? '打成平手，勢均力敵！' : '這次輸給戰帖了，練練再回來';
+  showMolingLine(line);
+  body.innerHTML = `<div class="rt-card">
+    <p class="rt-result">${win ? '🏆 應戰成功！' : tie ? '🤝 平手' : '💀 惜敗於戰帖'}</p>
+    <p>${esc(chInfo.challenger)} 的輸出：${chInfo.score}</p>
+    <p>你的輸出：${st.dmg}（答對 ${st.correct}/${ROUNDS}）</p>
+    <button id="rt-again-btn" class="overlay-ghost-btn" type="button">返回</button>
   </div>`;
   $('rt-again-btn').addEventListener('click', renderHome);
 }
