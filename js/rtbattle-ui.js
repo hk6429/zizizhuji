@@ -3,7 +3,8 @@
 // 戰鬥運算全走字字珠璣既有 kernel/adapter 管線（法寶/連對/寵物加成照舊），
 // 只是把「答題結果」透過房間輪詢同步給另一台裝置，而不是跟本機墨靈打。
 import { ZZAPI } from './meta/api.js';
-import { ROUNDS, ROUND_SEC, POLL_MS, buildQuestions, dealtDamage, judge } from './meta/rtbattle.js';
+import { ROUNDS, ROUND_SEC, POLL_MS, buildQuestions, dealtDamage, judge, buildEncounterScript } from './meta/rtbattle.js';
+import { applyEncounterEffect } from './meta/battle-adapter.js';
 import { getCtx, beginBattle, applyEliminate, showMolingLine, renderEvents } from './integration.js';
 import { saveMeta } from './meta/store.js';
 import * as kernel from './meta/kernel.js';
@@ -134,7 +135,7 @@ async function start() {
     round: 0, correct: 0, dmg: 0, done: false, locked: false, finished: false,
     state: { hpA: 100, hpB: DUMMY_HP, comboA: 0, comboB: 0 },
     oppDmg: 0, oppRound: 0, oppCombo: 0, oppDone: false, oppHb: Date.now(),
-    q: null,
+    q: null, encScript: buildEncounterScript(room.seed),
   };
   push();
   pollTimer = setInterval(poll, POLL_MS);
@@ -213,10 +214,19 @@ function answer(v) {
   st.dmg += dealtDamage(prev, st.state); // 累計輸出＝同步給對方的唯一數字
   if (correct) st.correct += 1;
   st.round += 1;
+  maybeScriptedEncounter();
   push();
   const lg = $('rt-log');
   if (lg) lg.textContent = correct ? `⚔️ 命中！累計輸出 ${st.dmg}` : (v === null ? '⏰ 時間到——這題沒拿到傷害' : '❌ 答錯——沒造成傷害');
   setTimeout(() => { if (!gone() && !st.finished) nextRound(); }, 900);
+}
+
+// 種子化奇遇：同 seed 雙方在同一題後觸發同一事件，效果只落在自己這台的 ctx.battle。
+function maybeScriptedEncounter() {
+  const ev = st.encScript.get(st.round); // st.round 已 +1（= 已答題數）
+  if (!ev) return;
+  applyEncounterEffect(ctx.battle, ev);
+  showMolingLine(`🎐 奇遇【${ev.name}】——${ev.desc}`);
 }
 
 /* ---------- 畫面 ---------- */

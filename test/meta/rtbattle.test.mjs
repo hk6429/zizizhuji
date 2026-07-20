@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mulberry32, buildQuestions, dealtDamage, judge, ROUNDS, DEAD_MS } from '../../js/meta/rtbattle.js';
+import { mulberry32, buildQuestions, dealtDamage, judge, ROUNDS, DEAD_MS, buildEncounterScript, ENCOUNTER_EVERY } from '../../js/meta/rtbattle.js';
+import { BATTLE_EVENTS } from '../../js/meta/encounter.js';
 
 const mkEntries = (n) => Array.from({ length: n }, (_, i) => ({
   id: `q-${String(i).padStart(3, '0')}`, type: '字音',
@@ -52,4 +53,25 @@ test('judge：血量歸零、雙完比血、斷線判勝、未分勝負', () => 
   assert.equal(judge({ ...base, myDone: true, oppDone: true, myHp: 60, oppHp: 60 }), 'draw');
   assert.equal(judge({ ...base, oppHbAgeMs: DEAD_MS + 1 }), 'win');
   assert.equal(judge(base), null);
+});
+
+test('buildEncounterScript：每 5 題一事件、同 seed 同序列、只用 adapter 支援的效果', () => {
+  const s1 = buildEncounterScript(99);
+  const s2 = buildEncounterScript(99);
+  assert.deepEqual([...s1.keys()], [5, 10, 15, 20]);
+  assert.deepEqual([...s1.entries()], [...s2.entries()]);
+  const okTypes = new Set(['doubleDamage', 'eliminate', 'comboThreshold']);
+  for (const ev of s1.values()) {
+    assert.ok(okTypes.has(ev.effect.type), `不支援的效果 ${ev.effect.type}`);
+    assert.ok(BATTLE_EVENTS.some(b => b.id === ev.id), '事件必須出自既有 BATTLE_EVENTS');
+  }
+});
+
+test('buildEncounterScript：不同 seed 大機率不同序列、相鄰不重複同事件', () => {
+  const ids = (m) => [...m.values()].map(e => e.id).join(',');
+  assert.notEqual(ids(buildEncounterScript(1)), ids(buildEncounterScript(2)));
+  for (let seed = 0; seed < 50; seed++) {
+    const seq = [...buildEncounterScript(seed).values()].map(e => e.id);
+    for (let i = 1; i < seq.length; i++) assert.notEqual(seq[i], seq[i - 1]);
+  }
 });
