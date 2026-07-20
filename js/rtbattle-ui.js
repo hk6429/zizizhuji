@@ -4,6 +4,7 @@
 // 只是把「答題結果」透過房間輪詢同步給另一台裝置，而不是跟本機墨靈打。
 import { ZZAPI } from './meta/api.js';
 import { ROUNDS, ROUND_SEC, POLL_MS, buildQuestions, dealtDamage, judge, buildEncounterScript } from './meta/rtbattle.js';
+import { safeBoard, buildLiveHerald } from './meta/livewall.js';
 import { applyEncounterEffect } from './meta/battle-adapter.js';
 import { getCtx, beginBattle, applyEliminate, showMolingLine, renderEvents } from './integration.js';
 import { saveMeta } from './meta/store.js';
@@ -22,12 +23,18 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => (
   { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
 ));
 const api = (body) => ZZAPI.call('/api/rt-room', { body });
+const liveApi = (body) => ZZAPI.call('/api/rt-live', { body });
 
 let overlay, body, ctx;
 let room = null, my = null, oppSnap = null, qs = [], st = null;
 let pollTimer = 0, tickTimer = 0;
 let mode = 'live'; // 'live'＝即時 1v1（push/poll 同步）；'challenge'＝非同步應戰戰帖（單機打分數比大小）
 let chInfo = null; // 應戰模式：{ code, challenger, score }（戰帖發起人暱稱與其輸出分數）
+
+// 全班戰況牆（老師開房、全班同 seed 同題）：lv = { mode:'host'|'student', code, pin?, nick?, seed, qn, scope, phase, qNo }
+let lv = null;
+let lvPollTimer = 0, lvTickTimer = 0;
+let lvBank = null, lvQs = [], lvCorrectCount = 0, lvLocked = false;
 
 const gone = () => !body || !body.isConnected || overlay.hidden; // 使用者關閉 overlay 就停表，不留殭屍輪詢
 
@@ -114,7 +121,9 @@ async function acceptChallenge(code) {
 }
 
 function renderHome() {
+  stopTimers();
   room = null; my = null; oppSnap = null; qs = []; st = null; mode = 'live'; chInfo = null;
+  lv = null; lvBank = null; lvQs = [];
   body.innerHTML = `
     <div class="rt-home">
       <button id="rt-create-btn" class="overlay-ghost-btn" type="button">⚔️ 開新房</button>
@@ -128,6 +137,11 @@ function renderHome() {
         <input id="rt-ch-code" class="savesync-input" type="text" maxlength="6" placeholder="6 碼戰帖碼">
         <button id="rt-ch-btn" class="overlay-ghost-btn" type="button">應戰</button>
       </div>
+      <p class="shuyuan-hint">全班一起打的隨堂戰況牆：</p>
+      <div class="rt-join-row">
+        <button id="lv-student-btn" class="overlay-ghost-btn" type="button">📡 隨堂戰況（學生）</button>
+        <button id="lv-host-btn" class="overlay-ghost-btn" type="button">🧑‍🏫 我是主持人（老師）</button>
+      </div>
     </div>`;
   $('rt-create-btn').addEventListener('click', create);
   $('rt-join-btn').addEventListener('click', () => {
@@ -137,6 +151,16 @@ function renderHome() {
   $('rt-ch-btn').addEventListener('click', () => {
     const code = $('rt-ch-code').value.trim();
     if (/^[A-Za-z0-9]{6}$/.test(code)) acceptChallenge(code);
+  });
+  $('lv-student-btn').addEventListener('click', () => {
+    ctx = getCtx();
+    if (!ctx) return offline('遊戲還在載入中，請稍候再試');
+    liveStudentForm();
+  });
+  $('lv-host-btn').addEventListener('click', () => {
+    ctx = getCtx();
+    if (!ctx) return offline('遊戲還在載入中，請稍候再試');
+    liveHostForm();
   });
 }
 
@@ -184,6 +208,8 @@ async function start() {
 function stopTimers() {
   clearInterval(pollTimer); clearInterval(tickTimer);
   pollTimer = 0; tickTimer = 0;
+  clearInterval(lvPollTimer); clearInterval(lvTickTimer);
+  lvPollTimer = 0; lvTickTimer = 0;
 }
 
 function myHp() { return Math.max(0, my.hp - st.oppDmg); }
@@ -399,6 +425,214 @@ async function finishChallenge() {
     <p class="rt-result">${win ? '🏆 應戰成功！' : tie ? '🤝 平手' : '💀 惜敗於戰帖'}</p>
     <p>${esc(chInfo.challenger)} 的輸出：${chInfo.score}</p>
     <p>你的輸出：${st.dmg}（答對 ${st.correct}/${ROUNDS}）</p>
+    <button id="rt-again-btn" class="overlay-ghost-btn" type="button">返回</button>
+  </div>`;
+  $('rt-again-btn').addEventListener('click', renderHome);
+}
+
+/* ---------- 全班戰況牆：老師主持面板 ---------- */
+
+function liveHostForm() {
+  body.innerHTML = `<div class="rt-card">
+    <p>🧑‍🏫 開設全班隨堂戰況——輸入班級碼與自訂主持碼：</p>
+    <div class="rt-join-row"><input id="lv-code" class="savesync-input" type="text" maxlength="16" placeholder="班級碼（如 五年三班）"></div>
+    <div class="rt-join-row"><input id="lv-pin" class="savesync-input" type="text" inputmode="numeric" maxlength="8" placeholder="自訂主持碼（4–8 位數字）"></div>
+    <div class="rt-join-row">
+      <label class="shuyuan-hint" for="lv-qn">題數：</label>
+      <select id="lv-qn"><option value="5">5</option><option value="10" selected>10</option><option value="15">15</option></select>
+    </div>
+    <button id="lv-start-btn" class="overlay-ghost-btn" type="button">開場</button>
+    <button id="rt-back-btn" class="overlay-ghost-btn" type="button">返回</button>
+  </div>`;
+  $('rt-back-btn').addEventListener('click', renderHome);
+  $('lv-start-btn').addEventListener('click', async () => {
+    const code = $('lv-code').value.trim();
+    const pin = $('lv-pin').value.trim();
+    const qn = Number($('lv-qn').value);
+    if (!code) return;
+    if (!/^\d{4,8}$/.test(pin)) return;
+    const scope = { bank: 'mixed', level: getLevel(), difficulty: 'all' };
+    body.innerHTML = '<div class="rt-card"><p>開場中…</p></div>';
+    const r = await liveApi({ op: 'start', code, pin, qn, scope });
+    if (gone()) return;
+    if (!r || !r.ok) return offline(r && r.error);
+    lv = { mode: 'host', code, pin, ...r.live };
+    liveHostPanel();
+  });
+}
+
+function liveStatusText() {
+  if (lv.phase === 'lobby') return '尚未開始';
+  if (lv.phase === 'q') return `第 ${lv.qNo}/${lv.qn} 題`;
+  return '已結束';
+}
+
+function liveHostPanel() {
+  clearInterval(lvPollTimer);
+  body.innerHTML = `<div class="rt-card">
+    <p>班級碼 <b>${esc(lv.code)}</b>・主持碼 ${esc(lv.pin)}</p>
+    <p class="shuyuan-hint" id="lv-status">階段：${liveStatusText()}</p>
+    <p class="shuyuan-hint" id="lv-answered">已答：0 人</p>
+    <button id="lv-next-btn" class="overlay-ghost-btn" type="button">${lv.phase === 'end' ? '查看戰報' : '下一題'}</button>
+    <button id="lv-end-btn" class="overlay-ghost-btn" type="button">結束</button>
+  </div>`;
+  $('lv-next-btn').addEventListener('click', async () => {
+    if (lv.phase === 'end') return liveHostShowEnd();
+    const r = await liveApi({ op: 'next', code: lv.code, pin: lv.pin });
+    if (gone()) return;
+    if (!r || !r.ok) return;
+    lv = { ...lv, ...r.live };
+    if (lv.phase === 'end') return liveHostShowEnd();
+    liveHostPanel();
+  });
+  $('lv-end-btn').addEventListener('click', async () => {
+    const r = await liveApi({ op: 'end', code: lv.code, pin: lv.pin });
+    if (gone()) return;
+    if (!r || !r.ok) return;
+    lv = { ...lv, ...r.live };
+    liveHostShowEnd();
+  });
+  lvPollTimer = setInterval(async () => {
+    if (gone()) return clearInterval(lvPollTimer);
+    const r = await liveApi({ op: 'roster', code: lv.code });
+    if (gone() || !r || !r.ok) return;
+    const answered = lv.qNo > 0 ? r.list.filter((x) => x.qNo >= lv.qNo).length : 0;
+    const el = $('lv-answered');
+    if (el) el.textContent = `已答：${answered} 人`;
+  }, 3000);
+}
+
+async function liveHostShowEnd() {
+  clearInterval(lvPollTimer);
+  const r = await liveApi({ op: 'roster', code: lv.code });
+  if (gone()) return;
+  const rows = (r && r.list) || [];
+  const board = safeBoard(rows, '', 5);
+  const herald = buildLiveHerald({ week: new Date().toISOString().slice(0, 10), rows });
+  body.innerHTML = `<div class="rt-card">
+    ${herald.map((l) => `<p>${esc(l)}</p>`).join('')}
+    <ol class="rt-live-board">${board.top.map((x) => `<li>${esc(x.nick)}・答對 ${x.score} 題</li>`).join('')}</ol>
+    <button id="rt-again-btn" class="overlay-ghost-btn" type="button">返回</button>
+  </div>`;
+  $('rt-again-btn').addEventListener('click', renderHome);
+}
+
+/* ---------- 全班戰況牆：學生入班答題 ---------- */
+
+function liveStudentForm() {
+  const prefillCode = ctx.meta.selfstudy.classCode || '';
+  const prefillNick = ctx.meta.selfstudy.nick || '';
+  body.innerHTML = `<div class="rt-card">
+    <p>📡 加入全班隨堂戰況：</p>
+    <div class="rt-join-row"><input id="lv-s-code" class="savesync-input" type="text" maxlength="16" placeholder="班級碼" value="${esc(prefillCode)}"></div>
+    <div class="rt-join-row"><input id="lv-s-nick" class="savesync-input" type="text" maxlength="12" placeholder="暱稱" value="${esc(prefillNick)}"></div>
+    <button id="lv-s-join-btn" class="overlay-ghost-btn" type="button">加入</button>
+    <button id="rt-back-btn" class="overlay-ghost-btn" type="button">返回</button>
+  </div>`;
+  $('rt-back-btn').addEventListener('click', renderHome);
+  $('lv-s-join-btn').addEventListener('click', () => {
+    const code = $('lv-s-code').value.trim();
+    const nick = $('lv-s-nick').value.trim().slice(0, 12);
+    if (!code || !nick) return;
+    ctx.meta.selfstudy.classCode = code;
+    ctx.meta.selfstudy.nick = nick;
+    saveMeta(ctx.meta);
+    lv = { mode: 'student', code, nick, qNo: 0, phase: 'lobby' };
+    lvBank = null; lvQs = []; lvCorrectCount = 0;
+    liveStudentWait();
+  });
+}
+
+function liveStudentWait() {
+  clearInterval(lvPollTimer);
+  body.innerHTML = '<div class="rt-card"><p>等待老師開始隨堂戰況…</p></div>';
+  lvPollTimer = setInterval(liveStudentPoll, POLL_MS * 2);
+  liveStudentPoll();
+}
+
+async function liveStudentPoll() {
+  if (gone()) return clearInterval(lvPollTimer);
+  const r = await liveApi({ op: 'state', code: lv.code });
+  if (gone() || !r || !r.ok || !r.live) return;
+  const prevQNo = lv.qNo;
+  lv = { ...lv, ...r.live };
+  if (lv.phase === 'end') {
+    clearInterval(lvPollTimer);
+    return liveStudentEnd();
+  }
+  if (lv.phase === 'q' && lv.qNo !== prevQNo) await liveStudentLoadQuestion();
+}
+
+async function liveStudentLoadQuestion() {
+  clearInterval(lvPollTimer); // 出題期間停輪詢，答完再恢復
+  if (!lvBank) {
+    if (lv.scope && lv.scope.level && lv.scope.level !== getLevel()) setLevel(lv.scope.level);
+    lvBank = await loadBank((lv.scope && lv.scope.bank) || 'mixed');
+    if (gone()) return;
+    lvQs = buildQuestions(lv.seed, lvBank, lv.qn);
+  }
+  const q = lvQs[lv.qNo - 1];
+  if (!q) return liveStudentResume();
+  lvLocked = false;
+  paintLiveQuestion(q, Date.now() + ROUND_SEC * 1000);
+}
+
+function paintLiveQuestion(q, deadline) {
+  body.innerHTML = `<div class="rt-q">
+    <div class="shuyuan-hint"><span id="lv-timer">${ROUND_SEC}s</span>・第 ${lv.qNo}/${lv.qn} 題</div>
+    <p>${esc(q.question)}</p>
+    <div id="lv-options"></div>
+  </div>`;
+  const optionsEl = $('lv-options');
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'oath-btn';
+    btn.textContent = `${STEMS[i] || i + 1}、${opt}`;
+    btn.dataset.value = opt;
+    optionsEl.appendChild(btn);
+  });
+  optionsEl.addEventListener('click', (ev) => {
+    const btn = ev.target.closest('button');
+    if (!btn || lvLocked) return;
+    optionsEl.querySelectorAll('button').forEach((b) => { b.disabled = true; });
+    liveStudentAnswer(btn.dataset.value === q.answer);
+  });
+  clearInterval(lvTickTimer);
+  lvTickTimer = setInterval(() => {
+    if (gone()) return clearInterval(lvTickTimer);
+    const left = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+    const t = $('lv-timer');
+    if (t) t.textContent = `${left}s`;
+    if (left <= 0 && !lvLocked) liveStudentAnswer(false);
+  }, 250);
+}
+
+async function liveStudentAnswer(correct) {
+  if (lvLocked) return;
+  lvLocked = true;
+  clearInterval(lvTickTimer);
+  if (correct) lvCorrectCount += 1;
+  await liveApi({ op: 'answer', code: lv.code, nick: lv.nick, qNo: lv.qNo, correct });
+  if (gone()) return;
+  liveStudentResume();
+}
+
+function liveStudentResume() {
+  body.innerHTML = `<div class="rt-card"><p>已作答第 ${lv.qNo} 題（答對 ${lvCorrectCount} 題）——等待老師下一題…</p></div>`;
+  lvPollTimer = setInterval(liveStudentPoll, POLL_MS * 2);
+}
+
+async function liveStudentEnd() {
+  const r = await liveApi({ op: 'roster', code: lv.code });
+  if (gone()) return;
+  const rows = (r && r.list) || [];
+  const board = safeBoard(rows, lv.nick, 5);
+  body.innerHTML = `<div class="rt-card">
+    <p>🏁 隨堂戰況結束！</p>
+    <ol class="rt-live-board">${board.top.map((x) => `<li>${esc(x.nick)}・答對 ${x.score} 題</li>`).join('')}</ol>
+    ${board.me ? `<p>你是第 ${board.me.rank} 名・答對 ${board.me.score} 題</p>` : ''}
+    <p class="shuyuan-hint">跟上一場的自己比就是進步</p>
     <button id="rt-again-btn" class="overlay-ghost-btn" type="button">返回</button>
   </div>`;
   $('rt-again-btn').addEventListener('click', renderHome);
