@@ -163,6 +163,16 @@
             <span class="pet-entry__arrow" aria-hidden="true">›</span>
           </button>
 
+          <!-- 神獸融合坊入口 -->
+          <button id="btn-fusion" class="pet-entry" type="button">
+            <img class="pet-entry__img" src="assets/web/fusion-forge-bg.jpg" alt="" loading="lazy">
+            <span class="pet-entry__body">
+              <span class="pet-entry__title">融合坊</span>
+              <span class="pet-entry__sub">雙親滿級可融合出稚靈</span>
+            </span>
+            <span class="pet-entry__arrow" aria-hidden="true">›</span>
+          </button>
+
           <!-- 自學・墨池 ＆ 文氣爭鋒 -->
           <div class="extra-grid">
             <button id="btn-selfstudy" class="extra-entry extra-entry--study" type="button">
@@ -194,6 +204,30 @@
               <span class="extra-entry__body">
                 <span class="extra-entry__title">字珠寶殿</span>
                 <span class="extra-entry__sub">看看你煉成的每一顆字珠</span>
+              </span>
+              <span class="pet-entry__arrow" aria-hidden="true">›</span>
+            </button>
+            <button id="btn-market" class="extra-entry extra-entry--market" type="button">
+              <span class="extra-entry__icon" aria-hidden="true">🏮</span>
+              <span class="extra-entry__body">
+                <span class="extra-entry__title">翰墨集市</span>
+                <span class="extra-entry__sub">週末開市，用字珠交換文房四寶</span>
+              </span>
+              <span class="pet-entry__arrow" aria-hidden="true">›</span>
+            </button>
+            <button id="btn-shuyuan" class="extra-entry extra-entry--shuyuan" type="button">
+              <span class="extra-entry__icon" aria-hidden="true">院</span>
+              <span class="extra-entry__body">
+                <span class="extra-entry__title">字靈書院</span>
+                <span class="extra-entry__sub">用煉成的字珠，蓋出你的山水書院</span>
+              </span>
+              <span class="pet-entry__arrow" aria-hidden="true">›</span>
+            </button>
+            <button id="btn-rtbattle" class="extra-entry extra-entry--rt" type="button">
+              <span class="extra-entry__icon" aria-hidden="true">⚔</span>
+              <span class="extra-entry__body">
+                <span class="extra-entry__title">即時對戰</span>
+                <span class="extra-entry__sub">跟同學連線比拚</span>
               </span>
               <span class="pet-entry__arrow" aria-hidden="true">›</span>
             </button>
@@ -270,6 +304,49 @@
     </div>
   </div>
 
+  <!-- 字靈書院 -->
+  <div id="shuyuan-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="shuyuan-title">
+    <div class="meta-overlay__card shuyuan-card">
+      <h2 id="shuyuan-title" class="overlay-title">字靈書院</h2>
+      <div id="shuyuan-scene" class="shuyuan-scene" aria-label="書院庭園場景"></div>
+      <p class="shuyuan-hint">拖曳裝飾可自由擺放；點裝飾換樣式；點山門或院落可題匾額、掛對聯。</p>
+      <div class="shuyuan-toolbar">
+        <button id="shuyuan-wall-btn" class="overlay-ghost-btn" type="button">成就牆</button>
+        <button id="shuyuan-reset" class="overlay-ghost-btn" type="button">還原擺設</button>
+        <button id="shuyuan-close" class="overlay-ghost-btn" type="button">關閉</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 即時對戰 -->
+  <div id="rt-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="rt-title">
+    <div class="meta-overlay__card">
+      <h2 id="rt-title" class="overlay-title">⚔️ 即時對戰</h2>
+      <div id="rt-body"></div>
+      <button id="rt-close-btn" class="overlay-ghost-btn" type="button">關閉</button>
+    </div>
+  </div>
+
+  <!-- 書院：裝飾換樣式 -->
+  <div id="shuyuan-style-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="shuyuan-style-title">
+    <div class="meta-overlay__card">
+      <h2 id="shuyuan-style-title" class="overlay-title">換個樣式</h2>
+      <div id="shuyuan-style-list"></div>
+      <button id="shuyuan-style-close" class="overlay-ghost-btn" type="button">關閉</button>
+    </div>
+  </div>
+  <!-- 書院：題匾額／掛對聯 -->
+  <div id="shuyuan-plaque-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="shuyuan-plaque-title">
+    <div class="meta-overlay__card">
+      <h2 id="shuyuan-plaque-title" class="overlay-title">題匾額</h2>
+      <div id="shuyuan-plaque-body"></div>
+      <div class="shuyuan-toolbar">
+        <button id="shuyuan-plaque-save" class="overlay-ghost-btn" type="button">掛上匾額</button>
+        <button id="shuyuan-plaque-close" class="overlay-ghost-btn" type="button">取消</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 事件 toast（八角機制層演出） -->
   <div id="event-toasts" aria-live="polite"></div>
 
@@ -336,6 +413,24 @@
         <div id="pet-equip-grid" class="pet-equip-grid"></div>
       </div>
       <button id="pet-close" class="overlay-ghost-btn" type="button">收起</button>
+    </div>
+  </div>
+
+  <!-- 神獸融合坊：墨晶／隱藏題揭曉／融合／稚靈收藏 -->
+  <div id="fusion-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="fusion-title">
+    <div class="meta-overlay__card fusion-panel">
+      <div class="fusion-head">
+        <h2 id="fusion-title" class="overlay-title">神獸融合坊</h2>
+        <span class="fusion-crystals">墨晶 <b id="fusion-crystal-balance">0</b></span>
+      </div>
+      <div class="fusion-tabs" role="tablist">
+        <button class="fusion-tab is-active" data-tab="forge" type="button" role="tab" aria-selected="true" aria-controls="fusion-panel-forge" id="fusion-tab-forge">融合</button>
+        <button class="fusion-tab" data-tab="cubs" type="button" role="tab" aria-selected="false" aria-controls="fusion-panel-cubs" id="fusion-tab-cubs">稚靈收藏</button>
+      </div>
+      <div id="fusion-panel-forge" class="fusion-panel-body" role="tabpanel" aria-labelledby="fusion-tab-forge"></div>
+      <div id="fusion-panel-cubs" class="fusion-panel-body" hidden role="tabpanel" aria-labelledby="fusion-tab-cubs"></div>
+      <canvas id="fusion-card-canvas" width="1080" height="1350" hidden></canvas>
+      <button id="fusion-close" class="overlay-ghost-btn" type="button">收起</button>
     </div>
   </div>
 
@@ -417,6 +512,37 @@
       <div id="pearls-grid" class="pearls-grid"></div>
       <p id="pearls-empty" class="pearls-empty" hidden>寶殿還空著——把一題練到滾瓜爛熟，就會煉成第一顆字珠！</p>
       <button id="pearls-close" class="overlay-ghost-btn" type="button">收起</button>
+    </div>
+  </div>
+
+  <!-- 翰墨集市：週末開市，班級／全站二手交易文房四寶（字珠計價，不可兌換現實金錢） -->
+  <div id="market-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="market-title">
+    <div class="meta-overlay__card mkt-card-wrap">
+      <h2 id="market-title" class="overlay-title">翰墨集市</h2>
+      <div id="mkt-status" class="mkt-status"></div>
+      <details id="mkt-rules" class="mkt-rules" open>
+        <summary class="mkt-rules__summary">集市規則（點看／收起）</summary>
+        <ul class="mkt-rules__list">
+          <li>定價帶：凡品 40–120 字珠・良品 75–225 字珠・珍品 150–450 字珠</li>
+          <li>成交需付 10% 手續費（用來維持集市運作）</li>
+          <li>每人每日限購 3 件；同時最多掛 3 筆</li>
+          <li>珍品每班每週限量 10 件</li>
+          <li>開市時間：每週五 16:00 起，至週日夜間 24:00</li>
+          <li>字珠不可兌換現實金錢或禮物</li>
+          <li>神獸是夥伴不是商品——集市只交易文房四寶</li>
+        </ul>
+      </details>
+      <div id="mkt-tabs" class="mkt-tabs">
+        <button id="mkt-tab-class" class="mkt-tab is-active" type="button">本班</button>
+        <button id="mkt-tab-pub" class="mkt-tab" type="button">全站</button>
+        <button id="mkt-tab-stars" class="mkt-tab" type="button">🏆 集市達人</button>
+        <button id="mkt-tab-ever" class="mkt-tab" type="button">📜 曾經持有</button>
+      </div>
+      <div id="mkt-list" class="mkt-list"></div>
+      <p id="mkt-empty" class="mkt-empty" hidden>集市還空著，週末再來看看有沒有人上架吧！</p>
+      <div id="mkt-stars" class="mkt-stars" hidden></div>
+      <div id="mkt-ever" class="mkt-ever-list" hidden></div>
+      <button id="market-close" class="overlay-ghost-btn" type="button">收起</button>
     </div>
   </div>
 

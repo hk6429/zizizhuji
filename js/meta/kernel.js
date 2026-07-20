@@ -18,6 +18,7 @@ import * as weakness from './weakness.js';
 import * as summaryMod from './summary.js';
 import * as adapter from './battle-adapter.js';
 import { recordAnswer } from '../leitner.js';
+import * as fusion from './fusion-store.js';
 
 const XP_PRACTICE = 10;
 const XP_BATTLE = 15;
@@ -189,6 +190,16 @@ function processAnswer(ctx, id, correct, mode) {
     }
   }
 
+  // 墨晶掉落：答對一題「曾經答錯過」的題（攻克弱點），每日上限見 CRYSTAL_DAILY_CAP。
+  // 快照必須取在 Leitner/collection 更新之前，否則本題的錯誤紀錄會污染判定。
+  const hadWrongBefore = !!(id && meta.collection[id] && meta.collection[id].wrong > 0);
+  if (correct && hadWrongBefore) {
+    const cr2 = fusion.earnCrystals(meta, 1, today);
+    if (cr2.earned > 0) {
+      events.push({ type: 'crystalEarned', payload: { amount: cr2.earned }, fx: 'crystal-glint' });
+    }
+  }
+
   // Leitner ＋ 圖鑑（煉成/品階/蒙塵/擦亮）
   if (id && ctx.leitner) {
     recordAnswer(ctx.leitner, id, correct);
@@ -237,15 +248,17 @@ function processAnswer(ctx, id, correct, mode) {
   // 成就（連對/累計題數/守燈類會在答題中途成立）
   pushAchievements(ctx, events);
 
-  // 奇遇
-  const er = encounter.rollEncounter(meta, mode, ctx.rng, { rate: mults.encounterRate });
-  if (er.event) {
-    events.push({ type: 'encounter', payload: er.event, fx: 'encounter-swirl' });
-    const eff = er.event.effect || {};
-    if (eff.type === 'pearls') grantPearls(ctx, eff.amount, 'encounter', events);
-    else if (eff.type === 'doublePearls') ctx.doublePearlNext = true;
-    else if (mode === 'battle' && ctx.battle) adapter.applyEncounterEffect(ctx.battle, er.event);
-    // eff.type==='challenge'（字妖突襲）由 UI 插入挑戰題；答對用 adapter.applyHeal 回血
+  // 奇遇（即時對戰要用 Task 7 的種子化奇遇腳本，必須關掉本機隨機擲骰，否則雙方事件不同步）
+  if (!ctx.encounterOff) {
+    const er = encounter.rollEncounter(meta, mode, ctx.rng, { rate: mults.encounterRate });
+    if (er.event) {
+      events.push({ type: 'encounter', payload: er.event, fx: 'encounter-swirl' });
+      const eff = er.event.effect || {};
+      if (eff.type === 'pearls') grantPearls(ctx, eff.amount, 'encounter', events);
+      else if (eff.type === 'doublePearls') ctx.doublePearlNext = true;
+      else if (mode === 'battle' && ctx.battle) adapter.applyEncounterEffect(ctx.battle, er.event);
+      // eff.type==='challenge'（字妖突襲）由 UI 插入挑戰題；答對用 adapter.applyHeal 回血
+    }
   }
 
   s.events.push(...events);

@@ -1942,3 +1942,244 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 .omen-line--mingmu .omen-glyph  { background: #b0563a; }
 .omen-line--lianxin .omen-glyph { background: #c05a78; }
 .omen-line--wenqu .omen-glyph   { background: #3b6f8a; }
+
+/* ───────── 字靈書院 ───────── */
+.shuyuan-card { max-width: 720px; width: min(94vw, 720px); }
+.shuyuan-scene {
+  position: relative; width: 100%; aspect-ratio: 4 / 3;
+  border-radius: 12px; overflow: hidden;
+  background: linear-gradient(180deg, #e8e2d4 0%, #d8cfb8 55%, #c9bda0 100%); /* 缺底圖時的宣紙色 */
+}
+.sy-bg, .sy-bg img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.sy-emoji { display: inline-flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 1.6em; }
+.sy-gate {
+  position: absolute; left: 50%; bottom: 3%; transform: translateX(-50%);
+  width: 26%; aspect-ratio: 3 / 4; /* 正式圖 gate-s{n}.jpg 出圖比例 3:4 */
+  border: 0; padding: 0; background: none; cursor: pointer; z-index: 3;
+  display: flex; flex-direction: column; align-items: center;
+}
+.sy-gate img { width: 100%; height: 100%; object-fit: contain; }
+.sy-court {
+  position: absolute; width: 22%; aspect-ratio: 4 / 3; /* 正式圖 court-*-t{n}.jpg 比例 4:3 */
+  border: 0; padding: 0; background: none; cursor: pointer; z-index: 2;
+  display: flex; flex-direction: column; align-items: center;
+}
+.sy-court img { width: 100%; height: 100%; object-fit: contain; }
+.sy-court--yin { left: 6%; top: 34%; }
+.sy-court--xing { left: 39%; top: 12%; }
+.sy-court--chengyu { right: 6%; top: 34%; }
+.sy-plaque {
+  position: absolute; top: 6%; left: 50%; transform: translateX(-50%);
+  background: rgba(43, 32, 24, .85); color: #f3e9c9; border: 1px solid #b49b5a;
+  padding: .1em .5em; border-radius: 4px; font-size: .85rem; letter-spacing: .15em; white-space: nowrap;
+}
+.sy-plaque--small { font-size: .72rem; }
+.sy-gate-rank, .sy-court-meta {
+  position: absolute; bottom: -1.4em; left: 50%; transform: translateX(-50%);
+  font-size: .7rem; color: #5a4a33; white-space: nowrap;
+}
+.sy-couplet {
+  position: absolute; z-index: 3; writing-mode: vertical-rl; letter-spacing: .2em;
+  background: #a33b2e; color: #f7ecd0; padding: .5em .15em; border-radius: 3px; font-size: .78rem;
+}
+.sy-couplet--up { left: 31%; bottom: 8%; }
+.sy-couplet--down { right: 31%; bottom: 8%; }
+.sy-decor {
+  position: absolute; width: 9%; aspect-ratio: 1 / 1; /* 正式圖 decor-*.png 透明方圖 */
+  transform: translate(-50%, -50%); cursor: grab; z-index: 4; touch-action: none;
+}
+.sy-decor img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.sy-decor.is-dragging { cursor: grabbing; z-index: 9; filter: drop-shadow(0 4px 8px rgba(0,0,0,.35)); }
+.shuyuan-hint { font-size: .8rem; color: #6b5b44; margin: .6em 0 .2em; }
+.shuyuan-toolbar { display: flex; gap: .5em; justify-content: flex-end; flex-wrap: wrap; }
+.sy-style-opt { display: inline-flex; flex-direction: column; align-items: center; gap: .3em; margin: .3em; padding: .5em; border: 2px solid transparent; border-radius: 8px; background: #efe8d8; cursor: pointer; width: 7em; }
+.sy-style-opt img { width: 4em; height: 4em; object-fit: contain; }
+.sy-style-opt.is-active { border-color: #a33b2e; }
+.sy-char-bank { display: grid; grid-template-columns: repeat(8, 1fr); gap: .35em; margin: .5em 0; }
+.sy-char { font-size: 1.15rem; padding: .4em 0; border: 1px solid #c9b98f; border-radius: 6px; background: #f7f1e2; cursor: pointer; }
+.sy-preview b { letter-spacing: .2em; }
+.sy-couplet-list { display: flex; flex-direction: column; gap: .35em; }
+.sy-couplet-opt { text-align: left; padding: .45em .6em; border: 1px solid #c9b98f; border-radius: 6px; background: #f7f1e2; cursor: pointer; }
+.sy-sub { margin: .8em 0 .3em; font-size: .95rem; }
+
+.sy-epic { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; background: rgba(20, 12, 6, .6); animation: syFade .3s ease; }
+.sy-epic-card { background: #f7f1e2; border: 2px solid #b49b5a; border-radius: 14px; padding: 1.4em 1.8em; text-align: center; max-width: 22em; animation: syPop .45s cubic-bezier(.2, 1.4, .4, 1); }
+.sy-epic-icon { font-size: 3rem; animation: syGlow 1.6s ease infinite alternate; }
+.sy-epic-card h3 { margin: .4em 0; letter-spacing: .1em; }
+.sy-epic-card button { margin: .6em .3em 0; }
+@keyframes syFade { from { opacity: 0; } }
+@keyframes syPop { from { transform: scale(.6); opacity: 0; } }
+@keyframes syGlow { from { filter: drop-shadow(0 0 2px #d8b45a); } to { filter: drop-shadow(0 0 14px #d8b45a); } }
+.sy-wall-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(11em, 1fr)); gap: .5em; padding: .5em; }
+.sy-wall-item { display: flex; flex-direction: column; gap: .15em; background: #efe8d8; border: 1px solid #c9b98f; border-radius: 8px; padding: .55em .7em; font-size: .82rem; }
+.sy-wall-item i { color: #8a7a5e; font-style: normal; font-size: .72rem; }
+
+/* 即時對戰：房號大字 */
+.rt-code { font-size: 3rem; letter-spacing: .3em; text-align: center; font-weight: 700; margin: .5em 0; }
+
+/* =========================================================
+   神獸融合坊：overlay + 融合分頁 + 稚靈收藏分頁
+   ========================================================= */
+
+.fusion-panel { max-width: 560px; width: 92vw; max-height: 88vh; display: flex; flex-direction: column; }
+.fusion-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.fusion-head .overlay-title { margin: 0; }
+.fusion-crystals { font-size: .85rem; color: var(--ink-soft); white-space: nowrap; }
+.fusion-crystals b { color: var(--gold-text); font-size: 1rem; }
+
+.fusion-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.fusion-tab {
+  flex: 1; padding: 8px 0; border: 1px solid rgba(43,58,74,.2); border-radius: 10px;
+  background: var(--paper-dim); color: var(--ink-soft); font-family: var(--serif);
+  font-weight: 700; letter-spacing: .1em; cursor: pointer;
+}
+.fusion-tab.is-active { background: var(--teal-deep); color: var(--paper-hi); border-color: var(--teal-deep); }
+.fusion-panel-body { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+/* ---- 融合分頁：類別卡 ---- */
+.fusion-cat-card {
+  display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;
+  padding: 10px; border: 1px solid rgba(201,162,39,.4); border-radius: 12px;
+  background: var(--paper-hi); font-family: var(--sans); color: var(--ink);
+}
+.fusion-cat-card__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-family: var(--serif); }
+.fusion-elig { font-size: .74rem; color: var(--ink-soft); }
+.fusion-cat-card__recipe { display: flex; align-items: center; gap: 10px; }
+.fusion-recipe-img {
+  width: 48px; height: 48px; flex: none; border-radius: 10px; object-fit: cover;
+  background: var(--ink);
+}
+.fusion-recipe-img.is-silhouette, .is-silhouette { filter: brightness(0) opacity(.75); }
+.fusion-recipe-unknown { font-family: var(--serif); font-weight: 800; color: var(--ink-soft); }
+.fusion-recipe-known { font-size: .84rem; color: var(--teal-deep); }
+.fusion-reveal-btn, .fusion-start-btn, .fusion-cancel-btn, .fusion-cub-card__btn {
+  padding: 7px 10px; border-radius: 8px; font-size: .78rem; cursor: pointer;
+  border: 1px solid rgba(43,58,74,.2); background: var(--paper-dim); color: var(--ink);
+}
+.fusion-start-btn { background: var(--teal-deep); color: var(--paper-hi); border-color: var(--teal-deep); }
+.fusion-start-btn:disabled { background: var(--paper-dim); color: var(--ink-soft); cursor: default; }
+.fusion-reveal-btn:disabled { opacity: .6; cursor: default; }
+
+.fusion-pet-picker { display: flex; flex-direction: column; gap: 8px; }
+.fusion-pet-picker__list { display: flex; flex-wrap: wrap; gap: 6px; }
+.fusion-pet-picker__btn {
+  padding: 6px 10px; border-radius: 8px; font-size: .78rem; cursor: pointer;
+  border: 1px solid rgba(43,58,74,.2); background: var(--paper-dim); color: var(--ink);
+}
+.fusion-pet-picker__btn.is-picked { background: var(--rouge); color: var(--paper-hi); border-color: var(--rouge); }
+
+.fusion-confirm p { margin: 0 0 8px; font-size: .84rem; color: var(--ink-soft); }
+
+.fusion-result {
+  margin-bottom: 12px; padding: 10px; border-radius: 10px;
+  background: var(--paper-dim); font-size: .84rem; color: var(--ink);
+}
+.fusion-result__born { font-style: italic; color: var(--teal-deep); margin: 0 0 6px; }
+.fusion-result__title { font-family: var(--serif); font-weight: 800; margin: 0; }
+.fusion-result__line { margin: 0 0 6px; color: var(--ink-soft); }
+.fusion-result__pearls { margin: 0 0 8px; color: var(--gold-text); font-weight: 700; }
+
+.fusion-passive-picker { display: flex; flex-direction: column; gap: 8px; }
+.fusion-passive-picker__hint { font-size: .84rem; color: var(--ink-soft); margin: 0; }
+.fusion-passive-btn {
+  display: flex; flex-direction: column; gap: 3px; text-align: left;
+  padding: 10px; border-radius: 10px; cursor: pointer;
+  border: 1px solid rgba(201,162,39,.4); background: var(--paper-hi); color: var(--ink);
+}
+.fusion-passive-btn span { font-size: .78rem; color: var(--ink-soft); }
+
+.fusion-nickname-panel { display: flex; flex-direction: column; gap: 8px; }
+.fusion-nickname-input {
+  padding: 8px 10px; border-radius: 8px; font-size: .9rem;
+  border: 1px solid rgba(43,58,74,.3); background: var(--paper-hi); color: var(--ink);
+}
+.fusion-card-panel { display: flex; flex-direction: column; gap: 8px; }
+#fusion-card-canvas { width: 100%; max-width: 320px; margin: 0 auto; border-radius: 10px; }
+
+.fusion-riddle-panel { display: flex; flex-direction: column; gap: 8px; }
+.fusion-riddle-panel__q { font-size: .88rem; color: var(--ink); margin: 0; }
+.fusion-riddle-panel__opt {
+  padding: 8px 10px; border-radius: 8px; font-size: .84rem; text-align: left; cursor: pointer;
+  border: 1px solid rgba(43,58,74,.2); background: var(--paper-dim); color: var(--ink);
+}
+.fusion-riddle-panel__correct { color: var(--teal-deep); font-weight: 700; }
+.fusion-riddle-panel__wrong { color: var(--ink-soft); }
+
+/* ---- 稚靈收藏分頁 ---- */
+.fusion-cubs-empty { font-size: .84rem; color: var(--ink-soft); text-align: center; padding: 20px 0; }
+.fusion-cub-card {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+  padding: 8px; border: 1px solid rgba(201,162,39,.4); border-radius: 12px;
+  background: var(--paper-hi); color: var(--ink);
+}
+.fusion-cub-card.is-active { border-color: var(--rouge); box-shadow: 0 0 0 2px rgba(193,75,75,.35); }
+.fusion-cub-card__img { width: 52px; height: 52px; flex: none; object-fit: cover; border-radius: 10px; background: var(--paper-dim); }
+.fusion-cub-card__body { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.fusion-cub-card__name { font-family: var(--serif); font-weight: 800; font-size: .9rem; display: flex; align-items: baseline; gap: 5px; }
+.fusion-cub-card__cat { font-size: .68rem; color: var(--teal-deep); font-weight: 700; }
+.fusion-cub-card__title { font-size: .72rem; color: var(--ink-soft); }
+.fusion-cub-card__badge { font-size: .68rem; color: var(--rouge-deep); font-weight: 800; }
+.fusion-cub-card__actions { display: flex; flex-direction: column; gap: 4px; flex: none; }
+
+/* ---------- 翰墨集市 ---------- */
+.extra-entry--market { background: linear-gradient(120deg, rgba(193,75,75,.14), rgba(201,162,39,.12)); }
+.extra-entry--market .extra-entry__icon { background: radial-gradient(circle at 30% 30%, #ffe6b8, #c9a227); }
+.mkt-card-wrap { max-width: 560px; }
+.mkt-status {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px; justify-content: center;
+  margin: 0 0 10px;
+}
+.mkt-badge {
+  font-family: var(--kai); font-size: .82rem; font-weight: 700; padding: 4px 12px; border-radius: 999px;
+}
+.mkt-open { background: rgba(193,75,75,.16); color: var(--rouge-deep); }
+.mkt-closed { background: rgba(120,120,120,.14); color: var(--ink-soft); }
+.mkt-status__hint { font-size: .78rem; color: var(--ink-soft); }
+.mkt-status__balance { font-size: .82rem; color: var(--ink); font-weight: 700; }
+.mkt-rules {
+  margin: 0 0 12px; padding: 8px 12px; border-radius: 12px;
+  background: rgba(46,143,138,.06); font-size: .78rem; color: var(--ink-soft);
+}
+.mkt-rules__summary { cursor: pointer; font-family: var(--kai); font-weight: 700; color: var(--ink); }
+.mkt-rules__list { margin: 8px 0 0; padding-left: 1.2em; line-height: 1.7; }
+.mkt-tabs { display: flex; gap: 6px; justify-content: center; margin: 0 0 10px; }
+.mkt-tab {
+  font-family: var(--kai); font-size: .82rem; padding: 5px 16px; border-radius: 999px;
+  border: 1px solid rgba(201,162,39,.5); background: var(--paper-hi); color: var(--ink-soft); cursor: pointer;
+}
+.mkt-tab.is-active { background: var(--gold); color: var(--paper-hi); border-color: var(--gold); }
+.mkt-list { display: flex; flex-direction: column; gap: 8px; max-height: 46vh; overflow-y: auto; padding: 4px; }
+.mkt-card {
+  display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+  border: 1px solid rgba(201,162,39,.4); border-radius: 12px;
+  background: linear-gradient(180deg, var(--paper-hi), var(--paper));
+}
+.mkt-card--reserved { border-color: var(--rouge); box-shadow: 0 0 0 2px rgba(193,75,75,.25); }
+.mkt-card__meta { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.mkt-card__line1, .mkt-card__line2 { display: flex; align-items: center; gap: 8px; font-size: .78rem; }
+.mkt-card__tier { font-weight: 700; color: var(--teal-deep); }
+.mkt-card__seller { color: var(--ink-soft); }
+.mkt-card__lock { color: var(--rouge-deep); font-weight: 700; }
+.mkt-card__price { margin-left: auto; font-weight: 800; color: var(--gold-text); }
+.mkt-empty { text-align: center; color: var(--ink-soft); font-size: .9rem; }
+.mkt-stars-list { list-style: none; margin: 0; padding: 4px; display: flex; flex-direction: column; gap: 6px; max-height: 46vh; overflow-y: auto; }
+.mkt-stars-row {
+  display: flex; align-items: center; gap: 10px; padding: 6px 10px;
+  border: 1px solid rgba(201,162,39,.4); border-radius: 12px;
+  background: linear-gradient(180deg, var(--paper-hi), var(--paper));
+  font-size: .82rem;
+}
+.mkt-stars-row__rank { font-weight: 800; color: var(--gold-text); width: 1.4em; text-align: center; }
+.mkt-stars-row__name { flex: 1; font-weight: 700; color: var(--ink); }
+.mkt-stars-row__deals { color: var(--ink-soft); }
+.mkt-stars-row__badge { font-size: .74rem; color: var(--rouge-deep); font-weight: 700; }
+.mkt-ever-list { display: flex; flex-direction: column; gap: 8px; max-height: 46vh; overflow-y: auto; padding: 4px; }
+.mkt-ever-card {
+  display: flex; flex-direction: column; gap: 2px; padding: 8px 10px;
+  border: 1px solid rgba(201,162,39,.4); border-radius: 12px;
+  background: linear-gradient(180deg, var(--paper-hi), var(--paper));
+  font-size: .82rem;
+}
+.mkt-ever-card__name { font-weight: 700; color: var(--ink); }
+.mkt-ever-card__peer { color: var(--ink-soft); }
+.mkt-ever-card__date { color: var(--ink-soft); font-size: .74rem; }

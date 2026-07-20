@@ -8,10 +8,14 @@ import {
   beginBattle, battleOver, applyEliminate, hideMolingBubble, showMolingLine,
 } from './integration.js';
 import { initPetUI } from './pet-ui.js';
+import { initFusionUI } from './fusion-ui.js';
 import { initSelfStudy } from './selfstudy-ui.js';
 import { initScoreGame } from './scoregame-ui.js';
 import { initAchievementsUI } from './achievements-ui.js';
 import { initPearlsUI } from './pearls-ui.js';
+import { initMarketUI } from './market-ui.js';
+import { initShuyuanUI } from './shuyuan-ui.js';
+import { initRtBattleUI } from './rtbattle-ui.js';
 import { initSaveSyncUI } from './save-sync-ui.js';
 import { initReportUI, attachReportButton } from './report.js';
 import { saveMeta } from './meta/store.js';
@@ -546,6 +550,7 @@ initTermsHelp();
 const ensureCtx = async () => { await initMetaLayer(); return getCtx(); };
 bindDailyBox();
 initPetUI({ getMeta: () => getCtx()?.meta, onChange: refreshWidgets });
+initFusionUI({ getMeta: () => getCtx()?.meta, onChange: refreshWidgets });
 initSelfStudy({ loadBank, ensureCtx });
 initScoreGame({ loadBank, ensureCtx, onChange: refreshWidgets });
 initAchievementsUI({ getMeta: () => getCtx()?.meta });
@@ -563,6 +568,12 @@ initPearlsUI({
     return { ziyin, chengyu };
   },
 });
+initMarketUI({ getMeta: () => getCtx()?.meta, saveMeta });
+initShuyuanUI({
+  getMeta: () => getCtx()?.meta,
+  getTotals: () => getCtx()?.totals,
+});
+initRtBattleUI();
 initSaveSyncUI({
   getMeta: () => getCtx()?.meta,
   onLoaded: (data) => { saveMeta(data); location.reload(); },

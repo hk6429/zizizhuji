@@ -9,3 +9,5 @@ node_modules/
 # 生圖產線 log
 scripts/gen_*.log
 scripts/gen_*_stderr.log
+.wrangler/
+.dev.vars
