@@ -88,6 +88,37 @@ await page.click('#btn-market');
 await page.waitForSelector('#market-overlay:not([hidden])');
 const mktRulesText = await page.$eval('#mkt-rules', el => el.textContent);
 const mktNoCryptoRule = mktRulesText.includes('不可兌換現實金錢');
+const mktSellSectionExists = await page.$('#mkt-sell') !== null;
+await page.click('#market-close');
+
+// 上架流程：本機塞一件裝備（狼毫筆）後 reload，集市上架區應出現該裝備珠面鈕，
+// 點選後價格輸入預設值＝該階下界（凡品 40），band 提示含「40–120」區間
+// 上架區只在開市時渲染，測試日不一定是週五16:00~週日，改用 localStorage 旗標
+// 讓 Date.now() 假裝落在週六中午（僅 addInitScript 掛在這個 page 物件，不影響 parentPage）
+await page.addInitScript(() => {
+  if (localStorage.getItem('zz_mkt_test_force_open') === '1') {
+    Date.now = () => Date.UTC(2026, 6, 25, 4, 0); // 2026-07-25 週六 12:00 (UTC+8)
+  }
+});
+await page.evaluate(() => {
+  const raw = localStorage.getItem('zzj_meta');
+  const m = raw ? JSON.parse(raw) : {};
+  m.gear = m.gear || { owned: [], loadout: [] };
+  m.gear.owned = ['langhao'];
+  localStorage.setItem('zzj_meta', JSON.stringify(m));
+  localStorage.setItem('zz_mkt_test_force_open', '1');
+});
+await page.reload();
+await page.click('.more-section > summary');
+await page.waitForSelector('#btn-pet', { state: 'visible' });
+await page.click('#btn-market');
+await page.waitForSelector('#market-overlay:not([hidden])');
+await page.waitForSelector('#mkt-sell-gear-list button');
+const sellGearBtnText = await page.$eval('#mkt-sell-gear-list button', el => el.textContent);
+await page.click('#mkt-sell-gear-list button');
+await page.waitForSelector('#mkt-sell-price');
+const sellPriceDefault = await page.$eval('#mkt-sell-price', el => el.value);
+const sellBandText = await page.$eval('#mkt-sell-band', el => el.textContent);
 await page.click('#market-close');
 
 // 成就總覽：開啟後應渲染 18 個成就卡
@@ -196,6 +227,10 @@ if (achCount !== 18) throw new Error(`成就總覽應有 18 個成就，實際 $
 if (pearlsCountChips !== 4) throw new Error(`字珠寶殿應有 4 個品階統計，實際 ${pearlsCountChips}`);
 if (!pearlsEmptyShown) throw new Error('新玩家的字珠寶殿應顯示空狀態文案');
 if (!mktNoCryptoRule) throw new Error('翰墨集市規則區應明載「字珠不可兌換現實金錢或禮物」');
+if (!mktSellSectionExists) throw new Error('翰墨集市應有 #mkt-sell 上架區塊');
+if (!sellGearBtnText.includes('狼毫筆')) throw new Error(`上架區珠面鈕應顯示裝備名「狼毫筆」，實際 "${sellGearBtnText}"`);
+if (sellPriceDefault !== '40') throw new Error(`點選裝備後價格輸入預設值應為 40（凡品下界），實際 "${sellPriceDefault}"`);
+if (!sellBandText.includes('40–120')) throw new Error(`定價帶提示應含「40–120」，實際 "${sellBandText}"`);
 if (!/^[A-Z0-9]{6}$/.test(savesyncCode)) throw new Error(`雲端存檔代碼格式應為 6 碼英數，實際「${savesyncCode}」`);
 if (ssMenuCount !== 4) throw new Error(`自學選單應有 4 款遊戲，實際 ${ssMenuCount}`);
 if (memCardCount !== 16) throw new Error(`記憶配對牌應鋪 16 張，實際 ${memCardCount}`);
