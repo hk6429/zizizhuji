@@ -92,3 +92,15 @@ test('挑戰書：壞碼/過期碼回 ok:0，不炸 500', async () => {
   assert.equal((await call(e, { op: 'accept', code: 'zz' })).ok, 0);
   assert.equal((await call(e, { op: 'accept', code: 'AAAAAA' })).ok, 0);
 });
+
+test('seasonAdd/seasonTop：累積、封頂單場 20、前 10 降冪', async () => {
+  const e = env();
+  await call(e, { op: 'seasonAdd', nick: '甲', pts: 20 });
+  const r = await call(e, { op: 'seasonAdd', nick: '甲', pts: 999 }); // clamp 到 20
+  assert.equal(r.total, 40);
+  await call(e, { op: 'seasonAdd', nick: '乙', pts: 5 });
+  const top = await call(e, { op: 'seasonTop' });
+  assert.equal(top.ok, 1);
+  assert.match(top.season, /^\d{4}-\d{2}$/);
+  assert.deepEqual(top.top, [{ nick: '甲', pts: 40 }, { nick: '乙', pts: 5 }]);
+});

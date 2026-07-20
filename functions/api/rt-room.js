@@ -12,8 +12,11 @@ import { kvFor } from './_kv.js';
 
 const TTL = 600; // 房間 10 分鐘
 const CH_TTL = 7 * 86400; // 挑戰書 7 天
+const SEASON_TTL = 100 * 86400; // 賽季榜 100 天（跨季可回顧上季榜）
 const keyOf = (code) => `rt:room:${code}`;
 const chKey = (code) => `rt:ch:${code}`;
+const seasonKeyOf = (k) => `rt:season:${k}`;
+const currentSeasonKey = () => new Date().toISOString().slice(0, 7); // 伺服器自算，不信任 client
 const okChCode = (c) => typeof c === 'string' && /^[A-Z0-9]{6}$/.test(String(c).trim().toUpperCase());
 const genChCode = () => {
   const cs = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // 避開易混淆字元
@@ -210,6 +213,25 @@ export async function onRequestPost({ request, env }) {
         challenger: { nick: c.nick, score: c.score },
         accepter: { nick: accepter.nick, score: accepter.score },
       }), { status: 200, headers });
+    }
+
+    if (op === 'seasonAdd') {
+      if (await rateLimited(kv, request, 'room')) return new Response(JSON.stringify({ error: '操作太頻繁，請稍候再試' }), { status: 429, headers });
+      const { nick } = body;
+      if (!okNick(nick)) return new Response(JSON.stringify({ error: 'bad req' }), { status: 400, headers });
+      const pts = clamp(body.pts, 20); // 單場上限 20 分
+      const key = seasonKeyOf(currentSeasonKey());
+      const total = await kv.zincrby(key, pts, stripBad(nick).trim().slice(0, 12));
+      await kv.expire(key, SEASON_TTL);
+      return new Response(JSON.stringify({ ok: 1, total }), { status: 200, headers });
+    }
+
+    if (op === 'seasonTop') {
+      const season = currentSeasonKey();
+      const flat = await kv.zrange(seasonKeyOf(season), 0, 9, { rev: true, withScores: true });
+      const top = [];
+      for (let i = 0; i < flat.length; i += 2) top.push({ nick: flat[i], pts: Number(flat[i + 1]) });
+      return new Response(JSON.stringify({ ok: 1, season, top }), { status: 200, headers });
     }
 
     return new Response(JSON.stringify({ error: 'bad op' }), { status: 400, headers });

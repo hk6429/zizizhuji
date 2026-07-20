@@ -6,8 +6,9 @@ import { ZZAPI } from './meta/api.js';
 import { ROUNDS, ROUND_SEC, POLL_MS, buildQuestions, dealtDamage, judge, buildEncounterScript } from './meta/rtbattle.js';
 import { safeBoard, buildLiveHerald } from './meta/livewall.js';
 import { applyEncounterEffect } from './meta/battle-adapter.js';
-import { getCtx, beginBattle, applyEliminate, showMolingLine, renderEvents } from './integration.js';
+import { getCtx, beginBattle, applyEliminate, showMolingLine, renderEvents, getToday } from './integration.js';
 import { saveMeta } from './meta/store.js';
+import { recordResult, loadSeason, titleFor, WIN_PTS, LOSE_PTS } from './meta/rtseason.js';
 import * as kernel from './meta/kernel.js';
 import { loadBank, getLevel, setLevel } from './bank.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
@@ -142,6 +143,9 @@ function renderHome() {
         <button id="lv-student-btn" class="overlay-ghost-btn" type="button">📡 隨堂戰況（學生）</button>
         <button id="lv-host-btn" class="overlay-ghost-btn" type="button">🧑‍🏫 我是主持人（老師）</button>
       </div>
+      <div class="rt-join-row">
+        <button id="rt-season-btn" class="overlay-ghost-btn" type="button">🏆 賽季排位榜</button>
+      </div>
     </div>`;
   $('rt-create-btn').addEventListener('click', create);
   $('rt-join-btn').addEventListener('click', () => {
@@ -162,6 +166,26 @@ function renderHome() {
     if (!ctx) return offline('遊戲還在載入中，請稍候再試');
     liveHostForm();
   });
+  $('rt-season-btn').addEventListener('click', showSeasonBoard);
+}
+
+/* 賽季排位榜：伺服器前 10 名＋本機自己的分數與稱號（月賽季限定稱號，稀缺性靠每月重算） */
+async function showSeasonBoard() {
+  const base = loadSeason(getToday());
+  const s = { ...base, title: titleFor(base.pts) };
+  body.innerHTML = '<div class="rt-card"><p>讀取賽季排位榜…</p></div>';
+  const r = await api({ op: 'seasonTop' });
+  const top = (r && r.ok && r.top) || [];
+  body.innerHTML = `<div class="rt-card">
+    <p>🏆 賽季排位榜（${esc((r && r.season) || s.key)}）</p>
+    <ol class="rt-live-board">${top.length
+    ? top.map((x) => `<li>${esc(x.nick)}・${x.pts} 分</li>`).join('')
+    : '<li>本賽季還沒有戰績，快去打一場！</li>'}</ol>
+    <p class="shuyuan-hint">你：${esc(s.title)}（${s.pts} 分・${s.wins} 勝 / ${s.battles} 場）</p>
+    <p class="shuyuan-hint">每月 1 日換季，稱號重新起算——賽季限定稱號，錯過這個月就要等下個月</p>
+    <button id="rt-back-btn" class="overlay-ghost-btn" type="button">返回</button>
+  </div>`;
+  $('rt-back-btn').addEventListener('click', renderHome);
 }
 
 /* 房主等待對手 */
@@ -376,9 +400,12 @@ function finish(verdict) {
     : '勢均力敵，平分秋色！';
   showMolingLine(line);
   const encourage = verdict === 'lose' ? '<p class="shuyuan-hint">積分不扣——把字記牢，下次贏回來</p>' : '';
+  const s = recordResult(getToday(), verdict);
+  if (verdict !== 'draw') api({ op: 'seasonAdd', nick: my.nick, pts: verdict === 'win' ? WIN_PTS : LOSE_PTS });
   body.innerHTML = `<div class="rt-card">
     <p class="rt-result">${verdict === 'win' ? '🏆 你贏了！' : verdict === 'lose' ? '💀 惜敗' : '🤝 平手'}</p>
     <p>答對 ${st.correct}/${ROUNDS}・總輸出 ${st.dmg}</p>
+    <p class="shuyuan-hint">賽季 ${esc(s.key)}・${esc(s.title)}（${s.pts} 分）</p>
     ${encourage}
     <button id="rt-again-btn" class="overlay-ghost-btn" type="button">再開一場</button>
     <button id="rt-challenge-btn" class="overlay-ghost-btn" type="button">📮 發挑戰書</button>
