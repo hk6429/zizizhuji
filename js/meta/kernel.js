@@ -237,15 +237,17 @@ function processAnswer(ctx, id, correct, mode) {
   // 成就（連對/累計題數/守燈類會在答題中途成立）
   pushAchievements(ctx, events);
 
-  // 奇遇
-  const er = encounter.rollEncounter(meta, mode, ctx.rng, { rate: mults.encounterRate });
-  if (er.event) {
-    events.push({ type: 'encounter', payload: er.event, fx: 'encounter-swirl' });
-    const eff = er.event.effect || {};
-    if (eff.type === 'pearls') grantPearls(ctx, eff.amount, 'encounter', events);
-    else if (eff.type === 'doublePearls') ctx.doublePearlNext = true;
-    else if (mode === 'battle' && ctx.battle) adapter.applyEncounterEffect(ctx.battle, er.event);
-    // eff.type==='challenge'（字妖突襲）由 UI 插入挑戰題；答對用 adapter.applyHeal 回血
+  // 奇遇（即時對戰要用 Task 7 的種子化奇遇腳本，必須關掉本機隨機擲骰，否則雙方事件不同步）
+  if (!ctx.encounterOff) {
+    const er = encounter.rollEncounter(meta, mode, ctx.rng, { rate: mults.encounterRate });
+    if (er.event) {
+      events.push({ type: 'encounter', payload: er.event, fx: 'encounter-swirl' });
+      const eff = er.event.effect || {};
+      if (eff.type === 'pearls') grantPearls(ctx, eff.amount, 'encounter', events);
+      else if (eff.type === 'doublePearls') ctx.doublePearlNext = true;
+      else if (mode === 'battle' && ctx.battle) adapter.applyEncounterEffect(ctx.battle, er.event);
+      // eff.type==='challenge'（字妖突襲）由 UI 插入挑戰題；答對用 adapter.applyHeal 回血
+    }
   }
 
   s.events.push(...events);

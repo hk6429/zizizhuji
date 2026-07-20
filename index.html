@@ -205,6 +205,14 @@
               </span>
               <span class="pet-entry__arrow" aria-hidden="true">›</span>
             </button>
+            <button id="btn-rtbattle" class="extra-entry extra-entry--rt" type="button">
+              <span class="extra-entry__icon" aria-hidden="true">⚔</span>
+              <span class="extra-entry__body">
+                <span class="extra-entry__title">即時對戰</span>
+                <span class="extra-entry__sub">跟同學連線比拚</span>
+              </span>
+              <span class="pet-entry__arrow" aria-hidden="true">›</span>
+            </button>
             <button id="btn-savesync" class="extra-entry extra-entry--sync" type="button">
               <span class="extra-entry__icon" aria-hidden="true">雲</span>
               <span class="extra-entry__body">
@@ -289,6 +297,15 @@
         <button id="shuyuan-reset" class="overlay-ghost-btn" type="button">還原擺設</button>
         <button id="shuyuan-close" class="overlay-ghost-btn" type="button">關閉</button>
       </div>
+    </div>
+  </div>
+
+  <!-- 即時對戰 -->
+  <div id="rt-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="rt-title">
+    <div class="meta-overlay__card">
+      <h2 id="rt-title" class="overlay-title">⚔️ 即時對戰</h2>
+      <div id="rt-body"></div>
+      <button id="rt-close-btn" class="overlay-ghost-btn" type="button">關閉</button>
     </div>
   </div>
 

@@ -2013,3 +2013,6 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 .sy-wall-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(11em, 1fr)); gap: .5em; padding: .5em; }
 .sy-wall-item { display: flex; flex-direction: column; gap: .15em; background: #efe8d8; border: 1px solid #c9b98f; border-radius: 8px; padding: .55em .7em; font-size: .82rem; }
 .sy-wall-item i { color: #8a7a5e; font-style: normal; font-size: .72rem; }
+
+/* 即時對戰：房號大字 */
+.rt-code { font-size: 3rem; letter-spacing: .3em; text-align: center; font-weight: 700; margin: .5em 0; }
