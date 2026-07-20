@@ -192,3 +192,23 @@ export function listCubs(meta) {
     };
   });
 }
+
+// —— 被動二選一：融合成功後由玩家親手挑（賦創造力——選擇權在孩子），一次定終身 ——
+// effect 欄位名對齊 battle-adapter createBattleContext 的 opts，Task 7 直接相加。
+
+export const CUB_PASSIVES = [
+  { id: 'inkfang',    name: '墨牙', desc: '稚靈隨行時戰鬥傷害 +1',           effect: { damageBonus: 1 } },
+  { id: 'clearsight', name: '澄目', desc: '稚靈隨行時開場多排除一個錯誤選項', effect: { freeEliminate: 1 } },
+];
+
+const PASSIVE_BY_ID = new Map(CUB_PASSIVES.map((p) => [p.id, p]));
+
+export function chooseCubPassive(meta, cubId, passiveId) {
+  const s = ensureFusionState(meta);
+  const r = s.cubs[cubId];
+  if (!r) return { meta, ok: false, reason: 'not-owned' };
+  if (!PASSIVE_BY_ID.has(passiveId)) return { meta, ok: false, reason: 'bad-passive' };
+  if (r.passive) return { meta, ok: false, reason: 'already-chosen' };
+  r.passive = passiveId;
+  return { meta, ok: true, reason: null };
+}
