@@ -5,6 +5,8 @@ import {
   getGateStage, getCourtyards, flourishTier, FLOURISH_TIERS, COURTYARDS,
   DECOR_KINDS, getDecorations, setDecorStyle, styleIndexOf,
   defaultPos, placeDecoration, resetPlacements,
+  PLAQUE_TARGETS, PLAQUE_BANK, PLAQUE_MIN, PLAQUE_MAX,
+  setPlaque, getPlaqueText, COUPLET_BANK, setCouplet, getCouplet,
 } from '../js/meta/shuyuan-store.js';
 import { defaultMeta } from '../js/meta/store.js';
 
@@ -166,4 +168,39 @@ test('getDecorations 未擺放用 defaultPos、擺過用自訂座標、reset 後
   resetPlacements(s);
   ds = getDecorations(m, s);
   assert.equal(ds[0].custom, false);
+});
+
+// 匾額對聯詞庫命名
+test('PLAQUE_BANK 至少 24 字且 id 不重複', () => {
+  assert.ok(PLAQUE_BANK.length >= 24);
+  assert.equal(new Set(PLAQUE_BANK.map((c) => c.id)).size, PLAQUE_BANK.length);
+});
+
+test('setPlaque 詞庫選字組匾額；越界長度/非法字/非法對象擋下', () => {
+  const s = defaultShuyuan();
+  const [a, b, c] = PLAQUE_BANK;
+  assert.equal(setPlaque(s, 'gate', [a.id, b.id, c.id]).ok, true);
+  assert.equal(getPlaqueText(s, 'gate'), `${a.ch}${b.ch}${c.ch}`);
+  assert.equal(setPlaque(s, 'gate', [a.id]).ok, false);                       // 少於 2 字
+  assert.equal(setPlaque(s, 'gate', [a.id, a.id, b.id, c.id, c.id]).ok, false); // 多於 4 字
+  assert.equal(setPlaque(s, 'gate', [a.id, 'freetext']).ok, false);           // 不在詞庫
+  assert.equal(setPlaque(s, 'roof', [a.id, b.id]).ok, false);                 // 非法對象
+});
+
+test('getPlaqueText 未題字回預設名', () => {
+  const s = defaultShuyuan();
+  assert.equal(getPlaqueText(s, 'gate'), '字靈書院');
+  assert.equal(getPlaqueText(s, 'yin'), '谷音亭');
+  assert.equal(getPlaqueText(s, 'xing'), '墨林軒');
+  assert.equal(getPlaqueText(s, 'chengyu'), '珠璣閣');
+});
+
+test('setCouplet 掛對聯／取下；非法 id 擋下', () => {
+  const s = defaultShuyuan();
+  assert.equal(getCouplet(s), null);
+  assert.equal(setCouplet(s, COUPLET_BANK[1].id).ok, true);
+  assert.equal(getCouplet(s).up, COUPLET_BANK[1].up);
+  assert.equal(setCouplet(s, 'nope').ok, false);
+  assert.equal(setCouplet(s, null).ok, true);
+  assert.equal(getCouplet(s), null);
 });

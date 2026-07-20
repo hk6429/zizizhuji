@@ -176,3 +176,54 @@ export function getDecorations(meta, state) {
   }
   return out;
 }
+
+// ── 題匾額／對聯：詞庫選字組合，不開放自由輸入（國中小使用情境，杜絕不當字詞） ──
+export const PLAQUE_TARGETS = ['gate', 'yin', 'xing', 'chengyu'];
+const DEFAULT_PLAQUES = { gate: '字靈書院', yin: '谷音亭', xing: '墨林軒', chengyu: '珠璣閣' };
+
+export const PLAQUE_BANK = [
+  { id: 'wen', ch: '文' }, { id: 'qi', ch: '氣' }, { id: 'zhu', ch: '珠' }, { id: 'ji', ch: '璣' },
+  { id: 'mo', ch: '墨' }, { id: 'guang', ch: '光' }, { id: 'shu', ch: '書' }, { id: 'xiang', ch: '香' },
+  { id: 'gu', ch: '谷' }, { id: 'yin', ch: '音' }, { id: 'lin', ch: '林' }, { id: 'hai', ch: '海' },
+  { id: 'yun', ch: '雲' }, { id: 'shan', ch: '山' }, { id: 'feng', ch: '風' }, { id: 'yue', ch: '月' },
+  { id: 'xing', ch: '星' }, { id: 'yan', ch: '硯' }, { id: 'bi', ch: '筆' }, { id: 'shi', ch: '詩' },
+  { id: 'li', ch: '禮' }, { id: 'xian', ch: '賢' }, { id: 'xin', ch: '心' }, { id: 'zhi', ch: '志' },
+];
+export const PLAQUE_MIN = 2;
+export const PLAQUE_MAX = 4;
+const PLAQUE_CH = new Map(PLAQUE_BANK.map((c) => [c.id, c.ch]));
+
+export function setPlaque(state, targetId, charIds) {
+  if (!PLAQUE_TARGETS.includes(targetId)) return { ok: false, msg: '沒有這個匾額位置' };
+  if (!Array.isArray(charIds) || charIds.length < PLAQUE_MIN || charIds.length > PLAQUE_MAX) {
+    return { ok: false, msg: `匾額要 ${PLAQUE_MIN}–${PLAQUE_MAX} 個字` };
+  }
+  if (!charIds.every((id) => PLAQUE_CH.has(id))) return { ok: false, msg: '只能從詞庫選字' };
+  state.plaques[targetId] = charIds.slice();
+  return { ok: true };
+}
+
+export function getPlaqueText(state, targetId) {
+  const ids = state.plaques[targetId];
+  if (!ids || !ids.length) return DEFAULT_PLAQUES[targetId] || '';
+  return ids.map((id) => PLAQUE_CH.get(id) || '').join('');
+}
+
+export const COUPLET_BANK = [
+  { id: 'c1', up: '一字一珠光照海', down: '半書半墨氣成虹' },
+  { id: 'c2', up: '谷音繞樑傳雅韻', down: '林字生輝映月明' },
+  { id: 'c3', up: '筆下有神驅濁墨', down: '胸中藏典煉真珠' },
+  { id: 'c4', up: '守燈夜夜心如鏡', down: '拾珠字字步成蹊' },
+];
+const COUPLET_BY_ID = new Map(COUPLET_BANK.map((c) => [c.id, c]));
+
+export function setCouplet(state, coupletId) {
+  if (coupletId === null) { state.couplet = null; return { ok: true }; }
+  if (!COUPLET_BY_ID.has(coupletId)) return { ok: false, msg: '沒有這副對聯' };
+  state.couplet = coupletId;
+  return { ok: true };
+}
+
+export function getCouplet(state) {
+  return state.couplet ? COUPLET_BY_ID.get(state.couplet) : null;
+}
