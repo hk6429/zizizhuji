@@ -212,3 +212,47 @@ export function chooseCubPassive(meta, cubId, passiveId) {
   r.passive = passiveId;
   return { meta, ok: true, reason: null };
 }
+
+// 配方揭曉隱藏題：答對才公開該類別下一隻稚靈的真身與稱號池（未知性核心）。
+// 答錯鎖到隔天——時間成本型代價，不扣任何資源（白帽原則）。
+export const REVEAL_RIDDLES = [
+  { category: '字音',
+    question: '《山海經》中，狀如狸而白首、吠聲守夜、後世傳為食月之獸的是？',
+    options: ['天狗', '畢方', '夔', '白澤'], answer: 0 },
+  { category: '成語',
+    question: '「渾敦無面目，是識歌舞」——這隻典故之源的神獸是？',
+    options: ['饕餮', '混沌', '檮杌', '窮奇'], answer: 1 },
+  { category: '混合',
+    question: '銜西山木石以填東海、至死不悔的幼鳥是？',
+    options: ['鳳凰', '畢方', '精衛', '鯤'], answer: 2 },
+];
+
+const RIDDLE_BY_CATEGORY = new Map(REVEAL_RIDDLES.map((r) => [r.category, r]));
+
+export function getRevealState(meta, category, today = '') {
+  const s = ensureFusionState(meta);
+  const revealed = !!s.revealed[category];
+  const lockedToday = !revealed && !!today && s.riddleTried[category] === today;
+  return { revealed, lockedToday, riddle: revealed ? null : (RIDDLE_BY_CATEGORY.get(category) || null) };
+}
+
+export function answerRevealRiddle(meta, category, optionIndex, today = '') {
+  const s = ensureFusionState(meta);
+  const riddle = RIDDLE_BY_CATEGORY.get(category);
+  if (!riddle) return { meta, ok: false, correct: false, reason: 'bad-category' };
+  if (s.revealed[category]) return { meta, ok: false, correct: false, reason: 'already-revealed' };
+  if (today && s.riddleTried[category] === today) return { meta, ok: false, correct: false, reason: 'locked-today' };
+  if (optionIndex === riddle.answer) {
+    s.revealed[category] = true;
+    return { meta, ok: true, correct: true, reason: null };
+  }
+  if (today) s.riddleTried[category] = today;
+  return { meta, ok: true, correct: false, reason: null };
+}
+
+export function getFusionPreview(meta, category) {
+  const s = ensureFusionState(meta);
+  if (!s.revealed[category]) return { known: false };
+  const cub = nextCubFor(meta, category);
+  return { known: true, cub: cub ? { id: cub.id, name: cub.name, titles: cub.titles.slice(), desc: cub.desc } : null };
+}
