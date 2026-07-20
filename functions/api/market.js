@@ -45,6 +45,13 @@ export function sigOf(p, secret) {
   return createHmac('sha256', secret).update(canon).digest('hex').slice(0, 24);
 }
 
+async function inRoster(ctx, classCode, name) {
+  if (ctx.roster) return ctx.roster.has(name);                    // 測試注入
+  if (!ctx.db) return false;                                      // 無 DB 一律當不在名單（fail-closed）
+  const row = await ctx.db.prepare("SELECT 1 AS e FROM leaderboard WHERE (board = ?1 OR board LIKE ?1 || '::%') AND name = ?2 LIMIT 1").bind(classCode, name).first('e');
+  return !!row;
+}
+
 const ITEM = (id) => `mkt:item:${id}`;
 const ZCLASS = (c) => `mkt:z:c:${c}`;
 const ZPUB = 'mkt:z:pub';
@@ -76,9 +83,20 @@ export async function marketOp(redis, body, ctx, nowMs = Date.now()) {
     if (!okClass(classCode)) return { ok: 0, error: '請先在積分競技設定班級代碼' };
     const mine = (await redis.zrange(ZCLASS(classCode), 0, 199)).map(parse).filter(x => x && x.seller === seller.trim());
     if (mine.length >= MAX_LISTINGS) return { ok: 0, error: `最多同時掛 ${MAX_LISTINGS} 筆` };
+    let reserveFor = '';
+    if (body.reserveFor != null && String(body.reserveFor).trim()) {
+      reserveFor = String(body.reserveFor).trim().slice(0, 12);
+      if (!okNick(reserveFor) || reserveFor === seller.trim()) return { ok: 0, error: '保留對象暱稱不合法' };
+      if (!(await inRoster(ctx, classCode, reserveFor))) return { ok: 0, error: '保留對象必須是同班同學的暱稱（對方要先在積分競技留過名）' };
+    }
+    // 珍品每週限量（所有驗證最後一關才 incr）
+    if (tierOf(gearId) === 'zhen') {
+      const n = await redis.incr(`mkt:rare:${classCode}:${weekKey(nowMs)}`, 8 * 86400);
+      if (n > 10) return { ok: 0, error: '本班珍品週限量 10 件已滿，下週開市再來' };
+    }
     const id = randomBytes(6).toString('hex');
     const claimKey = randomBytes(12).toString('hex');
-    const rec = { id, gearId, seller: seller.trim(), price, ts: nowMs, classCode, pub: body.pub ? 1 : 0, reserveFor: '' };
+    const rec = { id, gearId, seller: seller.trim(), price, ts: nowMs, classCode, pub: body.pub ? 1 : 0, reserveFor };
     const sig = sigOf({ gearId, price, seller: rec.seller, id }, ctx.secret);
     await redis.set(ITEM(id), JSON.stringify({ ...rec, claimKey, sig, sold: 0, claimed: 0, card: 0 }), { ex: ITEM_TTL });
     await redis.zadd(ZCLASS(classCode), { score: price, member: memberOf(rec) });
@@ -103,7 +121,17 @@ export async function marketOp(redis, body, ctx, nowMs = Date.now()) {
     if (rec.pub) await redis.zrem(ZPUB, memberOf(rec));
     rec.sold = 1; rec.soldTs = nowMs; rec.buyer = nick.trim(); rec.card = cardId;
     await redis.set(ITEM(id), JSON.stringify(rec), { ex: ITEM_TTL });
+    await redis.zincrby(`mkt:deals:${rec.classCode}`, 1, rec.seller);
+    await redis.zincrby(`mkt:deals:${rec.classCode}`, 1, rec.buyer);
     return { ok: 1, gearId: rec.gearId, price: rec.price };
+  }
+
+  if (op === 'stars') {
+    if (!okClass(body.classCode)) return { ok: 0, error: '班級代碼不合法' };
+    const raw = await redis.zrange(`mkt:deals:${body.classCode}`, 0, 9, { rev: true, withScores: true });
+    const top = [];
+    for (let i = 0; i < raw.length; i += 2) top.push({ name: raw[i], deals: Math.round(Number(raw[i + 1]) || 0) });
+    return { ok: 1, top };
   }
 
   const TAX = 0.1;

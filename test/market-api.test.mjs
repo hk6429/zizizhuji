@@ -175,3 +175,33 @@ test('claim/cancel：非開市時段也可用', async () => {
   const c = await marketOp(r, { op: 'cancel', id: a.id, claimKey: a.claimKey }, { ...ENV, forceOpen: false }, Date.UTC(2026, 6, 22, 4, 0));
   assert.equal(c.ok, 1);
 });
+
+const ROSTER_ENV = { ...ENV, roster: new Set(['小華', '小美']) };
+test('post+reserveFor：同班名單內放行；名單外、留給自己全拒', async () => {
+  const r = fakeRedis();
+  assert.equal((await marketOp(r, { op: 'post', gearId: 'langhao', price: 50, seller: '小明', classCode: 'demo', reserveFor: '小華' }, ROSTER_ENV, OPEN_TS)).ok, 1);
+  assert.match((await marketOp(r, { op: 'post', gearId: 'langhao', price: 50, seller: '小明', classCode: 'demo', reserveFor: '陌生人' }, ROSTER_ENV, OPEN_TS)).error, /同班/);
+  assert.equal((await marketOp(r, { op: 'post', gearId: 'langhao', price: 50, seller: '小明', classCode: 'demo', reserveFor: '小明' }, ROSTER_ENV, OPEN_TS)).ok, 0);
+});
+test('保留單：只有被指定同學買得走', async () => {
+  const r = fakeRedis();
+  const a = await marketOp(r, { op: 'post', gearId: 'langhao', price: 50, seller: '小明', classCode: 'demo', reserveFor: '小華' }, ROSTER_ENV, OPEN_TS);
+  assert.match((await marketOp(r, { op: 'buy', id: a.id, nick: '小美', classCode: 'demo' }, ROSTER_ENV, OPEN_TS)).error, /保留/);
+  assert.equal((await marketOp(r, { op: 'buy', id: a.id, nick: '小華', classCode: 'demo' }, ROSTER_ENV, OPEN_TS)).ok, 1);
+});
+test('珍品每週限量：第 11 件拒收，凡品不受限', async () => {
+  const r = fakeRedis();
+  for (let i = 0; i < 10; i++) assert.equal((await marketOp(r, { op: 'post', gearId: 'sheyan', price: 200, seller: `賣${i % 4}${i}`, classCode: 'demo' }, ENV, OPEN_TS)).ok, 1);
+  // 註：上面會撞「賣家3筆上限」→ 測試用 10 個不同賣家暱稱（賣00…賣39 型式），確保只測限量
+  assert.match((await marketOp(r, { op: 'post', gearId: 'sheyan', price: 200, seller: '新賣家', classCode: 'demo' }, ENV, OPEN_TS)).error, /限量/);
+  assert.equal((await marketOp(r, { op: 'post', gearId: 'langhao', price: 50, seller: '新賣家', classCode: 'demo' }, ENV, OPEN_TS)).ok, 1);
+});
+test('stars：成交後買賣雙方各 +1，排行由高到低', async () => {
+  const r = fakeRedis();
+  const a = await marketOp(r, { op: 'post', gearId: 'langhao', price: 50, seller: '小明', classCode: 'demo' }, ENV, OPEN_TS);
+  await marketOp(r, { op: 'buy', id: a.id, nick: '小華', classCode: 'demo' }, ENV, OPEN_TS);
+  const s = await marketOp(r, { op: 'stars', classCode: 'demo' }, ENV, OPEN_TS);
+  assert.equal(s.ok, 1);
+  assert.deepEqual(s.top.map(x => x.deals), [1, 1]);
+  assert.deepEqual(new Set(s.top.map(x => x.name)), new Set(['小明', '小華']));
+});
