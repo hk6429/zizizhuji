@@ -2,7 +2,7 @@
 // 移植自 vocab-duel functions/api/_redis.js（僅去掉 vercelToPages 轉接層）。
 // 契約：get/hget/hgetall/lrange 一律回原始字串，呼叫端防禦式 JSON.parse；
 //       set/hset/lpush/zadd 傳物件自動 stringify；TTL 存 exp epoch ms、讀取惰性過期。
-// 金鑰約定：需要簽章的子系統（市場）用 env.ZZ_HMAC_SECRET（Pages 環境變數，不入版控）。
+// 金鑰約定：需要簽章的子系統（市場）用 env.MKT_HMAC_SECRET（Pages 環境變數，不入版控）。
 
 export function kvFor(db) {
   const now = () => Date.now();
