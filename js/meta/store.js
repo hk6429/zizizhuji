@@ -66,6 +66,11 @@ export function defaultMeta() {
       seen: {}, active: null, ownedEquip: [], equipped: {}, nicknames: {},
       bond: {}, unlockedAt: {}, badges: {}, equipLevel: {}, subActive: null,
     },
+    // 神獸融合：墨晶貨幣／稚靈收藏／配方揭曉／隨行稚靈（見 js/meta/fusion-store.js）
+    fusion: {
+      crystals: { balance: 0, earnedToday: 0, earnedDate: '' },
+      cubs: {}, revealed: {}, riddleTried: {}, activeCub: null,
+    },
     // 閃卡 Leitner 盒位；積分競技各庫最高分；班級排行榜代碼與暱稱
     selfstudy: { flash: {}, scoreBest: {}, classCode: '', nick: '' },
   };

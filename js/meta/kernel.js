@@ -18,6 +18,7 @@ import * as weakness from './weakness.js';
 import * as summaryMod from './summary.js';
 import * as adapter from './battle-adapter.js';
 import { recordAnswer } from '../leitner.js';
+import * as fusion from './fusion-store.js';
 
 const XP_PRACTICE = 10;
 const XP_BATTLE = 15;
@@ -186,6 +187,16 @@ function processAnswer(ctx, id, correct, mode) {
         world.markMilestoneSeen(meta, letter.id);
         events.push({ type: 'worldLetter', payload: letter, fx: 'letter-unfold' });
       }
+    }
+  }
+
+  // 墨晶掉落：答對一題「曾經答錯過」的題（攻克弱點），每日上限見 CRYSTAL_DAILY_CAP。
+  // 快照必須取在 Leitner/collection 更新之前，否則本題的錯誤紀錄會污染判定。
+  const hadWrongBefore = !!(id && meta.collection[id] && meta.collection[id].wrong > 0);
+  if (correct && hadWrongBefore) {
+    const cr2 = fusion.earnCrystals(meta, 1, today);
+    if (cr2.earned > 0) {
+      events.push({ type: 'crystalEarned', payload: { amount: cr2.earned }, fx: 'crystal-glint' });
     }
   }
 
