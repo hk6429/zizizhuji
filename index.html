@@ -197,6 +197,14 @@
               </span>
               <span class="pet-entry__arrow" aria-hidden="true">›</span>
             </button>
+            <button id="btn-shuyuan" class="extra-entry extra-entry--shuyuan" type="button">
+              <span class="extra-entry__icon" aria-hidden="true">院</span>
+              <span class="extra-entry__body">
+                <span class="extra-entry__title">字靈書院</span>
+                <span class="extra-entry__sub">用煉成的字珠，蓋出你的山水書院</span>
+              </span>
+              <span class="pet-entry__arrow" aria-hidden="true">›</span>
+            </button>
             <button id="btn-savesync" class="extra-entry extra-entry--sync" type="button">
               <span class="extra-entry__icon" aria-hidden="true">雲</span>
               <span class="extra-entry__body">
@@ -267,6 +275,20 @@
       <p>請檢查網路連線後再試一次。</p>
       <button id="load-error-retry" class="overlay-ghost-btn" type="button">重新載入</button>
       <button id="load-error-back" class="overlay-ghost-btn" type="button">回首頁</button>
+    </div>
+  </div>
+
+  <!-- 字靈書院 -->
+  <div id="shuyuan-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="shuyuan-title">
+    <div class="meta-overlay__card shuyuan-card">
+      <h2 id="shuyuan-title" class="overlay-title">字靈書院</h2>
+      <div id="shuyuan-scene" class="shuyuan-scene" aria-label="書院庭園場景"></div>
+      <p class="shuyuan-hint">拖曳裝飾可自由擺放；點裝飾換樣式；點山門或院落可題匾額、掛對聯。</p>
+      <div class="shuyuan-toolbar">
+        <button id="shuyuan-wall-btn" class="overlay-ghost-btn" type="button">成就牆</button>
+        <button id="shuyuan-reset" class="overlay-ghost-btn" type="button">還原擺設</button>
+        <button id="shuyuan-close" class="overlay-ghost-btn" type="button">關閉</button>
+      </div>
     </div>
   </div>
 

@@ -1942,3 +1942,53 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 .omen-line--mingmu .omen-glyph  { background: #b0563a; }
 .omen-line--lianxin .omen-glyph { background: #c05a78; }
 .omen-line--wenqu .omen-glyph   { background: #3b6f8a; }
+
+/* ───────── 字靈書院 ───────── */
+.shuyuan-card { max-width: 720px; width: min(94vw, 720px); }
+.shuyuan-scene {
+  position: relative; width: 100%; aspect-ratio: 4 / 3;
+  border-radius: 12px; overflow: hidden;
+  background: linear-gradient(180deg, #e8e2d4 0%, #d8cfb8 55%, #c9bda0 100%); /* 缺底圖時的宣紙色 */
+}
+.sy-bg, .sy-bg img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.sy-emoji { display: inline-flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 1.6em; }
+.sy-gate {
+  position: absolute; left: 50%; bottom: 3%; transform: translateX(-50%);
+  width: 26%; aspect-ratio: 3 / 4; /* 正式圖 gate-s{n}.jpg 出圖比例 3:4 */
+  border: 0; padding: 0; background: none; cursor: pointer; z-index: 3;
+  display: flex; flex-direction: column; align-items: center;
+}
+.sy-gate img { width: 100%; height: 100%; object-fit: contain; }
+.sy-court {
+  position: absolute; width: 22%; aspect-ratio: 4 / 3; /* 正式圖 court-*-t{n}.jpg 比例 4:3 */
+  border: 0; padding: 0; background: none; cursor: pointer; z-index: 2;
+  display: flex; flex-direction: column; align-items: center;
+}
+.sy-court img { width: 100%; height: 100%; object-fit: contain; }
+.sy-court--yin { left: 6%; top: 34%; }
+.sy-court--xing { left: 39%; top: 12%; }
+.sy-court--chengyu { right: 6%; top: 34%; }
+.sy-plaque {
+  position: absolute; top: 6%; left: 50%; transform: translateX(-50%);
+  background: rgba(43, 32, 24, .85); color: #f3e9c9; border: 1px solid #b49b5a;
+  padding: .1em .5em; border-radius: 4px; font-size: .85rem; letter-spacing: .15em; white-space: nowrap;
+}
+.sy-plaque--small { font-size: .72rem; }
+.sy-gate-rank, .sy-court-meta {
+  position: absolute; bottom: -1.4em; left: 50%; transform: translateX(-50%);
+  font-size: .7rem; color: #5a4a33; white-space: nowrap;
+}
+.sy-couplet {
+  position: absolute; z-index: 3; writing-mode: vertical-rl; letter-spacing: .2em;
+  background: #a33b2e; color: #f7ecd0; padding: .5em .15em; border-radius: 3px; font-size: .78rem;
+}
+.sy-couplet--up { left: 31%; bottom: 8%; }
+.sy-couplet--down { right: 31%; bottom: 8%; }
+.sy-decor {
+  position: absolute; width: 9%; aspect-ratio: 1 / 1; /* 正式圖 decor-*.png 透明方圖 */
+  transform: translate(-50%, -50%); cursor: grab; z-index: 4; touch-action: none;
+}
+.sy-decor img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.sy-decor.is-dragging { cursor: grabbing; z-index: 9; filter: drop-shadow(0 4px 8px rgba(0,0,0,.35)); }
+.shuyuan-hint { font-size: .8rem; color: #6b5b44; margin: .6em 0 .2em; }
+.shuyuan-toolbar { display: flex; gap: .5em; justify-content: flex-end; flex-wrap: wrap; }

@@ -12,6 +12,7 @@ import { initSelfStudy } from './selfstudy-ui.js';
 import { initScoreGame } from './scoregame-ui.js';
 import { initAchievementsUI } from './achievements-ui.js';
 import { initPearlsUI } from './pearls-ui.js';
+import { initShuyuanUI } from './shuyuan-ui.js';
 import { initSaveSyncUI } from './save-sync-ui.js';
 import { initReportUI, attachReportButton } from './report.js';
 import { saveMeta } from './meta/store.js';
@@ -562,6 +563,10 @@ initPearlsUI({
     const [ziyin, chengyu] = await Promise.all([loadBank('ziyin'), loadBank('chengyu')]);
     return { ziyin, chengyu };
   },
+});
+initShuyuanUI({
+  getMeta: () => getCtx()?.meta,
+  getTotals: () => getCtx()?.totals,
 });
 initSaveSyncUI({
   getMeta: () => getCtx()?.meta,
