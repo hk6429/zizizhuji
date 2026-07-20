@@ -4,6 +4,7 @@
 // 硬性規則（vocab-duel P3-11 教訓）：雙親永不消耗；失敗只扣墨晶（白帽時間成本，不扣資產）。
 
 import { PETS, petLevel, MAX_LEVEL } from './pet.js';
+import { earnPearls } from './economy.js';
 
 export const CRYSTAL_DAILY_CAP = 10; // 墨晶每日取得上限
 
@@ -109,6 +110,13 @@ export function canFusePair(meta, petIdA, petIdB) {
 export const FUSE_COST = 30;  // 一次融合 30 墨晶（＝攻克 30 題弱點、至少 3 天積累）
 export const FAIL_RATE = 0.2; // 20% 失敗率——失敗只損墨晶（時間成本），見 Task 4
 
+export const CONSOLE_PEARLS = 5; // 融合失敗安慰字珠（豁免每日上限）
+export const FAIL_LINES = [
+  '墨氣散了……別急，濁墨裡的血脈本就難尋。這幾顆字珠拿去，明天再試。',
+  '這次的墨晶不夠澄澈——不是你的錯，弱點題再攻克幾題，墨晶自然更純。',
+  '稚靈在濁墨深處動了一下，又沉回去了。牠感覺得到你，下次一定接得住。',
+];
+
 // 稚靈全庫：山海經幼獸，每類別 2 隻依 order 出庫。
 // bornLine 扣連 bond.js 濁墨世界觀：融合＝修復被濁墨吞噬的神獸血脈。
 export const CUBS = [
@@ -155,7 +163,11 @@ export function fuse(meta, petIdA, petIdB, { rng = Math.random, today = '' } = {
   if (!cubDef) return { meta, ok: false, reason: 'all-owned' };
   const paid = spendCrystals(meta, FUSE_COST);
   if (!paid.ok) return { meta, ok: false, reason: 'crystals' };
-  // （Task 4 在此插入失敗分支）
+  if (rng() < FAIL_RATE) {
+    const line = FAIL_LINES[Math.floor(rng() * FAIL_LINES.length)];
+    const pr = earnPearls(meta, CONSOLE_PEARLS, 'fusion-consolation', today);
+    return { meta, ok: true, result: 'fail', line, pearls: pr.earned };
+  }
   const title = cubDef.titles[Math.floor(rng() * cubDef.titles.length)];
   s.cubs[cubDef.id] = {
     bornAt: new Date().toISOString(),

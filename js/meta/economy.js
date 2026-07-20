@@ -8,6 +8,7 @@ export const CAP_EXEMPT_REASONS = new Set([
   'achievement',        // 成就冊
   'lantern-milestone',  // 守燈里程碑
   'bond-gift',          // 羈絆贈禮
+  'fusion-consolation', // 融合失敗安慰（少量、非 farm 得動的來源）
 ]);
 
 export function earnPearls(meta, amount, reason = '', today = '') {
