@@ -207,6 +207,14 @@
               </span>
               <span class="pet-entry__arrow" aria-hidden="true">›</span>
             </button>
+            <button id="btn-market" class="extra-entry extra-entry--market" type="button">
+              <span class="extra-entry__icon" aria-hidden="true">🏮</span>
+              <span class="extra-entry__body">
+                <span class="extra-entry__title">翰墨集市</span>
+                <span class="extra-entry__sub">週末開市，用字珠交換文房四寶</span>
+              </span>
+              <span class="pet-entry__arrow" aria-hidden="true">›</span>
+            </button>
             <button id="btn-shuyuan" class="extra-entry extra-entry--shuyuan" type="button">
               <span class="extra-entry__icon" aria-hidden="true">院</span>
               <span class="extra-entry__body">
@@ -504,6 +512,33 @@
       <div id="pearls-grid" class="pearls-grid"></div>
       <p id="pearls-empty" class="pearls-empty" hidden>寶殿還空著——把一題練到滾瓜爛熟，就會煉成第一顆字珠！</p>
       <button id="pearls-close" class="overlay-ghost-btn" type="button">收起</button>
+    </div>
+  </div>
+
+  <!-- 翰墨集市：週末開市，班級／全站二手交易文房四寶（字珠計價，不可兌換現實金錢） -->
+  <div id="market-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="market-title">
+    <div class="meta-overlay__card mkt-card-wrap">
+      <h2 id="market-title" class="overlay-title">翰墨集市</h2>
+      <div id="mkt-status" class="mkt-status"></div>
+      <details id="mkt-rules" class="mkt-rules" open>
+        <summary class="mkt-rules__summary">集市規則（點看／收起）</summary>
+        <ul class="mkt-rules__list">
+          <li>定價帶：凡品 40–120 字珠・良品 75–225 字珠・珍品 150–450 字珠</li>
+          <li>成交需付 10% 手續費（用來維持集市運作）</li>
+          <li>每人每日限購 3 件；同時最多掛 3 筆</li>
+          <li>珍品每班每週限量 10 件</li>
+          <li>開市時間：每週五 16:00 起，至週日夜間 24:00</li>
+          <li>字珠不可兌換現實金錢或禮物</li>
+          <li>神獸是夥伴不是商品——集市只交易文房四寶</li>
+        </ul>
+      </details>
+      <div id="mkt-tabs" class="mkt-tabs">
+        <button id="mkt-tab-class" class="mkt-tab is-active" type="button">本班</button>
+        <button id="mkt-tab-pub" class="mkt-tab" type="button">全站</button>
+      </div>
+      <div id="mkt-list" class="mkt-list"></div>
+      <p id="mkt-empty" class="mkt-empty" hidden>集市還空著，週末再來看看有沒有人上架吧！</p>
+      <button id="market-close" class="overlay-ghost-btn" type="button">收起</button>
     </div>
   </div>
 

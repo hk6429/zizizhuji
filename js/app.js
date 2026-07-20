@@ -13,6 +13,7 @@ import { initSelfStudy } from './selfstudy-ui.js';
 import { initScoreGame } from './scoregame-ui.js';
 import { initAchievementsUI } from './achievements-ui.js';
 import { initPearlsUI } from './pearls-ui.js';
+import { initMarketUI } from './market-ui.js';
 import { initShuyuanUI } from './shuyuan-ui.js';
 import { initRtBattleUI } from './rtbattle-ui.js';
 import { initSaveSyncUI } from './save-sync-ui.js';
@@ -567,6 +568,7 @@ initPearlsUI({
     return { ziyin, chengyu };
   },
 });
+initMarketUI({ getMeta: () => getCtx()?.meta, saveMeta });
 initShuyuanUI({
   getMeta: () => getCtx()?.meta,
   getTotals: () => getCtx()?.totals,
