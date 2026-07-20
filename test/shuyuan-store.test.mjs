@@ -2,7 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   SHUYUAN_KEY, setStorageBackend, defaultShuyuan, loadShuyuan, saveShuyuan,
+  getGateStage, getCourtyards, flourishTier, FLOURISH_TIERS, COURTYARDS,
 } from '../js/meta/shuyuan-store.js';
+import { defaultMeta } from '../js/meta/store.js';
 
 function mockStorage() {
   const map = new Map();
@@ -46,4 +48,39 @@ test('loadShuyuan 遇壞資料退回預設，且補齊缺欄位', () => {
   assert.deepEqual(s.styles, { path: 1 });
   assert.deepEqual(s.celebrated, []);                       // 缺欄位補齊
   setStorageBackend(null);
+});
+
+test('getGateStage 直讀 meta.xp.rank，越界夾回 0–9', () => {
+  const m = defaultMeta();
+  assert.deepEqual(getGateStage(m), { stage: 0, rankName: '蒙童', total: 10 });
+  m.xp.rank = 6;
+  assert.equal(getGateStage(m).stage, 6);
+  assert.equal(getGateStage(m).rankName, '貢士');
+  m.xp.rank = 99;
+  assert.equal(getGateStage(m).stage, 9);
+});
+
+test('flourishTier 門檻 0/10/30/60/100', () => {
+  assert.equal(flourishTier(0), 0);
+  assert.equal(flourishTier(9), 0);
+  assert.equal(flourishTier(10), 1);
+  assert.equal(flourishTier(30), 2);
+  assert.equal(flourishTier(60), 3);
+  assert.equal(flourishTier(100), 4);
+  assert.equal(FLOURISH_TIERS.length, 5);
+});
+
+test('getCourtyards 直讀 world byZone 進度並算繁茂度', () => {
+  const m = defaultMeta();
+  m.world.byZone = { yin: 15, xing: 0, chengyu: 435 };
+  const totals = { yin: 150, xing: 100, chengyu: 435 };
+  const cs = getCourtyards(m, totals);
+  assert.equal(cs.length, 3);
+  assert.deepEqual(cs.map((c) => c.name), ['谷音亭', '墨林軒', '珠璣閣']);
+  assert.equal(cs[0].pct, 10);
+  assert.equal(cs[0].tierName, '初萌');
+  assert.equal(cs[1].tierName, '荒蕪');
+  assert.equal(cs[2].pct, 100);
+  assert.equal(cs[2].tierName, '鼎盛');
+  assert.equal(COURTYARDS[0].zoneName, '字音谷');
 });

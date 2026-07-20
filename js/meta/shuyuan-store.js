@@ -1,6 +1,9 @@
 // 字靈書院純邏輯層：書院擺設/樣式/匾額/慶典狀態（自有 key zz_shuyuan）。
 // 山門/院落/裝飾數量一律由 zzj_meta 唯讀 derive，本模組絕不寫回 zzj_meta。零 DOM。
 
+import { RANKS } from './progress.js';
+import * as world from './world.js';
+
 export const SHUYUAN_KEY = 'zz_shuyuan';
 export const SHUYUAN_VERSION = 1;
 
@@ -66,4 +69,37 @@ export function saveShuyuan(state) {
   } catch {
     return false;
   }
+}
+
+// ── 山門十階：文氣境界（蒙童→文曲星）直接對應山門型態 ──
+export function getGateStage(meta) {
+  const stage = Math.max(0, Math.min(RANKS.length - 1, meta.xp.rank | 0));
+  return { stage, rankName: RANKS[stage].name, total: RANKS.length };
+}
+
+// ── 三院落：直讀 world.js byZone 進度百分比，換算繁茂度五級 ──
+export const COURTYARDS = [
+  { id: 'yin', name: '谷音亭', zoneName: '字音谷' },
+  { id: 'xing', name: '墨林軒', zoneName: '字形林' },
+  { id: 'chengyu', name: '珠璣閣', zoneName: '珠璣海' },
+];
+
+export const FLOURISH_TIERS = ['荒蕪', '初萌', '漸盛', '繁茂', '鼎盛'];
+const FLOURISH_AT = [0, 10, 30, 60, 100]; // 對齊 world.js 里程碑百分比
+
+export function flourishTier(pct) {
+  let tier = 0;
+  for (let i = 1; i < FLOURISH_AT.length; i++) {
+    if (pct >= FLOURISH_AT[i]) tier = i;
+  }
+  return tier;
+}
+
+export function getCourtyards(meta, totals) {
+  const { byZone } = world.getProgress(meta, totals);
+  return COURTYARDS.map((c) => {
+    const z = byZone[c.id];
+    const tier = flourishTier(z.pct);
+    return { ...c, done: z.done, total: z.total, pct: z.pct, tier, tierName: FLOURISH_TIERS[tier] };
+  });
 }
