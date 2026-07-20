@@ -129,6 +129,36 @@ export function setDecorStyle(state, kind, styleIdx) {
   return { ok: true };
 }
 
+// ── 自由擺放：預設散佈（確定性）＋自訂座標（百分比 2–98） ──
+const clampPct = (v) => Math.max(2, Math.min(98, v));
+
+// 分帶散佈：path 沿中軸石徑、lantern 左側坡、koi 右前水岸、statue 後山列陣
+const DEFAULT_BANDS = {
+  path:    { x0: 44, y0: 90, dx: 1.6,  dy: -6.5 },
+  lantern: { x0: 12, y0: 78, dx: 6.5,  dy: -4 },
+  koi:     { x0: 62, y0: 84, dx: 4.5,  dy: -5 },
+  statue:  { x0: 10, y0: 26, dx: 7.2,  dy: 2.5 },
+};
+
+export function defaultPos(kind, i) {
+  const b = DEFAULT_BANDS[kind] || DEFAULT_BANDS.path;
+  return { x: clampPct(b.x0 + b.dx * i), y: clampPct(b.y0 + b.dy * (i % 8)) };
+}
+
+export function placeDecoration(state, decorId, x, y) {
+  const sep = typeof decorId === 'string' ? decorId.lastIndexOf('-') : -1;
+  const kind = sep > 0 ? decorId.slice(0, sep) : '';
+  if (!DECOR_KINDS[kind]) return { ok: false, msg: '沒有這個裝飾' };
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return { ok: false, msg: '座標無效' };
+  state.placements[decorId] = { x: clampPct(x), y: clampPct(y) };
+  return { ok: true };
+}
+
+export function resetPlacements(state) {
+  state.placements = {};
+  return { ok: true };
+}
+
 export function getDecorations(meta, state) {
   const { counts } = getCollection(meta);
   const out = [];
@@ -137,7 +167,7 @@ export function getDecorations(meta, state) {
     const styleIdx = styleIndexOf(state, kind);
     for (let i = 0; i < n; i++) {
       const id = `${kind}-${i}`;
-      const pos = state.placements[id] || { x: 50, y: 50 }; // Task 4 換成 defaultPos(kind, i)
+      const pos = state.placements[id] || defaultPos(kind, i);
       out.push({
         id, kind, name: def.name, styleIdx, styleName: def.styles[styleIdx],
         x: pos.x, y: pos.y, custom: !!state.placements[id],

@@ -4,6 +4,7 @@ import {
   SHUYUAN_KEY, setStorageBackend, defaultShuyuan, loadShuyuan, saveShuyuan,
   getGateStage, getCourtyards, flourishTier, FLOURISH_TIERS, COURTYARDS,
   DECOR_KINDS, getDecorations, setDecorStyle, styleIndexOf,
+  defaultPos, placeDecoration, resetPlacements,
 } from '../js/meta/shuyuan-store.js';
 import { defaultMeta } from '../js/meta/store.js';
 
@@ -131,4 +132,38 @@ test('setDecorStyle 換樣式、無效值擋下', () => {
   const d = getDecorations(m, s).find((x) => x.kind === 'lantern');
   assert.equal(d.styleIdx, 2);
   assert.equal(d.styleName, DECOR_KINDS.lantern.styles[2]);
+});
+
+test('defaultPos 確定性、不同 kind 分帶、座標在 2–98', () => {
+  assert.deepEqual(defaultPos('lantern', 0), defaultPos('lantern', 0)); // 確定性
+  assert.notDeepEqual(defaultPos('lantern', 0), defaultPos('lantern', 1)); // 同 kind 錯落
+  for (const kind of Object.keys(DECOR_KINDS)) {
+    for (let i = 0; i < DECOR_KINDS[kind].cap; i++) {
+      const p = defaultPos(kind, i);
+      assert.ok(p.x >= 2 && p.x <= 98 && p.y >= 2 && p.y <= 98, `${kind}-${i} 超界 ${JSON.stringify(p)}`);
+    }
+  }
+});
+
+test('placeDecoration 寫入座標並夾界；無效 id/座標擋下', () => {
+  const s = defaultShuyuan();
+  assert.equal(placeDecoration(s, 'statue-2', 120, -5).ok, true);
+  assert.deepEqual(s.placements['statue-2'], { x: 98, y: 2 }); // 夾到 2–98
+  assert.equal(placeDecoration(s, 'ghost-0', 10, 10).ok, false);
+  assert.equal(placeDecoration(s, 'statue-1', NaN, 10).ok, false);
+});
+
+test('getDecorations 未擺放用 defaultPos、擺過用自訂座標、reset 後回預設', () => {
+  const m = metaWithPearls([0, 0, 0, 2]); // 2 尊雕像
+  const s = defaultShuyuan();
+  let ds = getDecorations(m, s);
+  assert.deepEqual({ x: ds[0].x, y: ds[0].y }, defaultPos('statue', 0));
+  assert.equal(ds[0].custom, false);
+  placeDecoration(s, 'statue-0', 33, 44);
+  ds = getDecorations(m, s);
+  assert.deepEqual({ x: ds[0].x, y: ds[0].y }, { x: 33, y: 44 });
+  assert.equal(ds[0].custom, true);
+  resetPlacements(s);
+  ds = getDecorations(m, s);
+  assert.equal(ds[0].custom, false);
 });
