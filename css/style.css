@@ -2016,3 +2016,107 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 
 /* 即時對戰：房號大字 */
 .rt-code { font-size: 3rem; letter-spacing: .3em; text-align: center; font-weight: 700; margin: .5em 0; }
+
+/* =========================================================
+   神獸融合坊：overlay + 融合分頁 + 稚靈收藏分頁
+   ========================================================= */
+
+.fusion-panel { max-width: 560px; width: 92vw; max-height: 88vh; display: flex; flex-direction: column; }
+.fusion-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.fusion-head .overlay-title { margin: 0; }
+.fusion-crystals { font-size: .85rem; color: var(--ink-soft); white-space: nowrap; }
+.fusion-crystals b { color: var(--gold-text); font-size: 1rem; }
+
+.fusion-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.fusion-tab {
+  flex: 1; padding: 8px 0; border: 1px solid rgba(43,58,74,.2); border-radius: 10px;
+  background: var(--paper-dim); color: var(--ink-soft); font-family: var(--serif);
+  font-weight: 700; letter-spacing: .1em; cursor: pointer;
+}
+.fusion-tab.is-active { background: var(--teal-deep); color: var(--paper-hi); border-color: var(--teal-deep); }
+.fusion-panel-body { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+/* ---- 融合分頁：類別卡 ---- */
+.fusion-cat-card {
+  display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;
+  padding: 10px; border: 1px solid rgba(201,162,39,.4); border-radius: 12px;
+  background: var(--paper-hi); font-family: var(--sans); color: var(--ink);
+}
+.fusion-cat-card__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-family: var(--serif); }
+.fusion-elig { font-size: .74rem; color: var(--ink-soft); }
+.fusion-cat-card__recipe { display: flex; align-items: center; gap: 10px; }
+.fusion-recipe-img {
+  width: 48px; height: 48px; flex: none; border-radius: 10px; object-fit: cover;
+  background: var(--ink);
+}
+.fusion-recipe-img.is-silhouette, .is-silhouette { filter: brightness(0) opacity(.75); }
+.fusion-recipe-unknown { font-family: var(--serif); font-weight: 800; color: var(--ink-soft); }
+.fusion-recipe-known { font-size: .84rem; color: var(--teal-deep); }
+.fusion-reveal-btn, .fusion-start-btn, .fusion-cancel-btn, .fusion-cub-card__btn {
+  padding: 7px 10px; border-radius: 8px; font-size: .78rem; cursor: pointer;
+  border: 1px solid rgba(43,58,74,.2); background: var(--paper-dim); color: var(--ink);
+}
+.fusion-start-btn { background: var(--teal-deep); color: var(--paper-hi); border-color: var(--teal-deep); }
+.fusion-start-btn:disabled { background: var(--paper-dim); color: var(--ink-soft); cursor: default; }
+.fusion-reveal-btn:disabled { opacity: .6; cursor: default; }
+
+.fusion-pet-picker { display: flex; flex-direction: column; gap: 8px; }
+.fusion-pet-picker__list { display: flex; flex-wrap: wrap; gap: 6px; }
+.fusion-pet-picker__btn {
+  padding: 6px 10px; border-radius: 8px; font-size: .78rem; cursor: pointer;
+  border: 1px solid rgba(43,58,74,.2); background: var(--paper-dim); color: var(--ink);
+}
+.fusion-pet-picker__btn.is-picked { background: var(--rouge); color: var(--paper-hi); border-color: var(--rouge); }
+
+.fusion-confirm p { margin: 0 0 8px; font-size: .84rem; color: var(--ink-soft); }
+
+.fusion-result {
+  margin-bottom: 12px; padding: 10px; border-radius: 10px;
+  background: var(--paper-dim); font-size: .84rem; color: var(--ink);
+}
+.fusion-result__born { font-style: italic; color: var(--teal-deep); margin: 0 0 6px; }
+.fusion-result__title { font-family: var(--serif); font-weight: 800; margin: 0; }
+.fusion-result__line { margin: 0 0 6px; color: var(--ink-soft); }
+.fusion-result__pearls { margin: 0 0 8px; color: var(--gold-text); font-weight: 700; }
+
+.fusion-passive-picker { display: flex; flex-direction: column; gap: 8px; }
+.fusion-passive-picker__hint { font-size: .84rem; color: var(--ink-soft); margin: 0; }
+.fusion-passive-btn {
+  display: flex; flex-direction: column; gap: 3px; text-align: left;
+  padding: 10px; border-radius: 10px; cursor: pointer;
+  border: 1px solid rgba(201,162,39,.4); background: var(--paper-hi); color: var(--ink);
+}
+.fusion-passive-btn span { font-size: .78rem; color: var(--ink-soft); }
+
+.fusion-nickname-panel { display: flex; flex-direction: column; gap: 8px; }
+.fusion-nickname-input {
+  padding: 8px 10px; border-radius: 8px; font-size: .9rem;
+  border: 1px solid rgba(43,58,74,.3); background: var(--paper-hi); color: var(--ink);
+}
+.fusion-card-panel { display: flex; flex-direction: column; gap: 8px; }
+#fusion-card-canvas { width: 100%; max-width: 320px; margin: 0 auto; border-radius: 10px; }
+
+.fusion-riddle-panel { display: flex; flex-direction: column; gap: 8px; }
+.fusion-riddle-panel__q { font-size: .88rem; color: var(--ink); margin: 0; }
+.fusion-riddle-panel__opt {
+  padding: 8px 10px; border-radius: 8px; font-size: .84rem; text-align: left; cursor: pointer;
+  border: 1px solid rgba(43,58,74,.2); background: var(--paper-dim); color: var(--ink);
+}
+.fusion-riddle-panel__correct { color: var(--teal-deep); font-weight: 700; }
+.fusion-riddle-panel__wrong { color: var(--ink-soft); }
+
+/* ---- 稚靈收藏分頁 ---- */
+.fusion-cubs-empty { font-size: .84rem; color: var(--ink-soft); text-align: center; padding: 20px 0; }
+.fusion-cub-card {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+  padding: 8px; border: 1px solid rgba(201,162,39,.4); border-radius: 12px;
+  background: var(--paper-hi); color: var(--ink);
+}
+.fusion-cub-card.is-active { border-color: var(--rouge); box-shadow: 0 0 0 2px rgba(193,75,75,.35); }
+.fusion-cub-card__img { width: 52px; height: 52px; flex: none; object-fit: cover; border-radius: 10px; background: var(--paper-dim); }
+.fusion-cub-card__body { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.fusion-cub-card__name { font-family: var(--serif); font-weight: 800; font-size: .9rem; display: flex; align-items: baseline; gap: 5px; }
+.fusion-cub-card__cat { font-size: .68rem; color: var(--teal-deep); font-weight: 700; }
+.fusion-cub-card__title { font-size: .72rem; color: var(--ink-soft); }
+.fusion-cub-card__badge { font-size: .68rem; color: var(--rouge-deep); font-weight: 800; }
+.fusion-cub-card__actions { display: flex; flex-direction: column; gap: 4px; flex: none; }

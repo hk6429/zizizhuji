@@ -8,6 +8,7 @@ import {
   beginBattle, battleOver, applyEliminate, hideMolingBubble, showMolingLine,
 } from './integration.js';
 import { initPetUI } from './pet-ui.js';
+import { initFusionUI } from './fusion-ui.js';
 import { initSelfStudy } from './selfstudy-ui.js';
 import { initScoreGame } from './scoregame-ui.js';
 import { initAchievementsUI } from './achievements-ui.js';
@@ -548,6 +549,7 @@ initTermsHelp();
 const ensureCtx = async () => { await initMetaLayer(); return getCtx(); };
 bindDailyBox();
 initPetUI({ getMeta: () => getCtx()?.meta, onChange: refreshWidgets });
+initFusionUI({ getMeta: () => getCtx()?.meta, onChange: refreshWidgets });
 initSelfStudy({ loadBank, ensureCtx });
 initScoreGame({ loadBank, ensureCtx, onChange: refreshWidgets });
 initAchievementsUI({ getMeta: () => getCtx()?.meta });

@@ -163,6 +163,16 @@
             <span class="pet-entry__arrow" aria-hidden="true">›</span>
           </button>
 
+          <!-- 神獸融合坊入口 -->
+          <button id="btn-fusion" class="pet-entry" type="button">
+            <img class="pet-entry__img" src="assets/web/fusion-forge-bg.jpg" alt="" loading="lazy">
+            <span class="pet-entry__body">
+              <span class="pet-entry__title">融合坊</span>
+              <span class="pet-entry__sub">雙親滿級可融合出稚靈</span>
+            </span>
+            <span class="pet-entry__arrow" aria-hidden="true">›</span>
+          </button>
+
           <!-- 自學・墨池 ＆ 文氣爭鋒 -->
           <div class="extra-grid">
             <button id="btn-selfstudy" class="extra-entry extra-entry--study" type="button">
@@ -395,6 +405,24 @@
         <div id="pet-equip-grid" class="pet-equip-grid"></div>
       </div>
       <button id="pet-close" class="overlay-ghost-btn" type="button">收起</button>
+    </div>
+  </div>
+
+  <!-- 神獸融合坊：墨晶／隱藏題揭曉／融合／稚靈收藏 -->
+  <div id="fusion-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="fusion-title">
+    <div class="meta-overlay__card fusion-panel">
+      <div class="fusion-head">
+        <h2 id="fusion-title" class="overlay-title">神獸融合坊</h2>
+        <span class="fusion-crystals">墨晶 <b id="fusion-crystal-balance">0</b></span>
+      </div>
+      <div class="fusion-tabs" role="tablist">
+        <button class="fusion-tab is-active" data-tab="forge" type="button" role="tab" aria-selected="true" aria-controls="fusion-panel-forge" id="fusion-tab-forge">融合</button>
+        <button class="fusion-tab" data-tab="cubs" type="button" role="tab" aria-selected="false" aria-controls="fusion-panel-cubs" id="fusion-tab-cubs">稚靈收藏</button>
+      </div>
+      <div id="fusion-panel-forge" class="fusion-panel-body" role="tabpanel" aria-labelledby="fusion-tab-forge"></div>
+      <div id="fusion-panel-cubs" class="fusion-panel-body" hidden role="tabpanel" aria-labelledby="fusion-tab-cubs"></div>
+      <canvas id="fusion-card-canvas" width="1080" height="1350" hidden></canvas>
+      <button id="fusion-close" class="overlay-ghost-btn" type="button">收起</button>
     </div>
   </div>
 
