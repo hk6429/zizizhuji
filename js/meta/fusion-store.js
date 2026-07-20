@@ -283,3 +283,34 @@ export function getFusionPreview(meta, category) {
   const cub = nextCubFor(meta, category);
   return { known: true, cub: cub ? { id: cub.id, name: cub.name, titles: cub.titles.slice(), desc: cub.desc } : null };
 }
+
+export const CUB_NICKNAME_MAX = 8; // 與 pet.js NICKNAME_MAX 同規格
+
+export function setCubNickname(meta, cubId, nickname) {
+  const s = ensureFusionState(meta);
+  const r = s.cubs[cubId];
+  if (!r) return { meta, ok: false, reason: 'not-owned' };
+  const nick = String(nickname).trim();
+  if (nick.length === 0) { r.nickname = null; return { meta, ok: true, reason: null }; }
+  if (nick.length > CUB_NICKNAME_MAX) return { meta, ok: false, reason: 'too-long' };
+  r.nickname = nick;
+  return { meta, ok: true, reason: null };
+}
+
+// 稚靈名片資料（分享卡）：仿 vocab-duel petstore.js shareCard 的資料形狀，渲染在 js/fusion-card.js。
+export function buildCubCardData(meta, cubId) {
+  const s = ensureFusionState(meta);
+  const r = s.cubs[cubId];
+  const def = CUB_BY_ID.get(cubId);
+  if (!r || !def) return null;
+  const passive = r.passive ? PASSIVE_BY_ID.get(r.passive) : null;
+  return {
+    id: cubId, name: def.name, displayName: r.nickname || def.name,
+    title: r.title, category: def.category, desc: def.desc,
+    parents: r.parents.map((pid) => ({ id: pid, name: (PET_BY_ID.get(pid) || {}).name || pid })),
+    bornAt: r.bornAt,
+    passiveName: passive ? passive.name : null,
+    cubCount: Object.keys(s.cubs).length,
+    imgSrc: `assets/web/cub-${cubId}.jpg`,
+  };
+}
