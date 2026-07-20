@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { sceneHtml, styleOptionsHtml, plaqueComposerHtml } from '../js/shuyuan-ui.js';
+import { sceneHtml, styleOptionsHtml, plaqueComposerHtml, celebrationHtml, wallHtml } from '../js/shuyuan-ui.js';
 import { defaultMeta } from '../js/meta/store.js';
 import {
   defaultShuyuan, getShuyuanView, placeDecoration,
@@ -54,4 +54,21 @@ test('plaqueComposerHtml 有 24 顆選字鈕；gate 才有對聯區', () => {
   assert.ok(html.includes(COUPLET_BANK[0].up));
   const courtHtml = plaqueComposerHtml('yin', '谷音亭');
   assert.ok(!courtHtml.includes(COUPLET_BANK[0].up)); // 院落不掛對聯
+});
+
+test('celebrationHtml 升境卡含境界名/祝詞/複製鈕', () => {
+  const html = celebrationHtml({ id: 'rank-4', type: 'rank', title: '升境・秀才', text: '筆下有神，鄉里稱奇。' });
+  assert.ok(html.includes('升境・秀才'));
+  assert.ok(html.includes('筆下有神'));
+  assert.ok(html.includes('sy-epic-share'));
+  assert.ok(html.includes('sy-epic-close'));
+});
+
+test('wallHtml 陳列已解鎖成就；空清單給鼓勵語不給催促', () => {
+  const html = wallHtml([{ id: 'first-win', name: '初戰告捷', desc: '贏得第一場對戰', unlocked: true, unlockedAt: '2026-07-01' }]);
+  assert.ok(html.includes('初戰告捷'));
+  assert.ok(html.includes('2026'));
+  const empty = wallHtml([]);
+  assert.ok(empty.includes('成就'));      // 有標題
+  assert.ok(!empty.includes('還差'));     // 不催促（白帽）
 });

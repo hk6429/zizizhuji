@@ -2001,3 +2001,15 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 .sy-couplet-list { display: flex; flex-direction: column; gap: .35em; }
 .sy-couplet-opt { text-align: left; padding: .45em .6em; border: 1px solid #c9b98f; border-radius: 6px; background: #f7f1e2; cursor: pointer; }
 .sy-sub { margin: .8em 0 .3em; font-size: .95rem; }
+
+.sy-epic { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; background: rgba(20, 12, 6, .6); animation: syFade .3s ease; }
+.sy-epic-card { background: #f7f1e2; border: 2px solid #b49b5a; border-radius: 14px; padding: 1.4em 1.8em; text-align: center; max-width: 22em; animation: syPop .45s cubic-bezier(.2, 1.4, .4, 1); }
+.sy-epic-icon { font-size: 3rem; animation: syGlow 1.6s ease infinite alternate; }
+.sy-epic-card h3 { margin: .4em 0; letter-spacing: .1em; }
+.sy-epic-card button { margin: .6em .3em 0; }
+@keyframes syFade { from { opacity: 0; } }
+@keyframes syPop { from { transform: scale(.6); opacity: 0; } }
+@keyframes syGlow { from { filter: drop-shadow(0 0 2px #d8b45a); } to { filter: drop-shadow(0 0 14px #d8b45a); } }
+.sy-wall-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(11em, 1fr)); gap: .5em; padding: .5em; }
+.sy-wall-item { display: flex; flex-direction: column; gap: .15em; background: #efe8d8; border: 1px solid #c9b98f; border-radius: 8px; padding: .55em .7em; font-size: .82rem; }
+.sy-wall-item i { color: #8a7a5e; font-style: normal; font-size: .72rem; }

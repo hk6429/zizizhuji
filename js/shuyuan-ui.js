@@ -85,6 +85,29 @@ export function plaqueComposerHtml(targetId, currentText) {
     `<div class="sy-char-bank">${chars}</div>${couplets}`;
 }
 
+// ── 純函式：慶典卡／成就牆 ──
+export function celebrationHtml(celeb) {
+  const icon = celeb.type === 'rank' ? '🏮' : '🐉';
+  return `<div class="sy-epic-card" role="dialog" aria-modal="true" aria-label="書院慶典" tabindex="-1">` +
+    `<div class="sy-epic-icon">${icon}</div>` +
+    `<h3>${esc(celeb.title)}</h3>` +
+    `<p>${esc(celeb.text)}</p>` +
+    `<button class="overlay-ghost-btn" id="sy-epic-share" type="button">📋 複製喜報</button>` +
+    `<button class="overlay-ghost-btn" id="sy-epic-close" type="button">繼續建院</button>` +
+    `</div>`;
+}
+
+export function wallHtml(entries) {
+  if (!entries.length) {
+    return `<h3 class="sy-sub">書院成就牆</h3><p class="shuyuan-hint">牆上還空著——每一次修行，都會替書院掛上一塊新匾。</p>`;
+  }
+  return `<h3 class="sy-sub">書院成就牆（${entries.length} 面）</h3><div class="sy-wall-grid">` +
+    entries.map((e) =>
+      `<div class="sy-wall-item"><b>${esc(e.name)}</b><span>${esc(e.desc)}</span>` +
+      `<i>${esc(new Date(e.unlockedAt).toLocaleDateString('zh-TW'))}</i></div>`,
+    ).join('') + `</div>`;
+}
+
 // ── DOM 接線 ──
 let getMeta = () => null;
 let getTotals = () => null;
@@ -105,9 +128,54 @@ function open() {
   if (!state.seeded) { seedCelebrated(meta, state); saveShuyuan(state); }
   renderScene();
   openOverlay($('shuyuan-overlay'), close);
+  showingWall = false;
+  $('shuyuan-wall-btn').textContent = '成就牆';
+  playCelebrations();
 }
 
 function close() { closeOverlay($('shuyuan-overlay')); }
+
+// ── 慶典播放：一次一件，關掉才放下一件（epicShow 手法：焦點管理＋Esc 可關） ──
+function playCelebrations() {
+  const pend = pendingCelebrations(getMeta(), state);
+  if (!pend.length) return;
+  const celeb = pend[0];
+  const prevFocus = document.activeElement;
+  const d = document.createElement('div');
+  d.className = 'sy-epic';
+  d.innerHTML = celebrationHtml(celeb);
+  document.body.appendChild(d);
+  const onKey = (e) => { if (e.key === 'Escape') done(); };
+  const done = () => {
+    document.removeEventListener('keydown', onKey);
+    d.remove();
+    markCelebrated(state, celeb.id);
+    saveShuyuan(state);
+    if (prevFocus && prevFocus.focus) prevFocus.focus();
+    playCelebrations(); // 佇列裡還有就接著放
+  };
+  document.addEventListener('keydown', onKey);
+  d.querySelector('.sy-epic-card').focus();
+  d.querySelector('#sy-epic-close').onclick = done;
+  d.querySelector('#sy-epic-share').onclick = () => {
+    const text = `🏮 我的字靈書院傳來喜報——${celeb.title}！${celeb.text} 來字字珠璣跟我一起煉字珠：https://zizizhuji.vercel.app`;
+    if (navigator.clipboard) navigator.clipboard.writeText(text);
+  };
+}
+
+// ── 成就牆切換 ──
+let showingWall = false;
+function toggleWall() {
+  showingWall = !showingWall;
+  const scene = $('shuyuan-scene');
+  if (showingWall) {
+    scene.innerHTML = wallHtml(getWallEntries(getMeta()));
+    $('shuyuan-wall-btn').textContent = '回庭園';
+  } else {
+    renderScene();
+    $('shuyuan-wall-btn').textContent = '成就牆';
+  }
+}
 
 // ── 拖曳擺放：pointer 事件，放開才存檔（局部更新，不整場重繪） ──
 function bindDrag(scene) {
@@ -196,6 +264,7 @@ export function initShuyuanUI(opts) {
   getTotals = opts.getTotals;
   $('btn-shuyuan').addEventListener('click', open);
   $('shuyuan-close').addEventListener('click', close);
+  $('shuyuan-wall-btn').addEventListener('click', toggleWall);
   bindDrag($('shuyuan-scene'));
   $('shuyuan-scene').addEventListener('click', (ev) => {
     const t = ev.target.closest('[data-target]');
