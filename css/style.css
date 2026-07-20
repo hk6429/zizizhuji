@@ -1992,3 +1992,12 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 .sy-decor.is-dragging { cursor: grabbing; z-index: 9; filter: drop-shadow(0 4px 8px rgba(0,0,0,.35)); }
 .shuyuan-hint { font-size: .8rem; color: #6b5b44; margin: .6em 0 .2em; }
 .shuyuan-toolbar { display: flex; gap: .5em; justify-content: flex-end; flex-wrap: wrap; }
+.sy-style-opt { display: inline-flex; flex-direction: column; align-items: center; gap: .3em; margin: .3em; padding: .5em; border: 2px solid transparent; border-radius: 8px; background: #efe8d8; cursor: pointer; width: 7em; }
+.sy-style-opt img { width: 4em; height: 4em; object-fit: contain; }
+.sy-style-opt.is-active { border-color: #a33b2e; }
+.sy-char-bank { display: grid; grid-template-columns: repeat(8, 1fr); gap: .35em; margin: .5em 0; }
+.sy-char { font-size: 1.15rem; padding: .4em 0; border: 1px solid #c9b98f; border-radius: 6px; background: #f7f1e2; cursor: pointer; }
+.sy-preview b { letter-spacing: .2em; }
+.sy-couplet-list { display: flex; flex-direction: column; gap: .35em; }
+.sy-couplet-opt { text-align: left; padding: .45em .6em; border: 1px solid #c9b98f; border-radius: 6px; background: #f7f1e2; cursor: pointer; }
+.sy-sub { margin: .8em 0 .3em; font-size: .95rem; }
