@@ -14,6 +14,16 @@ export function recordAnswer(state, id, correct) {
   state.set(id, correct ? Math.min(current + 1, MAX_BOX) : Math.max(current - WRONG_DROP, MIN_BOX));
 }
 
+// 同字聚焦複習：答錯某破音字時，讓「同一個字」的其他題也退一盒、提早再出現，
+// 把複習從「單題」升級到「錯誤模式」。退幅比本題(WRONG_DROP)小，只是輕推不重罰。
+// siblingIds 不含本題自己；不在 state 內的 id 忽略。
+export function boostSiblings(state, siblingIds, drop = 1) {
+  for (const id of siblingIds || []) {
+    if (!state.has(id)) continue;
+    state.set(id, Math.max((state.get(id) ?? MIN_BOX) - drop, MIN_BOX));
+  }
+}
+
 // byId（可選）：id → entry，entry.difficulty 存在時用來在同盒位時優先出較易的題
 export function nextQuestionId(state, ids, byId) {
   return ids.reduce((lowest, id) => {

@@ -49,11 +49,45 @@
   .pd-trend-bar[data-answered="0"] { background: var(--paper-dim); }
   .pd-empty { color: var(--ink-soft); font-size: .86rem; text-align: center; padding: 8px 0; }
   .pd-hint { color: var(--ink-soft); font-size: .78rem; margin-top: -8px; margin-bottom: 16px; text-align: center; }
+  .pd-intro { margin-bottom: 20px; }
+  .pd-intro h2 { font-family: var(--kai); font-size: 1.05rem; color: var(--navy); margin: 0 0 8px; }
+  .pd-intro p, .pd-intro li { font-size: .88rem; line-height: 1.6; color: var(--ink); margin: 0 0 6px; }
+  .pd-intro ul { margin: 0 0 6px; padding-left: 1.2em; }
+  .pd-intro details {
+    margin-top: 6px;
+  }
+  .pd-intro summary {
+    cursor: pointer; font-size: .88rem; color: var(--teal-deep); font-weight: 600;
+  }
 </style>
 </head>
 <body>
   <h1 class="pd-title">家長儀表板</h1>
   <p class="pd-sub">唯讀報表，只看不改——輸入孩子的雲端存檔代碼即可查詢，不會覆蓋任何進度</p>
+
+  <div class="pd-card pd-intro">
+    <h2>給家長與老師：這站在教什麼</h2>
+    <p>「字字珠璣」是國小語文練功站，練的是<b>字音字形</b>（破音字、形近字）和<b>成語</b>。題目來源錨定教育部的公開資料（全字庫 CNS11643、國語小字典等），答案對照教育部《一字多音審訂表》現行標準；釋義由我們自己撰寫、每題會標明出處，資料不足的地方也照實標註，不會為了湊題目數量捏造內容。</p>
+
+    <details>
+      <summary>畫面上「神獸融合」「即時對戰」「翰墨集市」是遊戲，不是分心的東西嗎？</summary>
+      <p>這些機制是<b>答對題目、練到一定熟練度之後才解鎖</b>的延伸獎勵，設計上刻意做成「白帽」，不誘導孩子沉迷或花錢：</p>
+      <ul>
+        <li><b>神獸融合</b>：要該類題目的近期正確率達到門檻、並且累積答對一定題數，才能觸發融合，靠的是紮實練習，不是運氣。</li>
+        <li><b>即時對戰</b>：對戰輸了不扣分、不懲罰，頂多是連勝中斷，孩子不會因為輸一場就失去已經練會的東西。</li>
+        <li><b>翰墨集市</b>：交易用的是遊戲內練習賺來的「墨晶」，<b>不涉及任何真實金錢</b>——沒有課金、沒有抽卡、沒有廣告，也不會蒐集孩子的個人資料。</li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>我可以怎麼陪孩子玩？</summary>
+      <ul>
+        <li>下方儀表板可以看到孩子的<b>練習量</b>、<b>弱點分類</b>（正確率由低到高排序）、以及<b>最常錯的題目</b>，建議偶爾陪孩子看一下常錯字/常錯成語，聊聊錯在哪裡，比只看分數更有幫助。</li>
+        <li>遊戲首頁「更多功能」裡有一個<b>無傷模式</b>開關：開啟後會關掉對戰時的連擊嗆聲與低血警示（畫面變紅、快輸的緊張感），只保留自己的進度，適合容易挫折或緊張的孩子；孩子第一次遇到緊張情境時也會被問一次要不要開啟。</li>
+        <li>建議把「融合」「對戰」「集市」當成孩子認真練習後的<b>獎勵和調劑</b>，陪他看懂錯題解析、肯定他的進步，而不是緊盯遊戲畫面本身。</li>
+      </ul>
+    </details>
+  </div>
 
   <div class="pd-lookup">
     <input id="pd-code" type="text" maxlength="6" placeholder="輸入 6 碼存檔代碼" autocomplete="off" aria-label="存檔代碼">

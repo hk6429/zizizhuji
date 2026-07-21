@@ -51,9 +51,7 @@ await page.click('#btn-back');
 await page.click('#level-elem');
 await page.waitForSelector('#level-elem.is-active');
 
-// 「更多功能」預設收合（漸進揭露），要先展開才點得到寵物閣／自學／文氣爭鋒
-await page.click('.more-section > summary');
-await page.waitForSelector('#btn-pet', { state: 'visible' });
+// 寵物閣／融合坊現在是首頁常駐的「進階玩法」區塊，不再藏在收合區，不必先展開
 
 // 寵物閣：開啟後應渲染 12 隻神獸格；已解鎖的（unlockAt 0）要有羈絆階段文字與小傳按鈕
 await page.click('#btn-pet');
@@ -69,6 +67,10 @@ await page.waitForSelector('#fusion-overlay:not([hidden])');
 const fusionCrystalText = await page.$eval('#fusion-crystal-balance', el => el.textContent.trim());
 const fusionCatCount = await page.$$eval('#fusion-panel-forge .fusion-cat-card', els => els.length);
 await page.click('#fusion-close');
+
+// 字珠寶殿仍在「更多功能」收合區，要先展開才點得到
+await page.click('.more-section > summary');
+await page.waitForSelector('#btn-pearls', { state: 'visible' });
 
 // 字珠寶殿：開啟後顯示品階統計列（新玩家 0 顆 → 空狀態文案）
 await page.click('#btn-pearls');
@@ -109,8 +111,6 @@ await page.evaluate(() => {
   localStorage.setItem('zz_mkt_test_force_open', '1');
 });
 await page.reload();
-await page.click('.more-section > summary');
-await page.waitForSelector('#btn-pet', { state: 'visible' });
 await page.click('#btn-market');
 await page.waitForSelector('#market-overlay:not([hidden])');
 await page.waitForSelector('#mkt-sell-gear-list button');
@@ -131,14 +131,16 @@ await page.evaluate(() => {
   ]));
 });
 await page.reload();
-await page.click('.more-section > summary');
-await page.waitForSelector('#btn-pet', { state: 'visible' });
 await page.click('#btn-market');
 await page.waitForSelector('#market-overlay:not([hidden])');
 await page.click('#mkt-tab-ever');
 await page.waitForSelector('#mkt-ever:not([hidden])');
 const mktEverText = await page.$eval('#mkt-ever', el => el.textContent);
 await page.click('#market-close');
+
+// 剛才 reload 過，「更多功能」收合區重新收起，成就總覽等工具項目要先展開才點得到
+await page.click('.more-section > summary');
+await page.waitForSelector('#btn-achievements', { state: 'visible' });
 
 // 成就總覽：開啟後應渲染 18 個成就卡
 await page.click('#btn-achievements');

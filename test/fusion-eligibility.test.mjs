@@ -71,3 +71,45 @@ test('canFusePair：正確率不足時回 accuracy', () => {
   meta.weak = {};
   assert.equal(canFusePair(meta, 'baize', 'kui').reason, 'accuracy');
 });
+
+// —— WP2 Task 1：資格「還差多少」量化進度 ——
+
+test('getEligibility.progress：正確率未達標時回報還差幾個百分點', () => {
+  const meta = maxedZiyinMeta();
+  meta.weak = { 字音: { correct: 60, wrong: 40 } }; // 60% 正確率，樣本 100 足夠
+  const r = getEligibility(meta, '字音');
+  assert.equal(r.progress.accuracy.met, false);
+  assert.equal(r.progress.accuracy.gapPct, 20); // 80% - 60% = 20
+});
+
+test('getEligibility.progress：正確率已達標時 gapPct 為 0', () => {
+  const meta = maxedZiyinMeta(); // weak 90/10 = 90%
+  const r = getEligibility(meta, '字音');
+  assert.equal(r.progress.accuracy.met, true);
+  assert.equal(r.progress.accuracy.gapPct, 0);
+});
+
+test('getEligibility.progress：樣本數不足時回報還差幾題', () => {
+  const meta = maxedZiyinMeta();
+  meta.weak = { 字音: { correct: 8, wrong: 4 } }; // total=12 < 20
+  const r = getEligibility(meta, '字音');
+  assert.equal(r.progress.sample.met, false);
+  assert.equal(r.progress.sample.current, 12);
+  assert.equal(r.progress.sample.needed, ACCURACY_MIN_SAMPLE);
+  assert.equal(r.progress.sample.remaining, 8);
+});
+
+test('getEligibility.progress：雙親未滿級時回報還差幾級（同類別共用等級）', () => {
+  const meta = { collection: {}, weak: {} }; // 完全沒練，Lv0
+  const r = getEligibility(meta, '字音');
+  assert.equal(r.progress.pair.met, false);
+  assert.equal(r.progress.pair.current, 0);
+  assert.equal(r.progress.pair.remaining, 15); // MAX_LEVEL - 0
+});
+
+test('getEligibility.progress：雙親已滿級時 remaining 為 0', () => {
+  const meta = maxedZiyinMeta();
+  const r = getEligibility(meta, '字音');
+  assert.equal(r.progress.pair.met, true);
+  assert.equal(r.progress.pair.remaining, 0);
+});

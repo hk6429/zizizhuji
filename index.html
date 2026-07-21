@@ -51,9 +51,10 @@
           </h1>
           <span class="brand-seal" aria-hidden="true">珠璣</span>
         </div>
-        <p class="brand-sub">字音字形 × 成語 ── 答題對戰</p>
+        <p class="brand-sub">字音字形 × 成語 ── 邊學邊挑戰</p>
         <p class="brand-grade">適合國小高年級以上使用，也歡迎國小中年級來挑戰（可依難度分級練習）</p>
         <p class="brand-trust">免費開源．無廣告．無金流．不蒐集個資</p>
+        <a id="btn-parent-dashboard" class="parent-cta" href="parent.html" target="_blank" rel="noopener">👀 家長・老師看這裡</a>
       </header>
 
       <!-- 首頁（進入答題後由 body.in-quiz 隱藏） -->
@@ -147,11 +148,12 @@
           <input type="checkbox" id="toggle-sound" checked>
           <span>答題音效</span>
         </label>
-        <p class="mode-hint">想要排行榜與計分？「更多功能」裡的文氣爭鋒也是對戰玩法。</p>
+        <p class="mode-hint">練到有點基礎後，別忘了看看下面的「進階玩法」——那裡才是這個遊戲真正好玩的地方。</p>
 
-        <!-- 更多功能（漸進揭露：山海寵物／自學／文氣爭鋒，收合減少首頁決策點） -->
-        <details class="more-section">
-          <summary class="section-title section-title--toggle"><i aria-hidden="true"></i><span class="toggle-label">更多功能</span><i aria-hidden="true"></i></summary>
+        <!-- 進階玩法（常駐區塊，不藏進收合區：對戰／收藏／交易是主打玩法，要讓學生與老師都看得到） -->
+        <h2 class="section-title"><i aria-hidden="true"></i>進階玩法<i aria-hidden="true"></i></h2>
+        <p class="mode-hint">精通題目後，把實力變成收藏、對戰與交易的樂趣。</p>
+        <div class="advanced-play">
 
           <!-- 山海寵物入口 -->
           <button id="btn-pet" class="pet-entry" type="button">
@@ -165,7 +167,7 @@
 
           <!-- 神獸融合坊入口 -->
           <button id="btn-fusion" class="pet-entry" type="button">
-            <img class="pet-entry__img" src="assets/web/fusion-forge-bg.jpg" alt="" loading="lazy">
+            <img class="pet-entry__img" src="assets/web/fusion-forge-bg.jpg" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'⚗️',className:'pet-entry__img pet-icon-fallback'}))">
             <span class="pet-entry__body">
               <span class="pet-entry__title">融合坊</span>
               <span class="pet-entry__sub">雙親滿級可融合出稚靈</span>
@@ -173,13 +175,20 @@
             <span class="pet-entry__arrow" aria-hidden="true">›</span>
           </button>
 
-          <!-- 自學・墨池 ＆ 文氣爭鋒 -->
           <div class="extra-grid">
-            <button id="btn-selfstudy" class="extra-entry extra-entry--study" type="button">
-              <span class="extra-entry__icon" aria-hidden="true">墨</span>
+            <button id="btn-rtbattle" class="extra-entry extra-entry--rt" type="button">
+              <span class="extra-entry__icon" aria-hidden="true">⚔</span>
               <span class="extra-entry__body">
-                <span class="extra-entry__title">自學・墨池</span>
-                <span class="extra-entry__sub">記憶牌・閃卡・連連看</span>
+                <span class="extra-entry__title">即時對戰</span>
+                <span class="extra-entry__sub">跟同學連線比拚</span>
+              </span>
+              <span class="pet-entry__arrow" aria-hidden="true">›</span>
+            </button>
+            <button id="btn-market" class="extra-entry extra-entry--market" type="button">
+              <span class="extra-entry__icon" aria-hidden="true">🏮</span>
+              <span class="extra-entry__body">
+                <span class="extra-entry__title">翰墨集市</span>
+                <span class="extra-entry__sub">週末開市，用字珠交換文房四寶</span>
               </span>
               <span class="pet-entry__arrow" aria-hidden="true">›</span>
             </button>
@@ -191,6 +200,24 @@
               </span>
               <span class="pet-entry__arrow" aria-hidden="true">›</span>
             </button>
+          </div>
+        </div>
+
+        <!-- 更多功能（漸進揭露：自學工具／收藏／存檔，收合減少首頁決策點） -->
+        <details class="more-section">
+          <summary class="section-title section-title--toggle"><i aria-hidden="true"></i><span class="toggle-label">更多功能</span><i aria-hidden="true"></i></summary>
+
+          <!-- 自學・墨池 -->
+          <button id="btn-selfstudy" class="extra-entry extra-entry--study" type="button">
+            <span class="extra-entry__icon" aria-hidden="true">墨</span>
+            <span class="extra-entry__body">
+              <span class="extra-entry__title">自學・墨池</span>
+              <span class="extra-entry__sub">記憶牌・閃卡・連連看</span>
+            </span>
+            <span class="pet-entry__arrow" aria-hidden="true">›</span>
+          </button>
+
+          <div class="extra-grid">
             <button id="btn-achievements" class="extra-entry extra-entry--ach" type="button">
               <span class="extra-entry__icon" aria-hidden="true">成</span>
               <span class="extra-entry__body">
@@ -207,27 +234,11 @@
               </span>
               <span class="pet-entry__arrow" aria-hidden="true">›</span>
             </button>
-            <button id="btn-market" class="extra-entry extra-entry--market" type="button">
-              <span class="extra-entry__icon" aria-hidden="true">🏮</span>
-              <span class="extra-entry__body">
-                <span class="extra-entry__title">翰墨集市</span>
-                <span class="extra-entry__sub">週末開市，用字珠交換文房四寶</span>
-              </span>
-              <span class="pet-entry__arrow" aria-hidden="true">›</span>
-            </button>
             <button id="btn-shuyuan" class="extra-entry extra-entry--shuyuan" type="button">
               <span class="extra-entry__icon" aria-hidden="true">院</span>
               <span class="extra-entry__body">
                 <span class="extra-entry__title">字靈書院</span>
                 <span class="extra-entry__sub">用煉成的字珠，蓋出你的山水書院</span>
-              </span>
-              <span class="pet-entry__arrow" aria-hidden="true">›</span>
-            </button>
-            <button id="btn-rtbattle" class="extra-entry extra-entry--rt" type="button">
-              <span class="extra-entry__icon" aria-hidden="true">⚔</span>
-              <span class="extra-entry__body">
-                <span class="extra-entry__title">即時對戰</span>
-                <span class="extra-entry__sub">跟同學連線比拚</span>
               </span>
               <span class="pet-entry__arrow" aria-hidden="true">›</span>
             </button>
@@ -239,14 +250,6 @@
               </span>
               <span class="pet-entry__arrow" aria-hidden="true">›</span>
             </button>
-            <a id="btn-parent-dashboard" class="extra-entry extra-entry--sync" href="parent.html" target="_blank" rel="noopener">
-              <span class="extra-entry__icon" aria-hidden="true">親</span>
-              <span class="extra-entry__body">
-                <span class="extra-entry__title">家長儀表板</span>
-                <span class="extra-entry__sub">開新分頁查練習量／弱點，不影響目前進度</span>
-              </span>
-              <span class="pet-entry__arrow" aria-hidden="true">›</span>
-            </a>
           </div>
         </details>
       </section>

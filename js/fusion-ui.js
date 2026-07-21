@@ -6,7 +6,7 @@ import { saveMeta } from './meta/store.js';
 import {
   getEligibility, getCrystalBalance, getRevealState, answerRevealRiddle, getFusionPreview,
   fuse, FUSE_COST, CUB_PASSIVES, chooseCubPassive, setActiveCub, clearActiveCub,
-  setCubNickname, buildCubCardData, listCubs,
+  setCubNickname, buildCubCardData, listCubs, getPairCooldown,
 } from './meta/fusion-store.js';
 import { getToday } from './integration.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
@@ -70,10 +70,25 @@ function render() {
   renderForge();
 }
 
-function eligibilityBadge(reasons, accuracy) {
+// 資格進度條：把「還差多少」講清楚，讓孩子有「快解鎖了」的期待感，而不是單純被 ❌ 打回票。
+function eligibilityBadge(reasons, progress) {
   const pairMark = reasons.pair ? '✅' : '❌';
   const accMark = reasons.accuracy ? '✅' : '❌';
-  return `<span class="fusion-elig">${pairMark} 雙親滿級　${accMark} 正確率 ${Math.round(accuracy * 100)}%</span>`;
+
+  const pairText = progress.pair.met
+    ? '雙親已經備妥'
+    : `雙親還差 ${progress.pair.remaining} 級就能出戰`;
+
+  const accPct = Math.round(progress.accuracy.current * 100);
+  const accText = progress.accuracy.met
+    ? `正確率 ${accPct}%（已達標）`
+    : `正確率 ${accPct}%（還差 ${progress.accuracy.gapPct}%）`;
+
+  const sampleText = progress.sample.met
+    ? ''
+    : `　近期作答 ${progress.sample.current}/${progress.sample.needed} 題（再答 ${progress.sample.remaining} 題就能解鎖）`;
+
+  return `<span class="fusion-elig">${pairMark} ${pairText}　${accMark} ${accText}${sampleText}</span>`;
 }
 
 function renderForge() {
@@ -108,7 +123,7 @@ function renderCategoryCard(meta, category) {
 
   const head = document.createElement('div');
   head.className = 'fusion-cat-card__head';
-  head.innerHTML = `<b>${category}系</b>${eligibilityBadge(e.reasons, e.accuracy)}`;
+  head.innerHTML = `<b>${category}系</b>${eligibilityBadge(e.reasons, e.progress)}`;
   card.appendChild(head);
 
   const recipe = document.createElement('div');
@@ -185,15 +200,21 @@ function renderPetPicker(meta, maxLevelPetIds) {
 function renderConfirmFuse(meta) {
   const box = document.createElement('div');
   box.className = 'fusion-confirm';
+  const cooldown = getPairCooldown(meta, picked.petA, picked.petB, getToday());
   box.innerHTML =
     `<p>雙親：${esc(picked.petA)} × ${esc(picked.petB)}</p>` +
-    `<p>雙親融合後不會消失，仍可繼續出戰。融合花費 ${FUSE_COST} 墨晶。</p>`;
+    `<p>雙親融合後不會消失，仍可繼續出戰。融合花費 ${FUSE_COST} 墨晶。</p>` +
+    (cooldown.onCooldown
+      ? `<p class="fusion-cooldown-hint">這對雙親今天已經試過融合了，讓牠們先歇口氣，明天再來挑戰！</p>`
+      : '');
 
   const confirmBtn = document.createElement('button');
   confirmBtn.type = 'button';
   confirmBtn.className = 'fusion-start-btn';
-  confirmBtn.textContent = '確認融合';
+  confirmBtn.textContent = cooldown.onCooldown ? '明天再來' : '確認融合';
+  confirmBtn.disabled = cooldown.onCooldown;
   confirmBtn.addEventListener('click', () => {
+    if (cooldown.onCooldown) return;
     const r = fuse(meta, picked.petA, picked.petB, { today: getToday() });
     picked = { category: null, petA: null, petB: null };
     if (!r.ok) { saveMeta(meta); onChange(); render(); return; }
@@ -228,10 +249,12 @@ function renderFuseResult({ result, cub, line, pearls }) {
       `<p class="fusion-result__born">「${esc(cub.bornLine)}」</p>` +
       `<p class="fusion-result__title">${esc(cub.name)}・${esc(cub.title)} 誕生了！</p>`;
   } else {
-    // 白帽硬規則：失敗只顯示安慰台詞＋字珠變化，不列任何損失清單。
+    // 白帽硬規則：失敗只顯示安慰台詞＋字珠變化，不列任何損失清單；
+    // 時間冷卻是「等待」不是「沒收」，故只提示明天再來，不帶懲罰語氣。
     box.innerHTML =
       `<p class="fusion-result__line">${esc(line)}</p>` +
-      `<p class="fusion-result__pearls">獲得 ${pearls} 顆安慰字珠</p>`;
+      `<p class="fusion-result__pearls">獲得 ${pearls} 顆安慰字珠</p>` +
+      `<p class="fusion-result__cooldown">這對雙親今天先讓牠們歇口氣，明天再挑戰一次！</p>`;
     const okBtn = document.createElement('button');
     okBtn.type = 'button';
     okBtn.className = 'fusion-start-btn';

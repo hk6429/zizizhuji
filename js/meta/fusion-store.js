@@ -12,7 +12,7 @@ export function ensureFusionState(meta) {
   if (!meta.fusion) {
     meta.fusion = {
       crystals: { balance: 0, earnedToday: 0, earnedDate: '' },
-      cubs: {}, revealed: {}, riddleTried: {}, activeCub: null,
+      cubs: {}, revealed: {}, riddleTried: {}, activeCub: null, failedPairs: {},
     };
   }
   const s = meta.fusion;
@@ -21,7 +21,21 @@ export function ensureFusionState(meta) {
   if (!s.revealed) s.revealed = {};
   if (!s.riddleTried) s.riddleTried = {};
   if (s.activeCub === undefined) s.activeCub = null;
+  if (!s.failedPairs) s.failedPairs = {}; // 同對雙親當日融合失敗冷卻（時間成本，非資產沒收）
   return s;
+}
+
+// 雙親配對鍵：與順序無關（A×B 等同 B×A）。
+function pairKey(petIdA, petIdB) {
+  return [petIdA, petIdB].sort().join('|');
+}
+
+// 冷卻查詢：這對雙親是否因「今天已融合失敗過」而暫時無法再試——隔天（today 字串變動）自動解除。
+export function getPairCooldown(meta, petIdA, petIdB, today = '') {
+  const s = ensureFusionState(meta);
+  const failedDate = s.failedPairs[pairKey(petIdA, petIdB)] || null;
+  const onCooldown = !!failedDate && !!today && failedDate === today;
+  return { onCooldown, failedDate };
 }
 
 // 墨晶入帳：仿 economy.js earnPearls 的每日上限邏輯，但墨晶無豁免來源。
@@ -82,18 +96,38 @@ export function categoryAccuracy(meta, category) {
 }
 
 export function getEligibility(meta, category) {
-  const maxLevelPets = PETS
-    .filter((p) => p.category === category && petLevel(meta, p) >= MAX_LEVEL)
-    .map((p) => p.id);
+  const catPets = PETS.filter((p) => p.category === category);
+  // 同類別寵物共用同一份精通值（見 pet.js categoryMastery），等級永遠一起漲一起頂：
+  // 用第一隻代表整個類別的等級即可，不必逐隻比對。
+  const level = catPets.length ? petLevel(meta, catPets[0]) : 0;
+  const maxLevelPets = catPets.filter((p) => petLevel(meta, p) >= MAX_LEVEL).map((p) => p.id);
   const { accuracy, total } = categoryAccuracy(meta, category);
   const reasons = {
     pair: maxLevelPets.length >= 2,
     accuracy: total >= ACCURACY_MIN_SAMPLE && accuracy >= ACCURACY_GATE,
   };
-  return { eligible: reasons.pair && reasons.accuracy, maxLevelPets, accuracy, total, reasons };
+  // 量化進度：給 UI 顯示「還差多少」，取代單純的 ✅/❌（見 fusion-ui.js eligibilityBadge）。
+  const progress = {
+    pair: {
+      current: level, needed: MAX_LEVEL,
+      remaining: Math.max(0, MAX_LEVEL - level),
+      met: reasons.pair,
+    },
+    accuracy: {
+      current: accuracy, gate: ACCURACY_GATE,
+      gapPct: reasons.accuracy ? 0 : Math.max(0, Math.round((ACCURACY_GATE - accuracy) * 100)),
+      met: accuracy >= ACCURACY_GATE,
+    },
+    sample: {
+      current: total, needed: ACCURACY_MIN_SAMPLE,
+      remaining: Math.max(0, ACCURACY_MIN_SAMPLE - total),
+      met: total >= ACCURACY_MIN_SAMPLE,
+    },
+  };
+  return { eligible: reasons.pair && reasons.accuracy, maxLevelPets, accuracy, total, reasons, progress };
 }
 
-export function canFusePair(meta, petIdA, petIdB) {
+export function canFusePair(meta, petIdA, petIdB, today = '') {
   if (petIdA === petIdB) return { ok: false, reason: 'same-pet' };
   const a = PET_BY_ID.get(petIdA);
   const b = PET_BY_ID.get(petIdB);
@@ -102,6 +136,7 @@ export function canFusePair(meta, petIdA, petIdB) {
   if (petLevel(meta, a) < MAX_LEVEL || petLevel(meta, b) < MAX_LEVEL) return { ok: false, reason: 'level' };
   const e = getEligibility(meta, a.category);
   if (!e.reasons.accuracy) return { ok: false, reason: 'accuracy' };
+  if (getPairCooldown(meta, petIdA, petIdB, today).onCooldown) return { ok: false, reason: 'cooldown' };
   return { ok: true, reason: null };
 }
 
@@ -156,7 +191,7 @@ export function nextCubFor(meta, category) {
 
 export function fuse(meta, petIdA, petIdB, { rng = Math.random, today = '' } = {}) {
   const s = ensureFusionState(meta);
-  const gate = canFusePair(meta, petIdA, petIdB);
+  const gate = canFusePair(meta, petIdA, petIdB, today);
   if (!gate.ok) return { meta, ok: false, reason: gate.reason };
   const category = PET_BY_ID.get(petIdA).category;
   const cubDef = nextCubFor(meta, category);
@@ -166,6 +201,9 @@ export function fuse(meta, petIdA, petIdB, { rng = Math.random, today = '' } = {
   if (rng() < FAIL_RATE) {
     const line = FAIL_LINES[Math.floor(rng() * FAIL_LINES.length)];
     const pr = earnPearls(meta, CONSOLE_PEARLS, 'fusion-consolation', today);
+    // 白帽時間冷卻：這對雙親今天不能再試（隔天自動解除），不同對雙親不受影響；
+    // 雙親、字珠、圖鑑等既有資產完全不動——只增加「今天不能馬上重來」的時間成本。
+    if (today) s.failedPairs[pairKey(petIdA, petIdB)] = today;
     return { meta, ok: true, result: 'fail', line, pearls: pr.earned };
   }
   const title = cubDef.titles[Math.floor(rng() * cubDef.titles.length)];

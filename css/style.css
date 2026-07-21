@@ -208,6 +208,18 @@ body {
   color: var(--ink-soft);
   opacity: .7;
 }
+.parent-cta {
+  margin-top: 6px;
+  padding: 6px 16px;
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+  background: rgba(201,162,39,.10);
+  color: var(--gold-text);
+  font-family: var(--sans);
+  font-size: .8rem;
+  font-weight: 700;
+  text-decoration: none;
+}
 
 /* 進入答題後：收起首頁、題名縮小 */
 body.in-quiz #screen-home { display: none; }
@@ -217,6 +229,7 @@ body.in-quiz .brand-title { font-size: 1.5rem; }
 body.in-quiz .brand-seal,
 body.in-quiz .brand-sub,
 body.in-quiz .brand-grade,
+body.in-quiz .parent-cta,
 body.in-quiz .nodamage-toggle { display: none; }
 body.in-quiz .brand-trust { flex-basis: 100%; margin: 0; font-size: .6rem; text-align: center; }
 
@@ -1402,6 +1415,24 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 /* =========================================================
    山海寵物：首頁入口 + 寵物閣 overlay
    ========================================================= */
+
+/* ---- 進階玩法：常駐區塊（WP1：跟收合區做視覺區隔，讓對戰/收藏/交易玩法被看見） ---- */
+.advanced-play {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 12px 4px;
+  margin: 4px 0 12px;
+  border: 1.5px solid rgba(201,162,39,.6);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(46,143,138,.10), rgba(201,162,39,.08));
+}
+.pet-icon-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+}
 
 /* ---- 首頁入口卡 ---- */
 .pet-entry {

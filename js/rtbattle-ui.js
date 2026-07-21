@@ -3,12 +3,12 @@
 // 戰鬥運算全走字字珠璣既有 kernel/adapter 管線（法寶/連對/寵物加成照舊），
 // 只是把「答題結果」透過房間輪詢同步給另一台裝置，而不是跟本機墨靈打。
 import { ZZAPI } from './meta/api.js';
-import { ROUNDS, ROUND_SEC, POLL_MS, buildQuestions, dealtDamage, judge, buildEncounterScript } from './meta/rtbattle.js';
+import { ROUNDS, ROUND_SEC, POLL_MS, buildQuestions, dealtDamage, judge, buildEncounterScript, assassinSeed, assassinTargetScore } from './meta/rtbattle.js';
 import { safeBoard, buildLiveHerald } from './meta/livewall.js';
 import { applyEncounterEffect } from './meta/battle-adapter.js';
 import { getCtx, beginBattle, applyEliminate, showMolingLine, renderEvents, getToday } from './integration.js';
 import { saveMeta } from './meta/store.js';
-import { recordResult, loadSeason, titleFor, WIN_PTS, LOSE_PTS } from './meta/rtseason.js';
+import { recordResult, loadSeason, titleFor, WIN_PTS, LOSE_PTS, loadSoloBest, saveSoloBestIfHigher } from './meta/rtseason.js';
 import * as kernel from './meta/kernel.js';
 import { loadBank, getLevel, setLevel } from './bank.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
@@ -29,8 +29,9 @@ const liveApi = (body) => ZZAPI.call('/api/rt-live', { body });
 let overlay, body, ctx;
 let room = null, my = null, oppSnap = null, qs = [], st = null;
 let pollTimer = 0, tickTimer = 0;
-let mode = 'live'; // 'live'＝即時 1v1（push/poll 同步）；'challenge'＝非同步應戰戰帖（單機打分數比大小）
+let mode = 'live'; // 'live'＝即時 1v1（push/poll 同步）；'challenge'＝非同步應戰戰帖；'solo'＝今日墨靈刺客（單機打分數比大小）
 let chInfo = null; // 應戰模式：{ code, challenger, score }（戰帖發起人暱稱與其輸出分數）
+let soloInfo = null; // 單人刺客模式：{ target, today }（今日防線分數）
 
 // 全班戰況牆（老師開房、全班同 seed 同題）：lv = { mode:'host'|'student', code, pin?, nick?, seed, qn, scope, phase, qNo }
 let lv = null;
@@ -121,12 +122,42 @@ async function acceptChallenge(code) {
   nextRound();
 }
 
+// 單人挑戰「今日墨靈刺客」：不需要真人對手，用當日決定性種子出同一套題與同一條防線分數。
+// 走的路徑跟「應戰」模式一樣（本機打完 20 題、跟一個固定分數比大小），只是防線來自日期種子而非真人。
+async function startSolo() {
+  ctx = getCtx();
+  if (!ctx) return offline('遊戲還在載入中，請稍候再試');
+  beginBattle();
+  ctx.encounterOff = true;
+  my = mySnap();
+  mode = 'solo';
+  const today = getToday();
+  const target = assassinTargetScore(today);
+  soloInfo = { target, today };
+  oppSnap = { nick: '今日墨靈刺客', petName: '刺客', lv: 1, hp: DUMMY_HP };
+  body.innerHTML = '<div class="rt-card"><p>載入題庫…</p></div>';
+  const bank = await loadBank('mixed');
+  if (gone()) return;
+  const seed = assassinSeed(today);
+  qs = buildQuestions(seed, bank, ROUNDS);
+  st = {
+    round: 0, correct: 0, dmg: 0, done: false, locked: false, finished: false,
+    state: { hpA: 100, hpB: DUMMY_HP, comboA: 0, comboB: 0 },
+    oppDmg: 0, oppRound: ROUNDS, oppCombo: 0, oppDone: true, oppHb: Date.now(),
+    q: null, encScript: buildEncounterScript(seed),
+  };
+  nextRound();
+}
+
 function renderHome() {
   stopTimers();
-  room = null; my = null; oppSnap = null; qs = []; st = null; mode = 'live'; chInfo = null;
+  room = null; my = null; oppSnap = null; qs = []; st = null; mode = 'live'; chInfo = null; soloInfo = null;
   lv = null; lvBank = null; lvQs = [];
+  const best = loadSoloBest();
   body.innerHTML = `
     <div class="rt-home">
+      <button id="rt-solo-btn" class="overlay-ghost-btn" type="button">🗡️ 今日墨靈刺客（單人挑戰）</button>
+      <p class="shuyuan-hint">沒有同學在線也能打——${best > 0 ? `你的歷史最佳輸出 ${best}` : '第一次挑戰，打出你的紀錄吧'}</p>
       <button id="rt-create-btn" class="overlay-ghost-btn" type="button">⚔️ 開新房</button>
       <p class="shuyuan-hint">或輸入同學的房號加入：</p>
       <div class="rt-join-row">
@@ -147,6 +178,7 @@ function renderHome() {
         <button id="rt-season-btn" class="overlay-ghost-btn" type="button">🏆 賽季排位榜</button>
       </div>
     </div>`;
+  $('rt-solo-btn').addEventListener('click', startSolo);
   $('rt-create-btn').addEventListener('click', create);
   $('rt-join-btn').addEventListener('click', () => {
     const code = $('rt-join-code').value.trim();
@@ -273,6 +305,7 @@ function nextRound() {
   if (st.round >= ROUNDS) {
     st.done = true;
     if (mode === 'challenge') return finishChallenge();
+    if (mode === 'solo') return finishSolo();
     push();
     paintWaiting();
     return;

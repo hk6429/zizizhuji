@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createLeitnerState, recordAnswer, nextQuestionId } from '../js/leitner.js';
+import { createLeitnerState, recordAnswer, nextQuestionId, boostSiblings } from '../js/leitner.js';
 
 test('createLeitnerState initializes every id at box 1', () => {
   const state = createLeitnerState(['a', 'b', 'c']);
@@ -49,4 +49,21 @@ test('nextQuestionId prefers ids with the lowest box', () => {
   // a is box 3, b is box 1 -> b must be picked
   const picked = nextQuestionId(state, ['a', 'b']);
   assert.equal(picked, 'b');
+});
+
+test('boostSiblings drops same-char sibling boxes by 1 (default), floors at 1', () => {
+  const state = createLeitnerState(['a', 'b', 'c']);
+  for (let i = 0; i < 3; i++) recordAnswer(state, 'b', true); // b -> box 4
+  recordAnswer(state, 'c', true); // c -> box 2
+  boostSiblings(state, ['b', 'c']);
+  assert.equal(state.get('b'), 3); // 4-1
+  assert.equal(state.get('c'), 1); // 2-1
+});
+
+test('boostSiblings ignores ids not in state and tolerates empty/undefined', () => {
+  const state = createLeitnerState(['a']);
+  recordAnswer(state, 'a', true); // box 2
+  boostSiblings(state, ['zzz-not-here']);
+  boostSiblings(state, undefined);
+  assert.equal(state.get('a'), 2); // 未受影響
 });

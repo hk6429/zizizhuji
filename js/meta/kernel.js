@@ -17,7 +17,14 @@ import * as pet from './pet.js';
 import * as weakness from './weakness.js';
 import * as summaryMod from './summary.js';
 import * as adapter from './battle-adapter.js';
-import { recordAnswer } from '../leitner.js';
+import { recordAnswer, boostSiblings } from '../leitner.js';
+
+// 破音字題被考的那個字：「詞」的「字」 或 「字」的讀音 兩種句式；非字音題回 null。
+function ziyinTargetChar(entry) {
+  if (!entry || entry.type !== '字音' || typeof entry.question !== 'string') return null;
+  const m = entry.question.match(/「[^」]{1,6}」的「(.)」/) || entry.question.match(/「(.)」的(?:正確)?讀音/);
+  return m ? m[1] : null;
+}
 import * as fusion from './fusion-store.js';
 
 const XP_PRACTICE = 10;
@@ -62,6 +69,9 @@ export function initSession(today, banks = null, opts = {}) {
   // 跟 typeOfId 分開是因為 typeOfId 把成語庫全併成'成語'給對戰法寶加傷用，語意不同不能共用。
   const weakTypeOfId = new Map();
   const totals = { yin: 0, xing: 0, chengyu: 0 };
+  // 同字聚焦複習用：破音字題→被考的那個字，供答錯時連帶提早複習同字他題。
+  const charOfId = new Map();
+  const idsByChar = new Map();
   let allIds = [];
   if (banks) {
     const entries = [...(banks.ziyin || []), ...(banks.chengyu || [])];
@@ -71,8 +81,20 @@ export function initSession(today, banks = null, opts = {}) {
       typeOfId.set(entry.id, zone === 'chengyu' ? '成語' : entry.type);
       weakTypeOfId.set(entry.id, entry.type);
       totals[zone] += 1;
+      const ch = ziyinTargetChar(entry);
+      if (ch) {
+        charOfId.set(entry.id, ch);
+        if (!idsByChar.has(ch)) idsByChar.set(ch, []);
+        idsByChar.get(ch).push(entry.id);
+      }
     }
     allIds = entries.map(e => e.id);
+  }
+  // id → 同字他題 id 陣列（不含自己）；只有含 ≥2 題的字才有兄弟
+  const siblingsOfId = new Map();
+  for (const [id, ch] of charOfId) {
+    const sibs = (idsByChar.get(ch) || []).filter((x) => x !== id);
+    if (sibs.length) siblingsOfId.set(id, sibs);
   }
 
   const omen = daily.getOmen(today);
@@ -87,6 +109,7 @@ export function initSession(today, banks = null, opts = {}) {
     zoneOfId,
     typeOfId,
     weakTypeOfId,
+    siblingsOfId,
     omen,
     rng: opts.rng ?? Math.random,
     leitner: banks ? collection.loadLeitnerState(meta, allIds) : null,
@@ -203,6 +226,10 @@ function processAnswer(ctx, id, correct, mode) {
   // Leitner ＋ 圖鑑（煉成/品階/蒙塵/擦亮）
   if (id && ctx.leitner) {
     recordAnswer(ctx.leitner, id, correct);
+    // 答錯破音字→同字他題也輕退一盒、提早再複習（同字聚焦，錯誤模式級複習）
+    if (!correct && ctx.siblingsOfId && ctx.siblingsOfId.has(id)) {
+      boostSiblings(ctx.leitner, ctx.siblingsOfId.get(id));
+    }
     const newBox = ctx.leitner.get(id);
     const cr = collection.onQuestionResult(meta, id, correct, newBox);
     for (const ev of cr.events) {
