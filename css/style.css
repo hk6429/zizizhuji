@@ -2311,3 +2311,11 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 .tx-empty { list-style: none; padding: 1rem .5rem; opacity: .8; line-height: 1.6; text-align: center; }
 .tianxia-self { margin: .7rem 0 .2rem; padding: .5rem .6rem; border-radius: 8px;
   background: rgba(184,134,11,.12); font-size: .9rem; line-height: 1.5; }
+
+/* ── 寵物養成心法頁 ── */
+.pet-guide__lead { font-size: .9rem; line-height: 1.6; margin: 0 0 .7rem; color: #7d5c0f; }
+.pet-guide__item { border-left: 3px solid rgba(184,134,11,.5); padding: .1rem .1rem .1rem .7rem; margin: 0 0 .8rem; }
+.pet-guide__item h3 { font-size: .98rem; margin: 0 0 .25rem; color: #5a3e0a; }
+.pet-guide__item p { font-size: .86rem; line-height: 1.65; margin: 0; opacity: .92; }
+.pet-guide__tip { font-size: .84rem; line-height: 1.6; margin: .4rem 0 0; padding: .55rem .65rem;
+  border-radius: 8px; background: rgba(184,134,11,.12); }

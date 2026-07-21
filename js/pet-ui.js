@@ -61,6 +61,7 @@ function switchTab(name) {
   }
   $('pet-panel-pets').hidden = name !== 'pets';
   $('pet-panel-equip').hidden = name !== 'equip';
+  $('pet-panel-guide').hidden = name !== 'guide';
 }
 
 function render() {

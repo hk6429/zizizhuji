@@ -428,6 +428,7 @@
       <div class="pet-tabs" role="tablist">
         <button class="pet-tab is-active" data-tab="pets" type="button" role="tab" aria-selected="true" aria-controls="pet-panel-pets" id="pet-tab-pets">神獸</button>
         <button class="pet-tab" data-tab="equip" type="button" role="tab" aria-selected="false" aria-controls="pet-panel-equip" id="pet-tab-equip">寵物設備</button>
+        <button class="pet-tab" data-tab="guide" type="button" role="tab" aria-selected="false" aria-controls="pet-panel-guide" id="pet-tab-guide">養成心法</button>
       </div>
       <div id="pet-panel-pets" class="pet-panel" role="tabpanel" aria-labelledby="pet-tab-pets">
         <p class="pet-progress">已集齊 <b id="pet-progress-count">0</b> / 12 隻山海神獸</p>
@@ -440,6 +441,22 @@
       <div id="pet-panel-equip" class="pet-panel" hidden role="tabpanel" aria-labelledby="pet-tab-equip">
         <p class="pet-equip-balance">字珠 <b id="pet-equip-pearls">0</b>｜主寵裝備欄：<span id="pet-equip-active">未選主寵</span></p>
         <div id="pet-equip-grid" class="pet-equip-grid"></div>
+      </div>
+      <div id="pet-panel-guide" class="pet-panel pet-guide" hidden role="tabpanel" aria-labelledby="pet-tab-guide">
+        <p class="pet-guide__lead">神獸的成長分成三條線，別搞混囉——只有「寵物設備」要花字珠：</p>
+        <div class="pet-guide__item">
+          <h3>① 神獸境界（等級）</h3>
+          <p>每在<b>該神獸的類別</b>煉成 <b>20 顆字珠</b>就升 1 級，最高 <b>15 級</b>。字音神獸吃字音字形題、成語神獸吃成語題、<b>混合神獸通吃</b>（最好養）。曾經答錯、後來訂正才煉成的字珠，貢獻多算 <b>1.5 倍</b>——弱點題更值錢。<b>不用花字珠，純靠答題累積。</b></p>
+        </div>
+        <div class="pet-guide__item">
+          <h3>② 羈絆</h3>
+          <p>主寵陪你答對題目就會加深羈絆（0→100），依序解鎖<b>初見 → 漸熟 → 知己</b>三階，每一階都有專屬台詞。<b>也是純靠答題，不花字珠。</b></p>
+        </div>
+        <div class="pet-guide__item">
+          <h3>③ 寵物設備（唯一花字珠的一條）</h3>
+          <p>到「寵物設備」分頁用字珠購買，裝到主寵的 <b>2 個裝備欄</b>，還能再花字珠把設備升到 <b>Lv.3</b>。設備加成會帶進墨靈對戰。字珠賺多了，就往高段設備（盤瓠戰鎧、畢方羽扇、檮杌之角、燭陰神幡）追。</p>
+        </div>
+        <p class="pet-guide__tip">💡 想快點升級：專練你出戰神獸的類別；想上天下文氣榜，多答題累積文氣境界就對了。</p>
       </div>
       <button id="pet-close" class="overlay-ghost-btn" type="button">收起</button>
     </div>
