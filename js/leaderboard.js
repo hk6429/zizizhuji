@@ -27,3 +27,8 @@ export async function fetchTop(board) {
     return { ok: false };
   }
 }
+
+// 全服天下文氣榜：所有玩家共用一張榜，用文氣 XP 排名（前 500），暱稱沿用班級榜綽號。
+export const GLOBAL_BOARD = '__tianxia__';
+export function submitGlobalXp(nick, xp) { return submitScore(GLOBAL_BOARD, nick, xp); }
+export function fetchGlobal() { return fetchTop(GLOBAL_BOARD); }

@@ -2294,3 +2294,20 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 .mkt-ever-card__name { font-weight: 700; color: var(--ink); }
 .mkt-ever-card__peer { color: var(--ink-soft); }
 .mkt-ever-card__date { color: var(--ink-soft); font-size: .74rem; }
+
+/* ── 天下文氣榜（全服前 500）── */
+.extra-entry--tianxia .extra-entry__icon { background: linear-gradient(135deg,#b8860b,#e8c86a); color:#2a1c05; }
+.tianxia-card { max-width: 460px; }
+.tianxia-hint { font-size: .82rem; opacity: .78; margin: .2rem 0 .6rem; line-height: 1.5; }
+.tianxia-list { list-style: none; margin: 0; padding: 0; max-height: 56vh; overflow-y: auto; }
+.tx-row { display: grid; grid-template-columns: 2.4rem 1fr auto auto; gap: .5rem; align-items: baseline;
+  padding: .38rem .5rem; border-bottom: 1px solid rgba(184,134,11,.18); }
+.tx-row:nth-child(-n+3) .tx-rank { font-size: 1.15rem; }
+.tx-rank { font-weight: 700; color: #b8860b; text-align: center; }
+.tx-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tx-realm { font-size: .82rem; color: #8a6d1f; white-space: nowrap; }
+.tx-xp { font-size: .8rem; opacity: .7; white-space: nowrap; }
+.tx-row--me { background: linear-gradient(90deg, rgba(232,200,106,.28), transparent); border-radius: 6px; }
+.tx-empty { list-style: none; padding: 1rem .5rem; opacity: .8; line-height: 1.6; text-align: center; }
+.tianxia-self { margin: .7rem 0 .2rem; padding: .5rem .6rem; border-radius: 8px;
+  background: rgba(184,134,11,.12); font-size: .9rem; line-height: 1.5; }

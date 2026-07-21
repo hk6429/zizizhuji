@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { defaultMeta } from '../../js/meta/store.js';
-import { RANKS, addXp, getProgress } from '../../js/meta/progress.js';
+import { RANKS, addXp, getProgress, rankForXp } from '../../js/meta/progress.js';
 
 test('ten ranks with the designed thresholds', () => {
   assert.deepEqual(RANKS.map(r => r.threshold), [0, 100, 300, 700, 1500, 3000, 5500, 9000, 15000, 24000]);
@@ -39,6 +39,16 @@ test('getProgress reports next threshold, null at max rank', () => {
   p = getProgress(meta);
   assert.equal(p.rankName, '文曲星');
   assert.equal(p.nextThreshold, null);
+});
+
+test('rankForXp maps any xp value to its realm (used by the global board)', () => {
+  assert.equal(rankForXp(0).name, '蒙童');
+  assert.equal(rankForXp(99).name, '蒙童');
+  assert.equal(rankForXp(100).name, '識字生');
+  assert.equal(rankForXp(24000).name, '文曲星');
+  assert.equal(rankForXp(999999).name, '文曲星');
+  assert.equal(rankForXp(-5).name, '蒙童');
+  assert.equal(rankForXp('700').name, '誦典生');
 });
 
 test('addXp with zero or negative amount is a no-op', () => {

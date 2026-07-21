@@ -38,6 +38,12 @@ export function addXp(meta, amount) {
   return { meta, leveledUp: false, newRank: null };
 }
 
+// 由任意文氣 XP 值反推境界（天下榜把別人的 XP 映成境界名用）。
+export function rankForXp(xpValue) {
+  const idx = rankOf(Math.max(0, Number(xpValue) || 0));
+  return { rank: idx, name: RANKS[idx].name };
+}
+
 export function getProgress(meta) {
   const idx = meta.xp.rank;
   const next = RANKS[idx + 1] || null;

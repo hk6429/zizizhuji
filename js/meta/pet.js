@@ -59,6 +59,15 @@ export const PET_EQUIP = [
     upgradeCost: [120, 240], upgradeGate: [30, 60] },
   { id: 'zhulong', name: '燭龍之睛',  price: 220, tier: '墨玉', desc: '燭照九幽，戰鬥傷害 +3',        effect: { damageBonus: 3 },
     upgradeCost: [150, 300], upgradeGate: [30, 60] },
+  // ── 高段設備（給境界高、字珠賺得快的玩家繼續有得追）──
+  { id: 'panhu',   name: '盤瓠戰鎧',  price: 300, tier: '墨玉', desc: '五色神犬護體，戰鬥傷害 +4',    effect: { damageBonus: 4 },
+    upgradeCost: [200, 400], upgradeGate: [45, 75] },
+  { id: 'bifang',  name: '畢方羽扇',  price: 400, tier: '墨玉', desc: '木火之精，開場排一錯項並 +2 傷害', effect: { damageBonus: 2, freeEliminate: 1 },
+    upgradeCost: [260, 520], upgradeGate: [60, 90] },
+  { id: 'taowu',   name: '檮杌之角',  price: 550, tier: '墨玉', desc: '兇獸犄角，戰鬥傷害 +6',        effect: { damageBonus: 6 },
+    upgradeCost: [360, 720], upgradeGate: [75, 110] },
+  { id: 'zhuyin',  name: '燭陰神幡',  price: 800, tier: '墨玉', desc: '睜眼為晝，開場排一錯項並 +4 傷害', effect: { damageBonus: 4, freeEliminate: 1 },
+    upgradeCost: [520, 1040], upgradeGate: [90, 130] },
 ];
 
 export const EQUIP_MAX_LEVEL = 3;

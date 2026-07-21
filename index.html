@@ -201,6 +201,14 @@
               </span>
               <span class="pet-entry__arrow" aria-hidden="true">›</span>
             </button>
+            <button id="btn-tianxia" class="extra-entry extra-entry--tianxia" type="button">
+              <span class="extra-entry__icon" aria-hidden="true">榜</span>
+              <span class="extra-entry__body">
+                <span class="extra-entry__title">天下文氣榜</span>
+                <span class="extra-entry__sub">全服前 500 名・看看大家的境界到哪</span>
+              </span>
+              <span class="pet-entry__arrow" aria-hidden="true">›</span>
+            </button>
           </div>
         </div>
 
@@ -322,6 +330,19 @@
         <button id="shuyuan-wall-btn" class="overlay-ghost-btn" type="button">成就牆</button>
         <button id="shuyuan-reset" class="overlay-ghost-btn" type="button">還原擺設</button>
         <button id="shuyuan-close" class="overlay-ghost-btn" type="button">關閉</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 天下文氣榜（全服前 500） -->
+  <div id="tianxia-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="tianxia-title">
+    <div class="meta-overlay__card tianxia-card">
+      <h2 id="tianxia-title" class="overlay-title">天下文氣榜</h2>
+      <p class="tianxia-hint">全服玩家依文氣境界排名，取前 500。暱稱沿用你的班級綽號——請用綽號、勿填真名。</p>
+      <ol id="tianxia-list" class="tianxia-list"></ol>
+      <p id="tianxia-self" class="tianxia-self"></p>
+      <div class="shuyuan-toolbar">
+        <button id="tianxia-close" class="overlay-ghost-btn" type="button">關閉</button>
       </div>
     </div>
   </div>

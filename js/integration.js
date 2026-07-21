@@ -18,9 +18,20 @@ import { getPetBattleMods, syncUnlocks as syncPetUnlocks, listPets } from './met
 import { getCubBattleMods } from './meta/fusion-store.js';
 import { shouldOfferShareCard, renderShareCard, exportShareCard } from './meta/share-card.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
+import { submitGlobalXp } from './leaderboard.js';
 import { maybeOfferNoDamage } from './nodamage-prompt.js';
 
 const $ = (id) => document.getElementById(id);
+
+// 天下文氣榜同步：回首頁刷新時，若有暱稱且文氣有長進就靜默上傳一次（後端斷線不影響本體）。
+let lastGlobalXp = -1;
+function syncGlobalRank(meta) {
+  const nick = String(meta?.selfstudy?.nick || '').trim();
+  const xp = meta?.xp?.value || 0;
+  if (!nick || xp <= lastGlobalXp) return;
+  lastGlobalXp = xp;
+  submitGlobalXp(nick, xp).catch(() => {});
+}
 
 let ctx = null;
 let today = '';
@@ -179,6 +190,7 @@ export function refreshWidgets() {
   oathLine.hidden = false;
 
   refreshPetEntry();
+  syncGlobalRank(meta);
 }
 
 // 守燈進度（供答題頁 HUD 與里程碑卡共用）：今日答對、目標、還差幾題、是否已點燈。

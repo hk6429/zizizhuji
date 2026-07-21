@@ -17,6 +17,7 @@ import { initPearlsUI } from './pearls-ui.js';
 import { initMarketUI } from './market-ui.js';
 import { initShuyuanUI } from './shuyuan-ui.js';
 import { initRtBattleUI } from './rtbattle-ui.js';
+import { initTianxia } from './tianxia-ui.js';
 import { initSaveSyncUI } from './save-sync-ui.js';
 import { initReportUI, attachReportButton } from './report.js';
 import { saveMeta } from './meta/store.js';
@@ -605,6 +606,7 @@ initFusionUI({ getMeta: () => getCtx()?.meta, onChange: refreshWidgets });
 initSelfStudy({ loadBank, ensureCtx });
 initScoreGame({ loadBank, ensureCtx, onChange: refreshWidgets });
 initAchievementsUI({ getMeta: () => getCtx()?.meta });
+initTianxia({ getMeta: () => getCtx()?.meta });
 initPearlsUI({
   getMeta: () => getCtx()?.meta,
   // 珠面文字要跨學制解析：兩學制的混合題庫全載（fetchBank 有快取，重開不重抓）

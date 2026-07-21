@@ -1,8 +1,9 @@
 // 班級排行榜：POST /api/lb-submit  body: { board, name, score }
 // Cloudflare Pages Function，D1 綁定名稱 zizizhuji_db（見 wrangler.toml）。
-// 同 board+name 只留個人最佳分數（分數變低不覆蓋），回傳該榜前 20 名。
+// 同 board+name 只留個人最佳分數（分數變低不覆蓋），回傳該榜（班級 20／全服天下榜 500）。
 const BOARD_RE = /^[\w一-鿿]{1,20}(::(progress|streak))?$/;
-const TOP_N = 20;
+const GLOBAL_BOARD = '__tianxia__';
+function limitFor(board) { return board === GLOBAL_BOARD ? 500 : 20; }
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -47,7 +48,7 @@ export async function onRequestPost({ request, env }) {
 
   const { results } = await env.zizizhuji_db
     .prepare('SELECT name, score FROM leaderboard WHERE board = ?1 ORDER BY score DESC LIMIT ?2')
-    .bind(board, TOP_N)
+    .bind(board, limitFor(board))
     .all();
 
   return new Response(JSON.stringify({ ok: true, top: results || [] }), { status: 200, headers: CORS });
