@@ -5,8 +5,8 @@ import { DAILY_EARN_CAP, earnPearls, spendPearls, getBalance } from '../../js/me
 
 const D = '2026-07-14';
 
-test('DAILY_EARN_CAP is 120', () => {
-  assert.equal(DAILY_EARN_CAP, 120);
+test('DAILY_EARN_CAP is 300', () => {
+  assert.equal(DAILY_EARN_CAP, 300);
 });
 
 test('earnPearls adds to balance and daily counter', () => {
@@ -19,13 +19,13 @@ test('earnPearls adds to balance and daily counter', () => {
   assert.equal(meta.pearls.earnedDate, D);
 });
 
-test('earnPearls caps at 120 per day and reports capped', () => {
+test('earnPearls caps at DAILY_EARN_CAP per day and reports capped', () => {
   const meta = defaultMeta();
-  earnPearls(meta, 115, 'battle-win', D);
+  earnPearls(meta, DAILY_EARN_CAP - 5, 'battle-win', D);
   const r = earnPearls(meta, 10, 'battle-win', D);
   assert.equal(r.earned, 5);
   assert.equal(r.capped, true);
-  assert.equal(getBalance(meta), 120);
+  assert.equal(getBalance(meta), DAILY_EARN_CAP);
   const r2 = earnPearls(meta, 3, 'battle-win', D);
   assert.equal(r2.earned, 0);
   assert.equal(r2.capped, true);

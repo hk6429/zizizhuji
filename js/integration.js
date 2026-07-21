@@ -4,7 +4,7 @@
 
 import * as kernel from './meta/kernel.js';
 import { saveMeta } from './meta/store.js';
-import { getBalance } from './meta/economy.js';
+import { getBalance, DAILY_EARN_CAP } from './meta/economy.js';
 import { getProgress, RANKS } from './meta/progress.js';
 import { getLanternState, getBoxState, openBox } from './meta/daily.js';
 import * as oath from './meta/oath.js';
@@ -312,7 +312,7 @@ export function renderEvents(events) {
       case 'xpGained':      floatText(`＋${p.amount} 文氣`, 'xp'); break;
       case 'pearlEarned':
         floatText(`＋${p.amount} 珠`, 'pearl');
-        if (p.capped) toast('今日字珠已滿 120，明日再煉');
+        if (p.capped) toast(`今日字珠已滿 ${DAILY_EARN_CAP}，明日再煉`);
         break;
       case 'levelUp':       toast(`開悟！晉升「${p.name}」——${p.blessing}`, 'levelup'); playLevelUp(); break;
       case 'purified':      break; // 靜默：進度已入帳，避免每題洗版

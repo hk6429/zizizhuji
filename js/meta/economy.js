@@ -1,7 +1,7 @@
 // 字珠單一貨幣收支入口。所有加珠/扣珠一律經過這裡，防重複記帳。
-// 每日獲取上限 120 珠；一次性獎勵（成就/守燈里程碑/羈絆贈禮）不計入上限。
+// 每日獲取上限 300 珠；一次性獎勵（成就/守燈里程碑/羈絆贈禮）不計入上限。
 
-export const DAILY_EARN_CAP = 120;
+export const DAILY_EARN_CAP = 300;
 
 // 不受每日上限限制的收入來源（一次性獎勵）
 export const CAP_EXEMPT_REASONS = new Set([
