@@ -2319,3 +2319,9 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 .pet-guide__item p { font-size: .86rem; line-height: 1.65; margin: 0; opacity: .92; }
 .pet-guide__tip { font-size: .84rem; line-height: 1.6; margin: .4rem 0 0; padding: .55rem .65rem;
   border-radius: 8px; background: rgba(184,134,11,.12); }
+
+/* 天下榜：面板內取綽號上榜（脫鉤班級） */
+.tianxia-nickrow { display: flex; gap: .5rem; margin: 0 0 .7rem; }
+.tianxia-nickrow input { flex: 1; min-width: 0; padding: .5rem .6rem; border-radius: 8px;
+  border: 1px solid rgba(184,134,11,.45); background: rgba(255,255,255,.7); font-size: .9rem; }
+.tianxia-nickrow input:focus-visible { outline: 2px solid #2e8b8b; outline-offset: 1px; }

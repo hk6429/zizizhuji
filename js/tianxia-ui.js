@@ -1,32 +1,58 @@
 // 天下文氣榜（全服）：所有玩家共用一張榜，以文氣 XP 排名、前 500，把分數映成境界名顯示。
 // 後端 = 自家 CF Pages Function + D1（見 functions/api/lb-*.js）；只有 pages.dev 那條線有後端，
-// 另兩個靜態鏡像會靜默顯示「無法連線」提示，不影響本體遊玩。暱稱沿用班級榜綽號（隱私一致）。
+// 另兩個靜態鏡像會靜默顯示「無法連線」提示，不影響本體遊玩。
+// 暱稱獨立於班級：在本面板即可設綽號上榜，不必先加入班級（沿用同一 meta.selfstudy.nick）。
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
-import { fetchGlobal } from './leaderboard.js';
+import { fetchGlobal, submitGlobalXp } from './leaderboard.js';
 import { rankForXp } from './meta/progress.js';
+import { saveMeta } from './meta/store.js';
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const NICK_MAX = 12;
 
 export function initTianxia({ getMeta }) {
   const btn = $('btn-tianxia');
   const overlay = $('tianxia-overlay');
   const closeBtn = $('tianxia-close');
+  const nickInput = $('tianxia-nick');
+  const nickSave = $('tianxia-nick-save');
   if (!btn || !overlay) return;
+
+  const curNick = () => String(getMeta?.()?.selfstudy?.nick || '').trim();
 
   btn.addEventListener('click', openBoard);
   if (closeBtn) closeBtn.addEventListener('click', () => closeOverlay(overlay));
+  if (nickSave) nickSave.addEventListener('click', saveNick);
+  if (nickInput) nickInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') saveNick(); });
+
+  async function saveNick() {
+    const meta = getMeta && getMeta();
+    if (!meta) return;
+    const n = String(nickInput.value || '').trim().slice(0, NICK_MAX);
+    if (!n) { $('tianxia-self').textContent = '請先填一個綽號（1–12 字）再上榜。'; return; }
+    meta.selfstudy.nick = n;
+    saveMeta(meta);
+    const xp = meta.xp?.value || 0;
+    await submitGlobalXp(n, xp).catch(() => {});
+    await renderBoard();
+  }
 
   async function openBoard() {
+    if (nickInput) nickInput.value = curNick();
+    openOverlay(overlay, () => closeOverlay(overlay));
+    await renderBoard();
+  }
+
+  async function renderBoard() {
     const meta = getMeta && getMeta();
-    const myNick = String(meta?.selfstudy?.nick || '').trim();
+    const myNick = curNick();
     const myXp = meta?.xp?.value || 0;
     const listEl = $('tianxia-list');
     const selfEl = $('tianxia-self');
 
     listEl.innerHTML = '<li class="tx-empty">榜單載入中…</li>';
     selfEl.textContent = '';
-    openOverlay(overlay, () => closeOverlay(overlay));
 
     const res = await fetchGlobal();
     if (!res.ok) {
@@ -37,7 +63,7 @@ export function initTianxia({ getMeta }) {
 
     const rows = res.top || [];
     if (!rows.length) {
-      listEl.innerHTML = '<li class="tx-empty">天下榜還沒有人上榜。先去答題累積文氣，搶下第一柱長明燈！</li>';
+      listEl.innerHTML = '<li class="tx-empty">天下榜還沒有人上榜。設個綽號、去答題累積文氣，搶下第一柱長明燈！</li>';
     } else {
       listEl.innerHTML = rows.map((r, i) => {
         const realm = rankForXp(r.score).name;
@@ -54,7 +80,7 @@ export function initTianxia({ getMeta }) {
     const myRealm = rankForXp(myXp).name;
     const myRank = myNick ? rows.findIndex((r) => r.name === myNick) : -1;
     if (!myNick) {
-      selfEl.innerHTML = '你還沒設暱稱——到「文氣爭鋒」設一個班級暱稱（記得用綽號、別填真名），就能上天下榜。';
+      selfEl.innerHTML = '在上方填個綽號（勿填真名）就能上天下榜——不必加入班級。';
     } else if (myRank >= 0) {
       selfEl.innerHTML = `你（${esc(myNick)}）目前第 <b>${myRank + 1}</b> 名・${myRealm}・文氣 ${myXp}`;
     } else {

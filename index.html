@@ -338,7 +338,11 @@
   <div id="tianxia-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="tianxia-title">
     <div class="meta-overlay__card tianxia-card">
       <h2 id="tianxia-title" class="overlay-title">天下文氣榜</h2>
-      <p class="tianxia-hint">全服玩家依文氣境界排名，取前 500。暱稱沿用你的班級綽號——請用綽號、勿填真名。</p>
+      <p class="tianxia-hint">全服玩家依文氣境界排名，取前 500。不必加入班級，設個綽號就能上榜——請用綽號、勿填真名。</p>
+      <div class="tianxia-nickrow">
+        <input id="tianxia-nick" type="text" maxlength="12" placeholder="取個綽號上榜（1–12 字）" aria-label="天下榜綽號">
+        <button id="tianxia-nick-save" class="pet-equip-btn" type="button">上榜</button>
+      </div>
       <ol id="tianxia-list" class="tianxia-list"></ol>
       <p id="tianxia-self" class="tianxia-self"></p>
       <div class="shuyuan-toolbar">
