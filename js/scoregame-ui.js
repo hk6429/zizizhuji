@@ -258,6 +258,7 @@ function renderClassForm() {
   const codeIn = el('input', 'sg-classbar__in'); codeIn.placeholder = '班級代碼(如601)'; codeIn.maxLength = 20; codeIn.value = code; codeIn.setAttribute('aria-label', '班級代碼');
   const nickIn = el('input', 'sg-classbar__in'); nickIn.placeholder = '暱稱'; nickIn.maxLength = NICK_MAX; nickIn.value = nick; nickIn.setAttribute('aria-label', '暱稱');
   const save = el('button', 'sg-classbar__btn', '儲存'); save.type = 'button';
+  const priv = el('span', 'sg-classbar__hint', '暱稱會顯示在班級排行榜，請用綽號、勿填真實姓名');
   const err = el('span', 'sg-classbar__err', ''); err.setAttribute('aria-live', 'polite');
   save.addEventListener('click', () => {
     const c = codeIn.value.trim(), n = nickIn.value.trim().slice(0, NICK_MAX);
@@ -266,7 +267,7 @@ function renderClassForm() {
     if (metaRef) { metaRef.selfstudy.classCode = c; metaRef.selfstudy.nick = n; saveMeta(metaRef); }
     renderClassbar();
   });
-  bar.append(codeIn, nickIn, save, err);
+  bar.append(codeIn, nickIn, save, priv, err);
 }
 
 // 進步量／連續守燈子榜：跟主分數榜共用同一支 API，只是換一個 board 字串

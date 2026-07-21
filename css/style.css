@@ -221,6 +221,38 @@ body {
   text-decoration: none;
 }
 
+/* 首屏主 CTA：新手一眼就看到的「立刻開始」，直接用預設值開練 */
+.quickstart-cta {
+  margin-top: 14px;
+  padding: 14px 40px;
+  border: none;
+  border-radius: 999px;
+  background: radial-gradient(circle at 34% 30%, var(--gold-hi), var(--gold) 62%);
+  color: #3a2a00;
+  font-family: var(--sans);
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(201,162,39,.38);
+  animation: qs-pulse 2.4s ease-in-out infinite;
+}
+.quickstart-cta:hover { filter: brightness(1.05); }
+.quickstart-cta:active { transform: translateY(1px); }
+@keyframes qs-pulse {
+  0%, 100% { box-shadow: 0 6px 18px rgba(201,162,39,.32); }
+  50%      { box-shadow: 0 8px 26px rgba(201,162,39,.55); }
+}
+@media (prefers-reduced-motion: reduce) { .quickstart-cta { animation: none; } }
+
+/* 未立誓時的邀請樣式 */
+.oath-line--cta {
+  border: 1px dashed var(--gold);
+  background: rgba(201,162,39,.08);
+  color: var(--gold-text);
+  font-weight: 700;
+}
+
 /* 進入答題後：收起首頁、題名縮小 */
 body.in-quiz #screen-home { display: none; }
 body.in-quiz .brand { flex-direction: row; flex-wrap: wrap; justify-content: center; margin-bottom: 12px; }
@@ -230,6 +262,7 @@ body.in-quiz .brand-seal,
 body.in-quiz .brand-sub,
 body.in-quiz .brand-grade,
 body.in-quiz .parent-cta,
+body.in-quiz .quickstart-cta,
 body.in-quiz .nodamage-toggle { display: none; }
 body.in-quiz .brand-trust { flex-basis: 100%; margin: 0; font-size: .6rem; text-align: center; }
 
@@ -1203,7 +1236,32 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
   animation: xp-rise 2s ease both;
 }
 .meta-float--xp { color: var(--teal-deep); }
-.meta-float--pearl { color: var(--gold-text); top: 26px; }
+/* 答對得字珠：放大＋鎏金光暈＋彈跳，讓「成功那一刻」有感（正增強） */
+.meta-float--pearl {
+  color: var(--gold-text);
+  top: 22px;
+  font-size: 1.72rem;
+  font-weight: 800;
+  text-shadow: 0 1px 3px rgba(240,233,216,.9), 0 0 12px rgba(230,201,106,.75);
+  animation: pearl-pop 2s cubic-bezier(.22,1.2,.36,1) both;
+}
+@keyframes pearl-pop {
+  0%   { opacity: 0; transform: scale(.6) translateY(6px); }
+  22%  { opacity: 1; transform: scale(1.25) translateY(0); }
+  40%  { transform: scale(1); }
+  80%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-14px); }
+}
+@media (prefers-reduced-motion: reduce) { .meta-float--pearl { animation: xp-rise 2s ease both; } }
+
+/* 家長通行碼盒（每日上限突破前的關卡） */
+#daily-limit-pinbox { margin: 10px 0; text-align: center; }
+.daily-limit-pin-hint { font-size: .82rem; color: var(--ink-soft); margin: 0 0 6px; }
+.daily-limit-pin-msg { min-height: 18px; font-size: .8rem; color: #b3402f; margin-top: 4px; }
+/* 排行榜暱稱隱私提示 */
+.sg-classbar__hint { display: block; width: 100%; font-size: .74rem; color: var(--ink-soft); margin-top: 4px; }
+/* 家長頁隱私精確說明 */
+.parent-note { font-size: .9rem; line-height: 1.7; }
 @keyframes xp-rise {
   0%   { opacity: 0; translate: 0 6px; }
   20%  { opacity: 1; }

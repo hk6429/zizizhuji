@@ -31,12 +31,16 @@ page.on('console', msg => {
 });
 
 await page.goto('http://localhost:4173');
-// 首訪會先跳「開卷誓言」攔截層，先跳過才點得到模式按鈕
+// 新流程：首訪不再強制彈「立誓／術語」攔截層，首頁直接可玩
+await page.waitForSelector('#screen-home');
+// 首屏應有「立刻開始」大 CTA，且不被任何攔截層擋住
+await page.waitForSelector('#btn-quickstart');
+// 立誓改為常駐 CTA（未立誓時可見），點了才開誓言卡；跳過即關
+await page.waitForSelector('#oath-line:not([hidden])');
+await page.click('#oath-line');
 await page.waitForSelector('#oath-overlay:not([hidden])');
 await page.click('#oath-skip');
-// 首訪誓言收掉後會補跳「修行小抄」術語卡，關掉才能繼續
-await page.waitForSelector('#terms-overlay:not([hidden])');
-await page.click('#terms-close');
+await page.waitForSelector('#oath-overlay', { state: 'hidden' });
 
 // 學制切換：預設國小，切到國中後應重整頁面並套用國中題庫
 await page.waitForSelector('#level-select');

@@ -53,7 +53,8 @@
         </div>
         <p class="brand-sub">字音字形 × 成語 ── 邊學邊挑戰</p>
         <p class="brand-grade">適合國小高年級以上使用，也歡迎國小中年級來挑戰（可依難度分級練習）</p>
-        <p class="brand-trust">免費開源．無廣告．無金流．不蒐集個資</p>
+        <p class="brand-trust">免費開源．無廣告．無金流．免註冊</p>
+        <button id="btn-quickstart" class="quickstart-cta" type="button">▶ 立刻開始練習</button>
         <a id="btn-parent-dashboard" class="parent-cta" href="parent.html" target="_blank" rel="noopener">👀 家長・老師看這裡</a>
       </header>
 
@@ -476,6 +477,11 @@
     <div class="meta-overlay__card">
       <h2 id="daily-limit-title" class="overlay-title">今天練習夠多囉！</h2>
       <p id="daily-limit-msg">今天已經練習不少題目了，明天再來挑戰吧！</p>
+      <div id="daily-limit-pinbox" hidden>
+        <p class="daily-limit-pin-hint">家長已設定通行碼，輸入後才能繼續：</p>
+        <input id="daily-limit-pin" class="savesync-input" type="password" inputmode="numeric" maxlength="8" placeholder="家長通行碼" aria-label="家長通行碼">
+        <div id="daily-limit-pin-msg" class="daily-limit-pin-msg" role="alert"></div>
+      </div>
       <div class="summary-actions">
         <button id="daily-limit-continue" class="overlay-ghost-btn" type="button">再練一下下</button>
         <button id="daily-limit-home" class="overlay-ghost-btn" type="button">回首頁</button>
@@ -577,6 +583,12 @@
         <input id="savesync-daily-limit" class="savesync-input" type="number" min="1" step="1"
           placeholder="不限制" aria-label="每日練習題數上限">
         <button id="savesync-daily-limit-save" class="savesync-btn" type="button">儲存</button>
+      </div>
+      <p class="savesync-hint">家長通行碼（選填）：設定後，孩子要突破每日上限得先輸入這組碼。留空＝維持軟性提醒。</p>
+      <div class="savesync-pull-row">
+        <input id="savesync-daily-pin" class="savesync-input" type="text" inputmode="numeric" maxlength="8"
+          placeholder="不設碼" autocomplete="off" aria-label="家長通行碼">
+        <button id="savesync-daily-pin-save" class="savesync-btn" type="button">儲存</button>
       </div>
       <button id="savesync-close" class="overlay-ghost-btn" type="button">收起</button>
     </div>

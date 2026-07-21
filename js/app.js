@@ -23,9 +23,9 @@ import { checkWelcomeBack } from './meta/welcome-back.js';
 import { shuffle } from './shuffle.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
 import { initNoDamagePrompt, maybeOfferNoDamage } from './nodamage-prompt.js';
-import { initTermsHelp, maybeShowTermsIntro } from './terms-intro.js';
+import { initTermsHelp } from './terms-intro.js';
 import { playCorrect, playWrong, playCombo, isSoundOn, setSoundOn } from './sound.js';
-import { isDailyLimitReached, bypassLimitOnce } from './daily-limit.js';
+import { isDailyLimitReached, bypassLimitOnce, hasDailyPin, checkDailyPin } from './daily-limit.js';
 
 // 每連對 3 題加碼一次連擊音效（呼應連對獎勵遞增，見 js/meta/kernel.js 的 XP_COMBO_BONUS）
 function maybePlayCombo(ctx) {
@@ -211,12 +211,23 @@ function backHome() {
 $('btn-back').addEventListener('click', backHome);
 
 // 家長每日練習題數上限：達標時攔下一題，改顯示提示卡（軟性提醒，可「再練一下下」解除當次）
+// 家長若設了通行碼，「再練一下下」須先輸入正確碼才放行。
 let dailyLimitContinueCb = null;
 function showDailyLimitOverlay(onContinue) {
   dailyLimitContinueCb = onContinue;
+  const pinBox = $('daily-limit-pinbox');
+  const pinInput = $('daily-limit-pin');
+  const pinMsg = $('daily-limit-pin-msg');
+  const pinOn = hasDailyPin();
+  pinBox.hidden = !pinOn;
+  if (pinOn) { pinInput.value = ''; pinMsg.textContent = ''; }
   openOverlay($('daily-limit-overlay'), () => closeOverlay($('daily-limit-overlay')));
 }
 $('daily-limit-continue').addEventListener('click', () => {
+  if (hasDailyPin() && !checkDailyPin($('daily-limit-pin').value)) {
+    $('daily-limit-pin-msg').textContent = '通行碼不對，請找家長協助。';
+    return;
+  }
   bypassLimitOnce();
   closeOverlay($('daily-limit-overlay'));
   const cb = dailyLimitContinueCb;
@@ -526,6 +537,8 @@ async function startBattle() {
 
 $('btn-practice').addEventListener('click', startPractice);
 $('btn-battle').addEventListener('click', startBattle);
+// 首屏大 CTA：用目前預設（國小・字音字形・全部難度）直接開練，砍掉新手的選擇成本
+$('btn-quickstart').addEventListener('click', startPractice);
 
 // 回歸玩家迎接：非阻斷、不提斷簽損失，一天只顯示一次（用獨立 key，不進 zzj_meta schema）
 const WELCOME_SHOWN_KEY = 'zizhu:lastWelcomeShown';
@@ -581,5 +594,5 @@ initSaveSyncUI({
 initReportUI();
 initMetaLayer().then(() => {
   maybeShowWelcomeBack();
-  maybeShowTermsIntro();
+  // 不再進站就自動彈「修行小抄」——改為隨時可點 meta-bar 的「？」查看，讓新手先玩再讀。
 });

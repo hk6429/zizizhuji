@@ -19,7 +19,6 @@ import { getCubBattleMods } from './meta/fusion-store.js';
 import { shouldOfferShareCard, renderShareCard, exportShareCard } from './meta/share-card.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
 import { maybeOfferNoDamage } from './nodamage-prompt.js';
-import { maybeShowTermsIntro } from './terms-intro.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -44,7 +43,7 @@ export function ensureMeta(banks) {
   }
   if (init.pendingMilestones.length) saveMeta(ctx.meta);
 
-  if (init.intro) showOathOverlay(init.intro);
+  // 不再進站就強制彈「開卷・立誓」——改由首頁 oath-line 當常駐 CTA，讓新手先玩再立誓。
   refreshWidgets();
   return ctx;
 }
@@ -96,7 +95,6 @@ function showOathOverlay(intro) {
     }
     closeOverlay(overlay);
     refreshWidgets();
-    maybeShowTermsIntro(); // 首訪：誓言收掉後補上修行小抄
   };
   for (const o of intro.oaths) {
     const btn = document.createElement('button');
@@ -113,7 +111,6 @@ function showOathOverlay(intro) {
     oath.markIntroSeen(ctx.meta);
     saveMeta(ctx.meta);
     closeOverlay(overlay);
-    maybeShowTermsIntro(); // 首訪：跳過誓言也補上修行小抄
   };
   $('oath-skip').onclick = skip;
   openOverlay(overlay, skip);
@@ -173,10 +170,13 @@ export function refreshWidgets() {
   const oathLine = $('oath-line');
   if (o) {
     oathLine.textContent = `【誓】${o.oathText}`;
-    oathLine.hidden = false;
+    oathLine.classList.remove('oath-line--cta');
   } else {
-    oathLine.hidden = true;
+    // 未立誓：把它當常駐邀請 CTA，取代進站強制彈窗
+    oathLine.textContent = '✍️ 立下你的修行誓言（點我）';
+    oathLine.classList.add('oath-line--cta');
   }
+  oathLine.hidden = false;
 
   refreshPetEntry();
 }
@@ -393,6 +393,12 @@ export function renderSummary(summary) {
     ['守燈', `${s.lanternStreak} 天`],
     ['羈絆', s.bondStage],
   ];
+  // 回訪勾引：把最強的每日鉤子接在情緒最高點——明天回來讓長明燈連下去
+  if (s.lanternStreak >= 1) {
+    rows.push(['明日', `再來守燈，長明燈就連 ${s.lanternStreak + 1} 天了 🔥`]);
+  } else {
+    rows.push(['明日', '明天答對 10 題就能點亮長明燈，開啟守燈之路 🪔']);
+  }
   if (s.newPearls && s.newPearls.length) rows.push(['煉成', `${s.newPearls.length} 顆字珠`]);
   if (s.newAchievements && s.newAchievements.length) {
     rows.push(['新成就', s.newAchievements.map((a) => a.name).join('、')]);

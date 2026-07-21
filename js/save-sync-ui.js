@@ -3,7 +3,7 @@
 
 import { generateCode, pushSave, pullSave } from './save-sync.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
-import { getDailyLimit, setDailyLimit } from './daily-limit.js';
+import { getDailyLimit, setDailyLimit, getDailyPin, setDailyPin } from './daily-limit.js';
 
 const $ = (id) => document.getElementById(id);
 const CODE_KEY = 'zizhu:saveCode';
@@ -56,6 +56,7 @@ export function initSaveSyncUI(opts) {
   $('savesync-regen-cancel').addEventListener('click', resetRegenConfirm);
   $('savesync-copy').addEventListener('click', handleCopy);
   $('savesync-daily-limit-save').addEventListener('click', handleDailyLimitSave);
+$('savesync-daily-pin-save').addEventListener('click', handleDailyPinSave);
 }
 
 function open() {
@@ -71,6 +72,7 @@ function render() {
   applyBackupStatus();
   const limit = getDailyLimit();
   $('savesync-daily-limit').value = limit > 0 ? String(limit) : '';
+  $('savesync-daily-pin').value = getDailyPin();
   resetPullConfirm();
   resetRegenConfirm();
 }
@@ -102,6 +104,13 @@ function handleDailyLimitSave() {
   const raw = $('savesync-daily-limit').value.trim();
   setDailyLimit(raw ? parseInt(raw, 10) : 0);
   const btn = $('savesync-daily-limit-save');
+  btn.textContent = '已儲存';
+  setTimeout(() => { btn.textContent = '儲存'; }, 1200);
+}
+
+function handleDailyPinSave() {
+  setDailyPin($('savesync-daily-pin').value);
+  const btn = $('savesync-daily-pin-save');
   btn.textContent = '已儲存';
   setTimeout(() => { btn.textContent = '儲存'; }, 1200);
 }

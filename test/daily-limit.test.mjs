@@ -50,3 +50,26 @@ test('bypassLimitOnce 讓當次 session 忽略限制', () => {
   mod.bypassLimitOnce();
   assert.equal(mod.isDailyLimitReached({ daily: { todayAnswered: 100 } }), false);
 });
+
+test('家長通行碼：預設未設，hasDailyPin=false、checkDailyPin 一律放行', () => {
+  assert.equal(mod.hasDailyPin(), false);
+  assert.equal(mod.getDailyPin(), '');
+  assert.equal(mod.checkDailyPin(''), true);
+  assert.equal(mod.checkDailyPin('1234'), true);
+});
+
+test('家長通行碼：設定後只有正確碼放行', () => {
+  mod.setDailyPin('2468');
+  assert.equal(mod.hasDailyPin(), true);
+  assert.equal(mod.checkDailyPin('2468'), true);
+  assert.equal(mod.checkDailyPin('0000'), false);
+  assert.equal(mod.checkDailyPin(''), false);
+});
+
+test('家長通行碼：前後空白會被 trim，空字串＝清除', () => {
+  mod.setDailyPin('  99  ');
+  assert.equal(mod.getDailyPin(), '99');
+  assert.equal(mod.checkDailyPin('99'), true);
+  mod.setDailyPin('');
+  assert.equal(mod.hasDailyPin(), false);
+});
