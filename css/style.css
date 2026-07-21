@@ -1262,6 +1262,28 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 .sg-classbar__hint { display: block; width: 100%; font-size: .74rem; color: var(--ink-soft); margin-top: 4px; }
 /* 家長頁隱私精確說明 */
 .parent-note { font-size: .9rem; line-height: 1.7; }
+
+/* 答題頁常駐 HUD：守燈今日進度＋本回合答對 */
+.quiz-hud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  justify-content: center;
+  margin: 2px 0 10px;
+  font-family: var(--sans);
+  font-size: .82rem;
+  font-weight: 700;
+}
+.quiz-hud__item {
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: rgba(201,162,39,.10);
+  border: 1px solid rgba(201,162,39,.35);
+  color: var(--gold-text);
+  white-space: nowrap;
+}
+/* 里程碑卡的守燈提示 */
+.milestone-lantern { color: var(--gold-text); font-weight: 700; margin-top: 4px; }
 @keyframes xp-rise {
   0%   { opacity: 0; translate: 0 6px; }
   20%  { opacity: 1; }

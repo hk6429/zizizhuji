@@ -281,6 +281,10 @@
           <img class="card-seal" src="assets/web/emblem.jpg" alt="" aria-hidden="true" loading="lazy">
           <span id="mode-tag" class="mode-tag" aria-hidden="true"></span>
           <button id="report-btn" class="report-btn" type="button" hidden aria-label="回報這一題有問題" title="回報這一題有問題">🚩</button>
+          <div id="quiz-hud" class="quiz-hud" hidden aria-live="polite">
+            <span id="quiz-hud-lantern" class="quiz-hud__item"></span>
+            <span id="quiz-hud-session" class="quiz-hud__item"></span>
+          </div>
           <p id="question-text"></p>
           <div id="options"></div>
           <div id="answer-feedback" class="answer-feedback" hidden aria-live="polite"></div>
@@ -485,6 +489,19 @@
       <div class="summary-actions">
         <button id="daily-limit-continue" class="overlay-ghost-btn" type="button">再練一下下</button>
         <button id="daily-limit-home" class="overlay-ghost-btn" type="button">回首頁</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 練習里程碑：每 10 題輕量結算，給成就閉環＋回訪守燈提示，順勢露出戰報分享 -->
+  <div id="milestone-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="milestone-title">
+    <div class="meta-overlay__card">
+      <h2 id="milestone-title" class="overlay-title">🎯 階段達成！</h2>
+      <p id="milestone-msg"></p>
+      <p id="milestone-lantern" class="milestone-lantern"></p>
+      <div class="summary-actions">
+        <button id="milestone-continue" class="overlay-ghost-btn" type="button">繼續練習</button>
+        <button id="milestone-finish" class="overlay-ghost-btn" type="button">收卷看戰報・分享</button>
       </div>
     </div>
   </div>

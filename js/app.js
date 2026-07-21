@@ -6,6 +6,7 @@ import {
   ensureMeta, getCtx, getToday, refreshWidgets, bindDailyBox,
   renderEvents, renderSummary, syncPets,
   beginBattle, battleOver, applyEliminate, hideMolingBubble, showMolingLine,
+  updateQuizHud, getLanternProgress,
 } from './integration.js';
 import { initPetUI } from './pet-ui.js';
 import { initFusionUI } from './fusion-ui.js';
@@ -170,6 +171,10 @@ function enterQuiz(mode) {
   $('quiz-area').hidden = false;
   $('battle-hud').hidden = mode !== 'battle';
   $('mode-tag').textContent = mode === 'battle' ? '對戰' : '練習';
+  // 練習模式顯示守燈／回合進度 HUD；對戰有自己的血條 HUD 就不疊
+  const hud = $('quiz-hud');
+  hud.hidden = mode !== 'practice';
+  if (mode === 'practice') updateQuizHud();
   return session;
 }
 
@@ -238,6 +243,33 @@ $('daily-limit-home').addEventListener('click', () => {
   closeOverlay($('daily-limit-overlay'));
   dailyLimitContinueCb = null;
   backHome();
+});
+
+// 練習每 10 題的輕量里程碑卡：不結算、不重置 session，只給進度回饋＋回訪守燈提示
+let milestoneContinueCb = null;
+function showMilestoneOverlay(onContinue) {
+  const ctx = getCtx();
+  if (!ctx) { if (onContinue) onContinue(); return; }
+  milestoneContinueCb = onContinue;
+  const s = ctx.session;
+  const acc = s.total ? Math.round((s.correct / s.total) * 100) : 0;
+  $('milestone-msg').textContent = `本回合已練 ${s.total} 題，答對 ${s.correct} 題（${acc}%）！`;
+  const lp = getLanternProgress();
+  $('milestone-lantern').textContent = lp.litToday
+    ? `🪔 今天的長明燈已經點亮，守燈 ${lp.streak} 天，繼續保持！`
+    : `🪔 今日守燈 ${lp.todayCorrect}/${lp.goal}，再答對 ${lp.remaining} 題就能點亮長明燈！`;
+  openOverlay($('milestone-overlay'), () => closeOverlay($('milestone-overlay')));
+}
+$('milestone-continue').addEventListener('click', () => {
+  closeOverlay($('milestone-overlay'));
+  const cb = milestoneContinueCb;
+  milestoneContinueCb = null;
+  if (cb) cb();
+});
+$('milestone-finish').addEventListener('click', () => {
+  closeOverlay($('milestone-overlay'));
+  milestoneContinueCb = null;
+  backHome(); // 走既有收卷結算 → 戰報卡（含分享圖卡按鈕）
 });
 
 /* ---------- 出題與回饋 ---------- */
@@ -419,8 +451,14 @@ async function startPractice() {
       renderEvents(events);
       maybePlayCombo(ctx);
       syncPets(); // 精通題數可能剛跨過解鎖門檻
+      updateQuizHud(); // 守燈／回合進度即時更新
       lastId = id;
-      nextRound();
+      // 每 10 題輕量里程碑：成就閉環＋回訪守燈提示，順勢可收卷看戰報並分享
+      if (ctx.session.total > 0 && ctx.session.total % 10 === 0) {
+        showMilestoneOverlay(nextRound);
+      } else {
+        nextRound();
+      }
     }, { manual: true });
   }
   nextRound();

@@ -181,6 +181,31 @@ export function refreshWidgets() {
   refreshPetEntry();
 }
 
+// 守燈進度（供答題頁 HUD 與里程碑卡共用）：今日答對、目標、還差幾題、是否已點燈。
+export function getLanternProgress() {
+  if (!ctx) return { todayCorrect: 0, goal: 10, remaining: 10, litToday: false, streak: 0 };
+  const l = getLanternState(ctx.meta, today);
+  return {
+    todayCorrect: Math.min(l.todayCorrect, l.goal),
+    goal: l.goal,
+    remaining: Math.max(0, l.goal - l.todayCorrect),
+    litToday: l.litToday,
+    streak: l.streak,
+  };
+}
+
+// 答題頁常駐 HUD：讓「今日守燈進度」與「本回合答對」在答題當下就看得到（首頁 meta-bar 被 in-quiz 藏起來）。
+export function updateQuizHud() {
+  const hud = $('quiz-hud');
+  if (!hud || !ctx) return;
+  const lp = getLanternProgress();
+  $('quiz-hud-lantern').textContent = lp.litToday
+    ? `🪔 長明燈已亮・守燈 ${lp.streak} 天`
+    : `🪔 守燈 今日 ${lp.todayCorrect}/${lp.goal}（還差 ${lp.remaining} 題）`;
+  const s = ctx.session || {};
+  $('quiz-hud-session').textContent = `本回合 答對 ${s.correct || 0}/${s.total || 0}`;
+}
+
 // 首頁「寵物閣」入口：顯示主寵頭像、名號與境界；未選主寵則提示去挑。
 export function refreshPetEntry() {
   if (!ctx) return;
