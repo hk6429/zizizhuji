@@ -19,7 +19,7 @@ import { getCubBattleMods } from './meta/fusion-store.js';
 import { shouldOfferShareCard, renderShareCard, exportShareCard } from './meta/share-card.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
 import { submitGlobalXp } from './leaderboard.js';
-import { getQuests } from './meta/quests.js';
+import { getQuestLines } from './meta/quests.js';
 import { maybeOfferNoDamage } from './nodamage-prompt.js';
 
 const $ = (id) => document.getElementById(id);
@@ -196,22 +196,38 @@ export function refreshWidgets() {
   renderHomeQuests(meta, today);
 }
 
-/* 每日任務常駐面板（首頁直接呈現難／中／易完成度） */
+/* 每日任務常駐面板：一線三階里程碑軸（同一努力軸，易／中／難三個檢查點各自領獎）。 */
+const QUEST_ICON = { diligent: '📖', duel: '⚔️', endure: '🖌️' };
 function renderHomeQuests(meta, today) {
   const listEl = $('home-quests-list');
   if (!listEl) return;
-  listEl.innerHTML = getQuests(meta, today).map((q) => {
-    const pct = Math.min(100, Math.round((q.progress / q.goal) * 100));
-    let btn;
-    if (q.claimed) btn = '<button class="quest-claim" type="button" disabled>已領取</button>';
-    else if (q.done) btn = `<button class="quest-claim quest-claim--on" type="button" data-quest="${q.id}">領取 ${q.reward} 珠</button>`;
-    else btn = `<button class="quest-claim" type="button" disabled>還差 ${q.goal - q.progress}</button>`;
-    return `<div class="quest-row quest-row--${q.tier}${q.claimed ? ' is-claimed' : ''}">
-      <div class="quest-row__top"><span class="quest-tier">${q.tier}</span><b class="quest-name">${q.name}</b><span class="quest-reward">🪙 ${q.reward}</span></div>
-      <div class="quest-desc">${q.desc}</div>
-      <div class="quest-bar"><span style="width:${pct}%"></span></div>
-      <div class="quest-foot"><span class="quest-prog">${q.progress} / ${q.goal}</span>${btn}</div>
-    </div>`;
+  listEl.innerHTML = getQuestLines(meta, today).map((line) => {
+    const maxGoal = line.tiers[line.tiers.length - 1].goal;
+    const fillPct = Math.min(100, Math.round((line.value / maxGoal) * 100));
+    const nodes = line.tiers.map((t) => {
+      const pct = Math.round((t.goal / maxGoal) * 100);
+      const state = t.claimed ? 'claimed' : (t.done ? 'claimable' : 'locked');
+      let btn;
+      if (t.claimed) btn = '<button class="quest-node__claim" type="button" disabled>✓ 已領</button>';
+      else if (t.done) btn = `<button class="quest-node__claim" type="button" data-quest="${t.id}">領 +${t.reward}</button>`;
+      else btn = `<button class="quest-node__claim" type="button" disabled>差 ${t.goal - t.progress}</button>`;
+      return `<div class="quest-node quest-node--${state}" style="left:${pct}%">
+        <div class="quest-node__dot"><span class="quest-node__label">${t.tier}</span></div>
+        <div class="quest-node__pop"><span class="quest-node__goal">${t.goal}</span>${btn}</div>
+      </div>`;
+    }).join('');
+    return `<li class="quest-line" data-line="${line.key}">
+      <div class="quest-line__head">
+        <span class="quest-line__icon" aria-hidden="true">${QUEST_ICON[line.key] || '📜'}</span>
+        <span class="quest-line__name">${line.name}</span>
+        <span class="quest-line__value">今日${line.unit} <strong>${line.value}</strong></span>
+      </div>
+      <div class="quest-track" style="--fill:${fillPct}%">
+        <div class="quest-track__base"></div>
+        <div class="quest-track__fill"></div>
+        ${nodes}
+      </div>
+    </li>`;
   }).join('');
 }
 
