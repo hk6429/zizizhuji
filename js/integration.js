@@ -19,7 +19,7 @@ import { getCubBattleMods } from './meta/fusion-store.js';
 import { shouldOfferShareCard, renderShareCard, exportShareCard } from './meta/share-card.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
 import { submitGlobalXp } from './leaderboard.js';
-import { claimableCount } from './meta/quests.js';
+import { getQuests } from './meta/quests.js';
 import { maybeOfferNoDamage } from './nodamage-prompt.js';
 
 const $ = (id) => document.getElementById(id);
@@ -193,12 +193,26 @@ export function refreshWidgets() {
   refreshPetEntry();
   syncGlobalRank(meta);
 
-  const qBadge = $('quests-badge');
-  if (qBadge) {
-    const qc = claimableCount(meta, today);
-    qBadge.hidden = qc === 0;
-    qBadge.textContent = String(qc);
-  }
+  renderHomeQuests(meta, today);
+}
+
+/* 每日任務常駐面板（首頁直接呈現難／中／易完成度） */
+function renderHomeQuests(meta, today) {
+  const listEl = $('home-quests-list');
+  if (!listEl) return;
+  listEl.innerHTML = getQuests(meta, today).map((q) => {
+    const pct = Math.min(100, Math.round((q.progress / q.goal) * 100));
+    let btn;
+    if (q.claimed) btn = '<button class="quest-claim" type="button" disabled>已領取</button>';
+    else if (q.done) btn = `<button class="quest-claim quest-claim--on" type="button" data-quest="${q.id}">領取 ${q.reward} 珠</button>`;
+    else btn = `<button class="quest-claim" type="button" disabled>還差 ${q.goal - q.progress}</button>`;
+    return `<div class="quest-row quest-row--${q.tier}${q.claimed ? ' is-claimed' : ''}">
+      <div class="quest-row__top"><span class="quest-tier">${q.tier}</span><b class="quest-name">${q.name}</b><span class="quest-reward">🪙 ${q.reward}</span></div>
+      <div class="quest-desc">${q.desc}</div>
+      <div class="quest-bar"><span style="width:${pct}%"></span></div>
+      <div class="quest-foot"><span class="quest-prog">${q.progress} / ${q.goal}</span>${btn}</div>
+    </div>`;
+  }).join('');
 }
 
 // 守燈進度（供答題頁 HUD 與里程碑卡共用）：今日答對、目標、還差幾題、是否已點燈。

@@ -82,6 +82,12 @@
         <button id="oath-line" class="oath-line" type="button" hidden></button>
         <p id="omen-line" class="omen-line" hidden></p>
 
+        <!-- 每日任務（首頁直接呈現，難/中/易完成度一眼看到，不藏進彈窗） -->
+        <section id="home-quests" class="home-quests" aria-label="每日任務">
+          <h2 class="home-quests__title">📜 每日任務</h2>
+          <div id="home-quests-list" class="quests-list"></div>
+        </section>
+
         <!-- 角色對峙 VS -->
         <div class="vs-stage" aria-label="小書生對決墨靈少女">
           <figure class="fighter fighter--player">
@@ -198,14 +204,6 @@
               <span class="extra-entry__body">
                 <span class="extra-entry__title">文氣爭鋒（對戰玩法）</span>
                 <span class="extra-entry__sub">衝分・戰墨靈・同硯對決</span>
-              </span>
-              <span class="pet-entry__arrow" aria-hidden="true">›</span>
-            </button>
-            <button id="btn-quests" class="extra-entry extra-entry--quests" type="button">
-              <span class="extra-entry__icon" aria-hidden="true">任<span id="quests-badge" class="quests-badge" hidden>0</span></span>
-              <span class="extra-entry__body">
-                <span class="extra-entry__title">每日任務</span>
-                <span class="extra-entry__sub">簡單・中等・困難，完成領字珠</span>
               </span>
               <span class="pet-entry__arrow" aria-hidden="true">›</span>
             </button>
@@ -338,18 +336,6 @@
         <button id="shuyuan-wall-btn" class="overlay-ghost-btn" type="button">成就牆</button>
         <button id="shuyuan-reset" class="overlay-ghost-btn" type="button">還原擺設</button>
         <button id="shuyuan-close" class="overlay-ghost-btn" type="button">關閉</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 每日任務（簡單／中等／困難） -->
-  <div id="quests-overlay" class="meta-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="quests-title">
-    <div class="meta-overlay__card quests-card">
-      <h2 id="quests-title" class="overlay-title">每日任務</h2>
-      <p class="quests-hint">每天三個任務，分簡單、中等、困難。達標按「領取」拿字珠，隔日重置。</p>
-      <div id="quests-list" class="quests-list"></div>
-      <div class="shuyuan-toolbar">
-        <button id="quests-close" class="overlay-ghost-btn" type="button">關閉</button>
       </div>
     </div>
   </div>

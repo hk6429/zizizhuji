@@ -23,7 +23,7 @@ import { initSaveSyncUI } from './save-sync-ui.js';
 import { initReportUI, attachReportButton } from './report.js';
 import { saveMeta } from './meta/store.js';
 import { recordDailyBattle } from './meta/daily.js';
-import { getQuests, claimQuest } from './meta/quests.js';
+import { claimQuest } from './meta/quests.js';
 import { checkWelcomeBack } from './meta/welcome-back.js';
 import { shuffle } from './shuffle.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
@@ -278,31 +278,8 @@ $('milestone-finish').addEventListener('click', () => {
   backHome(); // 走既有收卷結算 → 戰報卡（含分享圖卡按鈕）
 });
 
-/* ---------- 每日任務（簡單／中等／困難） ---------- */
-function renderQuests() {
-  const ctx = getCtx();
-  const listEl = $('quests-list');
-  if (!ctx || !listEl) return;
-  listEl.innerHTML = getQuests(ctx.meta, getToday()).map((q) => {
-    const pct = Math.round((q.progress / q.goal) * 100);
-    let btn;
-    if (q.claimed) btn = '<button class="quest-claim" type="button" disabled>已領取</button>';
-    else if (q.done) btn = `<button class="quest-claim quest-claim--on" type="button" data-quest="${q.id}">領取 ${q.reward} 珠</button>`;
-    else btn = `<button class="quest-claim" type="button" disabled>還差 ${q.goal - q.progress}</button>`;
-    return `<div class="quest-row quest-row--${q.tier}${q.claimed ? ' is-claimed' : ''}">
-      <div class="quest-row__top"><span class="quest-tier">${q.tier}</span><b class="quest-name">${q.name}</b><span class="quest-reward">🪙 ${q.reward}</span></div>
-      <div class="quest-desc">${q.desc}</div>
-      <div class="quest-bar"><span style="width:${pct}%"></span></div>
-      <div class="quest-foot"><span class="quest-prog">${q.progress} / ${q.goal}</span>${btn}</div>
-    </div>`;
-  }).join('');
-}
-$('btn-quests').addEventListener('click', () => {
-  renderQuests();
-  openOverlay($('quests-overlay'), () => closeOverlay($('quests-overlay')));
-});
-$('quests-close').addEventListener('click', () => closeOverlay($('quests-overlay')));
-$('quests-list').addEventListener('click', (e) => {
+/* ---------- 每日任務（首頁常駐面板，領取委派給 home-quests-list） ---------- */
+$('home-quests-list').addEventListener('click', (e) => {
   const btn = e.target.closest('[data-quest]');
   if (!btn) return;
   const ctx = getCtx();
@@ -311,8 +288,7 @@ $('quests-list').addEventListener('click', (e) => {
   if (r.ok) {
     saveMeta(ctx.meta);
     notify(`任務完成，+${r.reward} 字珠！`, 'lantern');
-    renderQuests();
-    refreshWidgets(); // 更新字珠餘額與首頁任務紅點
+    refreshWidgets(); // 重繪首頁任務面板與字珠餘額
   }
 });
 
