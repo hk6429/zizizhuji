@@ -2325,3 +2325,29 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 .tianxia-nickrow input { flex: 1; min-width: 0; padding: .5rem .6rem; border-radius: 8px;
   border: 1px solid rgba(184,134,11,.45); background: rgba(255,255,255,.7); font-size: .9rem; }
 .tianxia-nickrow input:focus-visible { outline: 2px solid #2e8b8b; outline-offset: 1px; }
+
+/* ── 每日任務 ── */
+.extra-entry--quests .extra-entry__icon { background: linear-gradient(135deg,#2e8b8b,#5bc2c2); color:#08302f; position: relative; }
+.quests-badge { position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px; padding: 0 4px;
+  border-radius: 9px; background: #d13a3a; color: #fff; font-size: .72rem; line-height: 18px; text-align: center; font-weight: 700; }
+.quests-card { max-width: 460px; }
+.quests-hint { font-size: .82rem; opacity: .78; margin: .2rem 0 .7rem; line-height: 1.5; }
+.quests-list { display: flex; flex-direction: column; gap: .7rem; }
+.quest-row { border: 1px solid rgba(184,134,11,.28); border-radius: 10px; padding: .6rem .7rem; background: rgba(255,255,255,.5); }
+.quest-row.is-claimed { opacity: .62; }
+.quest-row__top { display: flex; align-items: center; gap: .5rem; }
+.quest-tier { font-size: .74rem; font-weight: 700; padding: .1rem .45rem; border-radius: 6px; color: #fff; }
+.quest-row--簡單 .quest-tier { background: #3a9d5d; }
+.quest-row--中等 .quest-tier { background: #c99020; }
+.quest-row--困難 .quest-tier { background: #c0562e; }
+.quest-name { font-size: 1rem; }
+.quest-reward { margin-left: auto; font-size: .84rem; color: #7d5c0f; font-weight: 600; }
+.quest-desc { font-size: .82rem; opacity: .82; margin: .3rem 0 .4rem; }
+.quest-bar { height: 7px; border-radius: 4px; background: rgba(0,0,0,.08); overflow: hidden; }
+.quest-bar > span { display: block; height: 100%; background: linear-gradient(90deg,#2e8b8b,#5bc2c2); border-radius: 4px; }
+.quest-foot { display: flex; align-items: center; justify-content: space-between; margin-top: .45rem; }
+.quest-prog { font-size: .8rem; opacity: .7; }
+.quest-claim { min-height: 32px; padding: .25rem .8rem; border-radius: 8px; border: 1px solid rgba(184,134,11,.4);
+  background: rgba(255,255,255,.6); font-size: .84rem; color: #7d5c0f; }
+.quest-claim--on { background: linear-gradient(135deg,#c9a227,#e8c86a); color: #2a1c05; font-weight: 700; border-color: #b8860b; cursor: pointer; }
+.quest-claim[disabled] { opacity: .55; cursor: default; }

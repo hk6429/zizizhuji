@@ -19,6 +19,7 @@ import { getCubBattleMods } from './meta/fusion-store.js';
 import { shouldOfferShareCard, renderShareCard, exportShareCard } from './meta/share-card.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
 import { submitGlobalXp } from './leaderboard.js';
+import { claimableCount } from './meta/quests.js';
 import { maybeOfferNoDamage } from './nodamage-prompt.js';
 
 const $ = (id) => document.getElementById(id);
@@ -191,6 +192,13 @@ export function refreshWidgets() {
 
   refreshPetEntry();
   syncGlobalRank(meta);
+
+  const qBadge = $('quests-badge');
+  if (qBadge) {
+    const qc = claimableCount(meta, today);
+    qBadge.hidden = qc === 0;
+    qBadge.textContent = String(qc);
+  }
 }
 
 // 守燈進度（供答題頁 HUD 與里程碑卡共用）：今日答對、目標、還差幾題、是否已點燈。
@@ -317,6 +325,9 @@ function toast(text, kind = '') {
   toastQueue.push({ text, kind });
   if (!toastPumping) pumpToasts();
 }
+
+// 對外的輕量通知（練習回合轉換等 UI 提示用），走同一組 toast 佇列。
+export function notify(text, kind = '') { toast(text, kind); }
 
 function pumpToasts() {
   const next = toastQueue.shift();

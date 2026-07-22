@@ -10,6 +10,7 @@ export const CAP_EXEMPT_REASONS = new Set([
   'bond-gift',          // 羈絆贈禮
   'fusion-consolation', // 融合失敗安慰（少量、非 farm 得動的來源）
   'market-sale',        // 集市賣出貨款（已抽稅的資產轉換，非新產出）
+  'daily-quest',        // 每日任務獎勵（一次性，不受 farm 上限）
 ]);
 
 export function earnPearls(meta, amount, reason = '', today = '') {

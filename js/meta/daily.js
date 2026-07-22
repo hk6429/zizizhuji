@@ -137,7 +137,16 @@ export function rolloverDaily(meta, today) {
   d.date = today;
   d.todayCorrect = 0;
   d.todayAnswered = 0;
+  d.todayBattles = 0;      // 每日任務・對弈：今日完成對戰場次
+  d.questsClaimed = [];    // 每日任務：今日已領取的任務 id
   d.boxOpened = false;
+  return events;
+}
+
+// ---- 每日行為：完成一場對戰（每日任務・對弈用）----
+export function recordDailyBattle(meta, today) {
+  const events = rolloverDaily(meta, today);
+  meta.daily.todayBattles = (meta.daily.todayBattles || 0) + 1;
   return events;
 }
 

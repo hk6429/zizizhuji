@@ -6,8 +6,9 @@ import {
   ensureMeta, getCtx, getToday, refreshWidgets, bindDailyBox,
   renderEvents, renderSummary, syncPets,
   beginBattle, battleOver, applyEliminate, hideMolingBubble, showMolingLine,
-  updateQuizHud, getLanternProgress,
+  updateQuizHud, getLanternProgress, notify,
 } from './integration.js';
+import { createRoundState, nextInRound, recordRound, advanceRound } from './practice-round.js';
 import { initPetUI } from './pet-ui.js';
 import { initFusionUI } from './fusion-ui.js';
 import { initSelfStudy } from './selfstudy-ui.js';
@@ -21,6 +22,8 @@ import { initTianxia } from './tianxia-ui.js';
 import { initSaveSyncUI } from './save-sync-ui.js';
 import { initReportUI, attachReportButton } from './report.js';
 import { saveMeta } from './meta/store.js';
+import { recordDailyBattle } from './meta/daily.js';
+import { getQuests, claimQuest } from './meta/quests.js';
 import { checkWelcomeBack } from './meta/welcome-back.js';
 import { shuffle } from './shuffle.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
@@ -196,6 +199,8 @@ function finishSession() {
     const { summary, events } = kernel.onBattleEnd(ctx, battleState);
     renderEvents(events);
     renderSummary(summary);
+    recordDailyBattle(ctx.meta, getToday()); // 每日任務・對弈：計一場對戰
+    saveMeta(ctx.meta);
   }
 }
 
@@ -271,6 +276,44 @@ $('milestone-finish').addEventListener('click', () => {
   closeOverlay($('milestone-overlay'));
   milestoneContinueCb = null;
   backHome(); // 走既有收卷結算 → 戰報卡（含分享圖卡按鈕）
+});
+
+/* ---------- 每日任務（簡單／中等／困難） ---------- */
+function renderQuests() {
+  const ctx = getCtx();
+  const listEl = $('quests-list');
+  if (!ctx || !listEl) return;
+  listEl.innerHTML = getQuests(ctx.meta, getToday()).map((q) => {
+    const pct = Math.round((q.progress / q.goal) * 100);
+    let btn;
+    if (q.claimed) btn = '<button class="quest-claim" type="button" disabled>已領取</button>';
+    else if (q.done) btn = `<button class="quest-claim quest-claim--on" type="button" data-quest="${q.id}">領取 ${q.reward} 珠</button>`;
+    else btn = `<button class="quest-claim" type="button" disabled>還差 ${q.goal - q.progress}</button>`;
+    return `<div class="quest-row quest-row--${q.tier}${q.claimed ? ' is-claimed' : ''}">
+      <div class="quest-row__top"><span class="quest-tier">${q.tier}</span><b class="quest-name">${q.name}</b><span class="quest-reward">🪙 ${q.reward}</span></div>
+      <div class="quest-desc">${q.desc}</div>
+      <div class="quest-bar"><span style="width:${pct}%"></span></div>
+      <div class="quest-foot"><span class="quest-prog">${q.progress} / ${q.goal}</span>${btn}</div>
+    </div>`;
+  }).join('');
+}
+$('btn-quests').addEventListener('click', () => {
+  renderQuests();
+  openOverlay($('quests-overlay'), () => closeOverlay($('quests-overlay')));
+});
+$('quests-close').addEventListener('click', () => closeOverlay($('quests-overlay')));
+$('quests-list').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-quest]');
+  if (!btn) return;
+  const ctx = getCtx();
+  if (!ctx) return;
+  const r = claimQuest(ctx.meta, btn.dataset.quest, getToday());
+  if (r.ok) {
+    saveMeta(ctx.meta);
+    notify(`任務完成，+${r.reward} 字珠！`, 'lantern');
+    renderQuests();
+    refreshWidgets(); // 更新字珠餘額與首頁任務紅點
+  }
 });
 
 /* ---------- 出題與回饋 ---------- */
@@ -434,16 +477,24 @@ async function startPractice() {
   if (!ctx) { showLoadError('practice'); return; }
   const mySession = enterQuiz('practice');
 
-  const ids = shuffle(bank.map((e) => e.id)); // 洗牌，避免近似成語同組連續出現
+  const allIds = bank.map((e) => e.id);
   const state = ctx.leitner; // 由 kernel 供給：含上次遊玩的盒位，不再每次歸零
   const byId = new Map(bank.map((e) => [e.id, e]));
-  let lastId = null;
+  // 作業式回合：整池每題各出一次不重複；答錯的整輪跑完再補一輪；全對後重洗整池（見 practice-round.js）。
+  // 「哪一題先出」仍交給 Leitner 盒位＋難度排序（低盒／較易先出）。
+  const rs = createRoundState(shuffle(allIds));
+  const pick = (cands) => nextQuestionId(state, cands, byId);
 
   function nextRound() {
     if (isDailyLimitReached(ctx.meta)) { showDailyLimitOverlay(nextRound); return; }
-    // 排除剛答過的那題再選，避免它是唯一低盒題時立刻重複
-    const pool = ids.length > 1 ? ids.filter((x) => x !== lastId) : ids;
-    const id = nextQuestionId(state, pool, byId);
+    let id = nextInRound(rs, pick);
+    if (id === null) { // 本輪出完，推進下一輪
+      const info = advanceRound(rs, allIds, shuffle);
+      notify(info.mode === 'wrong-review'
+        ? `錯題複習開始：${info.size} 題`
+        : '整池已全數答對！重新洗牌開新一輪', 'lantern');
+      id = nextInRound(rs, pick);
+    }
     const entry = byId.get(id);
     renderQuestion(entry);
     bindAnswer(entry, mySession, (correct) => {
@@ -453,7 +504,7 @@ async function startPractice() {
       maybePlayCombo(ctx);
       syncPets(); // 精通題數可能剛跨過解鎖門檻
       updateQuizHud(); // 守燈／回合進度即時更新
-      lastId = id;
+      recordRound(rs, id, correct); // 記錄本輪對錯，供錯題複習輪與不重複判定
       // 每 10 題輕量里程碑：成就閉環＋回訪守燈提示，順勢可收卷看戰報並分享
       if (ctx.session.total > 0 && ctx.session.total % 10 === 0) {
         showMilestoneOverlay(nextRound);

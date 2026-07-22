@@ -50,9 +50,9 @@ export function defaultMeta() {
     gear: { owned: [], loadout: [] },
     arts: { unlocked: [], equipped: null, battlesWon: 0 },
     daily: {
-      date: '', todayCorrect: 0, todayAnswered: 0, streak: 0, best: 0, tier: 0, boxOpened: false,
+      date: '', todayCorrect: 0, todayAnswered: 0, todayBattles: 0, streak: 0, best: 0, tier: 0, boxOpened: false,
       lastLit: '', weekKey: '', weekOpenDays: [], liuliOpened: false, liuliHalfOpened: false,
-      charms: 0, milestonesClaimed: [],
+      charms: 0, milestonesClaimed: [], questsClaimed: [],
     },
     // 近 30 天答題快照（家長儀表板的趨勢圖用），每次跨日 rollover 時 push 前一天
     trend: [],
