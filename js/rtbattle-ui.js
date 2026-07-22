@@ -4,6 +4,7 @@
 // 只是把「答題結果」透過房間輪詢同步給另一台裝置，而不是跟本機墨靈打。
 import { ZZAPI } from './meta/api.js';
 import { ROUNDS, ROUND_SEC, POLL_MS, buildQuestions, dealtDamage, judge, buildEncounterScript, assassinSeed, assassinTargetScore } from './meta/rtbattle.js';
+import { awardResultXp } from './result-xp.js';
 import { safeBoard, buildLiveHerald } from './meta/livewall.js';
 import { applyEncounterEffect } from './meta/battle-adapter.js';
 import { getCtx, beginBattle, applyEliminate, showMolingLine, renderEvents, getToday } from './integration.js';
@@ -426,6 +427,7 @@ function finish(verdict) {
   push();
   ctx.meta.ach.stats.battles += 1;
   if (verdict === 'win') ctx.meta.ach.stats.wins += 1;
+  const xpBonus = awardResultXp(ctx.meta, { correct: st.correct, answered: ROUNDS, won: verdict === 'win', requireWin: true });
   ctx.encounterOff = false; // 離開即時對戰，一般對戰要恢復隨機奇遇
   saveMeta(ctx.meta);
   const line = verdict === 'win' ? '贏了！這場打得漂亮～'
@@ -437,7 +439,7 @@ function finish(verdict) {
   if (verdict !== 'draw') api({ op: 'seasonAdd', nick: my.nick, pts: verdict === 'win' ? WIN_PTS : LOSE_PTS });
   body.innerHTML = `<div class="rt-card">
     <p class="rt-result">${verdict === 'win' ? '🏆 你贏了！' : verdict === 'lose' ? '💀 惜敗' : '🤝 平手'}</p>
-    <p>答對 ${st.correct}/${ROUNDS}・總輸出 ${st.dmg}</p>
+    <p>答對 ${st.correct}/${ROUNDS}・總輸出 ${st.dmg}${xpBonus ? `・文氣 +${xpBonus}` : ''}</p>
     <p class="shuyuan-hint">賽季 ${esc(s.key)}・${esc(s.title)}（${s.pts} 分）</p>
     ${encourage}
     <button id="rt-again-btn" class="overlay-ghost-btn" type="button">再開一場</button>
@@ -476,6 +478,7 @@ async function finishChallenge() {
   const win = st.dmg > chInfo.score;
   const tie = st.dmg === chInfo.score;
   if (win) ctx.meta.ach.stats.wins += 1;
+  const xpBonus = awardResultXp(ctx.meta, { correct: st.correct, answered: ROUNDS, won: win, requireWin: true });
   ctx.encounterOff = false;
   saveMeta(ctx.meta);
   await api({ op: 'challengeResult', code: chInfo.code, nick: my.nick, score: st.dmg });
@@ -484,7 +487,7 @@ async function finishChallenge() {
   body.innerHTML = `<div class="rt-card">
     <p class="rt-result">${win ? '🏆 應戰成功！' : tie ? '🤝 平手' : '💀 惜敗於戰帖'}</p>
     <p>${esc(chInfo.challenger)} 的輸出：${chInfo.score}</p>
-    <p>你的輸出：${st.dmg}（答對 ${st.correct}/${ROUNDS}）</p>
+    <p>你的輸出：${st.dmg}（答對 ${st.correct}/${ROUNDS}）${xpBonus ? `・文氣 +${xpBonus}` : ''}</p>
     <button id="rt-again-btn" class="overlay-ghost-btn" type="button">返回</button>
   </div>`;
   $('rt-again-btn').addEventListener('click', renderHome);

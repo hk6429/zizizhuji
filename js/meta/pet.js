@@ -84,8 +84,8 @@ export const PET_BOND_STAGES = [
 const PET_BY_ID = new Map(PETS.map((p) => [p.id, p]));
 const EQUIP_BY_ID = new Map(PET_EQUIP.map((e) => [e.id, e]));
 
-// 主動技能「點化」每日充能次數（跨日由 rolloverDaily 重置 meta.daily.petSkillUsed）。
-export const MAX_PET_SKILL_USES = 2;
+// 主動技能「點化」每日充能上限；實際次數依主寵羈絆階段為初見 1／漸熟 2／知己 3。
+export const MAX_PET_SKILL_USES = 3;
 
 // 題目類別：zy-＝字音、cy-＝成語，其餘視為混合／其他。
 export function questionCategory(id) {
@@ -128,9 +128,15 @@ export function petPracticeHint(meta) {
 }
 
 // 主動技能剩餘次數（讀 meta.daily.petSkillUsed；跨日重置由 rolloverDaily 負責）。
+export function petSkillDailyLimit(meta) {
+  const s = ensurePetState(meta);
+  const bond = s.active ? (s.bond[s.active] || 0) : 0;
+  return Math.min(MAX_PET_SKILL_USES, stageOfBond(bond) + 1);
+}
+
 export function petSkillRemaining(meta) {
   const used = meta.daily?.petSkillUsed || 0;
-  return Math.max(0, MAX_PET_SKILL_USES - used);
+  return Math.max(0, petSkillDailyLimit(meta) - used);
 }
 
 // 使用一次主動技能：需有出戰且已解鎖的主寵、且今日還有次數。成功回 { ok:true, remaining }。
@@ -140,9 +146,10 @@ export function usePetSkill(meta) {
   if (!petId || !isUnlocked(meta, petId)) return { ok: false, reason: 'no-pet' };
   if (!meta.daily) return { ok: false, reason: 'no-daily' };
   const used = meta.daily.petSkillUsed || 0;
-  if (used >= MAX_PET_SKILL_USES) return { ok: false, reason: 'no-charge' };
+  const limit = petSkillDailyLimit(meta);
+  if (used >= limit) return { ok: false, reason: 'no-charge' };
   meta.daily.petSkillUsed = used + 1;
-  return { ok: true, remaining: MAX_PET_SKILL_USES - (used + 1) };
+  return { ok: true, remaining: limit - (used + 1) };
 }
 
 function ensurePetState(meta) {

@@ -41,6 +41,16 @@ test('achievement rewards bypass the daily cap', () => {
   assert.equal(meta.pearls.earnedToday, 120); // exempt earnings not counted
 });
 
+test('每日墨匣的一次性獎勵不受每日 300 珠上限擠壓', () => {
+  const meta = defaultMeta();
+  earnPearls(meta, DAILY_EARN_CAP, 'practice-answer', D);
+  const r = earnPearls(meta, 8, 'daily-box', D);
+  assert.equal(r.earned, 8);
+  assert.equal(r.capped, false);
+  assert.equal(getBalance(meta), DAILY_EARN_CAP + 8);
+  assert.equal(meta.pearls.earnedToday, DAILY_EARN_CAP);
+});
+
 test('daily counter resets on a new day', () => {
   const meta = defaultMeta();
   earnPearls(meta, 120, 'practice-answer', D);

@@ -32,6 +32,9 @@ import { initNoDamagePrompt, maybeOfferNoDamage } from './nodamage-prompt.js';
 import { initTermsHelp } from './terms-intro.js';
 import { playCorrect, playWrong, playCombo, isSoundOn, setSoundOn } from './sound.js';
 import { isDailyLimitReached, bypassLimitOnce, hasDailyPin, checkDailyPin } from './daily-limit.js';
+import { shouldWaitForNext } from './answer-flow.js';
+import { revealAdvancedPlayOnce } from './advanced-play.js';
+import { practicePoolForPlayer } from './practice-difficulty.js';
 
 // 每連對 3 題加碼一次連擊音效（呼應連對獎勵遞增，見 js/meta/kernel.js 的 XP_COMBO_BONUS）
 function maybePlayCombo(ctx) {
@@ -430,8 +433,8 @@ function bindAnswer(entry, mySession, onDone, opts = {}) {
         : `答錯了，正解是「${entry.answer}」。${explainText}`;
       feedbackEl.hidden = false;
     }
-    if (opts.manual) {
-      // 練習模式：老師反饋解說一閃即逝來不及看，改手動點「下一題」才前進
+    if (shouldWaitForNext(correct, opts.manual)) {
+      // 練習一律、對戰答錯時手動點「下一題」才前進；對戰答對維持原本快速節奏。
       const nextBtn = $('answer-next-btn');
       if (nextBtn) {
         nextBtn.hidden = false;
@@ -494,6 +497,11 @@ async function startPractice() {
   if (!bank.length) return;
   const ctx = getCtx();
   if (!ctx) { showLoadError('practice'); return; }
+  let practiceBank = practicePoolForPlayer(bank, ctx.meta);
+  // 新手若手動選到「難」，改從完整題庫取易／中題，仍不改動任何題目內容。
+  if (!practiceBank.length) practiceBank = practicePoolForPlayer(await loadBank(currentBank), ctx.meta);
+  bank = practiceBank;
+  if (!bank.length) return;
   const mySession = enterQuiz('practice');
 
   const allIds = bank.map((e) => e.id);
@@ -508,6 +516,7 @@ async function startPractice() {
     if (isDailyLimitReached(ctx.meta)) { showDailyLimitOverlay(nextRound); return; }
     let id = nextInRound(rs, pick);
     if (id === null) { // 本輪出完，推進下一輪
+      revealAdvancedPlayOnce($('advanced-play'));
       const info = advanceRound(rs, allIds, shuffle);
       notify(info.mode === 'wrong-review'
         ? `錯題複習開始：${info.size} 題`
@@ -528,6 +537,7 @@ async function startPractice() {
       recordRound(rs, id, correct); // 記錄本輪對錯，供錯題複習輪與不重複判定
       // 每 10 題輕量里程碑：成就閉環＋回訪守燈提示，順勢可收卷看戰報並分享
       if (ctx.session.total > 0 && ctx.session.total % 10 === 0) {
+        revealAdvancedPlayOnce($('advanced-play'));
         showMilestoneOverlay(nextRound);
       } else {
         nextRound();

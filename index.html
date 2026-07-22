@@ -160,10 +160,21 @@
         </label>
         <p class="mode-hint">練到有點基礎後，別忘了看看下面的「進階玩法」——那裡才是這個遊戲真正好玩的地方。</p>
 
-        <!-- 進階玩法（常駐區塊，不藏進收合區：對戰／收藏／交易是主打玩法，要讓學生與老師都看得到） -->
-        <h2 class="section-title"><i aria-hidden="true"></i>進階玩法<i aria-hidden="true"></i></h2>
-        <p class="mode-hint">精通題目後，把實力變成收藏、對戰與交易的樂趣。</p>
-        <div class="advanced-play">
+        <!-- 自學・墨池：提升為首屏主要學習入口 -->
+        <button id="btn-selfstudy" class="extra-entry extra-entry--study" type="button">
+          <span class="extra-entry__icon" aria-hidden="true">墨</span>
+          <span class="extra-entry__body">
+            <span class="extra-entry__title">自學・墨池（閃卡）</span>
+            <span class="extra-entry__sub">記憶牌・閃卡・連連看</span>
+          </span>
+          <span class="pet-entry__arrow" aria-hidden="true">›</span>
+        </button>
+
+        <!-- 進階玩法：新手先收合，完成首輪或里程碑後自動展開一次 -->
+        <details id="advanced-play" class="more-section advanced-section">
+          <summary class="section-title section-title--toggle"><i aria-hidden="true"></i><span class="toggle-label">進階玩法</span><i aria-hidden="true"></i></summary>
+          <p class="mode-hint">精通題目後，把實力變成收藏、對戰與交易的樂趣。</p>
+          <div class="advanced-play">
 
           <!-- 山海寵物入口 -->
           <button id="btn-pet" class="pet-entry" type="button">
@@ -219,21 +230,12 @@
               <span class="pet-entry__arrow" aria-hidden="true">›</span>
             </button>
           </div>
-        </div>
+          </div>
+        </details>
 
-        <!-- 更多功能（漸進揭露：自學工具／收藏／存檔，收合減少首頁決策點） -->
+        <!-- 更多功能（漸進揭露：收藏／存檔，收合減少首頁決策點） -->
         <details class="more-section">
           <summary class="section-title section-title--toggle"><i aria-hidden="true"></i><span class="toggle-label">更多功能</span><i aria-hidden="true"></i></summary>
-
-          <!-- 自學・墨池 -->
-          <button id="btn-selfstudy" class="extra-entry extra-entry--study" type="button">
-            <span class="extra-entry__icon" aria-hidden="true">墨</span>
-            <span class="extra-entry__body">
-              <span class="extra-entry__title">自學・墨池</span>
-              <span class="extra-entry__sub">記憶牌・閃卡・連連看</span>
-            </span>
-            <span class="pet-entry__arrow" aria-hidden="true">›</span>
-          </button>
 
           <div class="extra-grid">
             <button id="btn-achievements" class="extra-entry extra-entry--ach" type="button">

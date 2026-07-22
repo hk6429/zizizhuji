@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { petLevel, PET_EQUIP, MAX_LEVEL, PETS,
   petPracticeBonus, petPracticeHint, usePetSkill, petSkillRemaining,
-  activePetName, MAX_PET_SKILL_USES, setActivePet } from '../js/meta/pet.js';
+  activePetName, MAX_PET_SKILL_USES, petSkillDailyLimit, setActivePet } from '../js/meta/pet.js';
 import { defaultMeta } from '../js/meta/store.js';
 
 // 建 meta：出戰某寵，並用 n 題已煉成的字珠灌該類別精通（prefix 決定類別）。
@@ -81,16 +81,22 @@ test('petPracticeHint / activePetName 隨出戰寵物給說明', () => {
 });
 
 /* ===== 主動技能充能 usePetSkill ===== */
-test('主動技能每日 MAX_PET_SKILL_USES 次、用完擋下', () => {
+test('主動技能每日次數隨主寵羈絆：初見1、漸熟2、知己3，用完擋下', () => {
   const m = metaWith('baize', 'zy', 0);
-  assert.equal(petSkillRemaining(m), MAX_PET_SKILL_USES);
-  for (let i = 0; i < MAX_PET_SKILL_USES; i++) {
-    assert.equal(usePetSkill(m).ok, true);
-  }
+  assert.equal(MAX_PET_SKILL_USES, 3);
+  assert.equal(petSkillDailyLimit(m), 1);
+  assert.equal(petSkillRemaining(m), 1);
+  assert.equal(usePetSkill(m).ok, true);
   assert.equal(petSkillRemaining(m), 0);
   const over = usePetSkill(m);
   assert.equal(over.ok, false);
   assert.equal(over.reason, 'no-charge');
+
+  m.daily.petSkillUsed = 0;
+  m.pet.bond.baize = 34;
+  assert.equal(petSkillDailyLimit(m), 2);
+  m.pet.bond.baize = 67;
+  assert.equal(petSkillDailyLimit(m), 3);
 });
 
 test('無出戰寵物不能用技能', () => {

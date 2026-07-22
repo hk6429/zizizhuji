@@ -1,6 +1,6 @@
 // 每日任務：三條主線（勤學／對弈／不輟），每條各拆易／中／難三階，共 9 個獨立獎勵，隔日自動重置。
 // 進度全部讀 meta.daily 既有計數（rolloverDaily 每日歸零），不新增追蹤面：
-//   勤學＝今日答對題數(todayCorrect)、對弈＝今日完成對戰場次(todayBattles)、不輟＝今日作答總題數(todayAnswered)。
+//   勤學＝今日答對題數(todayCorrect)、對弈＝今日完成對戰場次(todayBattles)、不輟＝今日答對題數(todayCorrect，採不同門檻)。
 // 三階門檻遞增、獎勵遞增；達成任一階即可各自領取。獎勵走 earnPearls 的 'daily-quest'（不受每日上限）。
 import { earnPearls } from './economy.js';
 import { rolloverDaily } from './daily.js';
@@ -9,7 +9,7 @@ import { rolloverDaily } from './daily.js';
 export const QUEST_LINES = [
   { key: 'diligent', name: '勤學', metric: 'todayCorrect',  unit: '答對', tiers: [['易', 5, 10], ['中', 15, 22], ['難', 30, 40]] },
   { key: 'duel',     name: '對弈', metric: 'todayBattles',  unit: '對戰', tiers: [['易', 1, 15], ['中', 3, 32], ['難', 5, 55]] },
-  { key: 'endure',   name: '不輟', metric: 'todayAnswered', unit: '作答', tiers: [['易', 20, 12], ['中', 50, 28], ['難', 100, 50]] },
+  { key: 'endure',   name: '不輟', metric: 'todayCorrect',  unit: '答對', tiers: [['易', 8, 12], ['中', 20, 28], ['難', 40, 50]] },
 ];
 
 // 攤平成 9 個任務，id = `${key}-${易/中/難}`。

@@ -1400,7 +1400,10 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 }
 .oath-btn:active { background: var(--paper-dim); }
 .overlay-ghost-btn {
-  display: block;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   margin: 6px auto 0;
   padding: 6px 14px;
   font-size: .78rem;

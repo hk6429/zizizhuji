@@ -55,7 +55,11 @@ await page.click('#btn-back');
 await page.click('#level-elem');
 await page.waitForSelector('#level-elem.is-active');
 
-// 寵物閣／融合坊現在是首頁常駐的「進階玩法」區塊，不再藏在收合區，不必先展開
+// 新手首頁先收合進階玩法；自學・墨池提升為首頁直接可見入口
+const advancedInitiallyClosed = await page.$eval('#advanced-play', el => !el.open);
+const selfStudyVisible = await page.$eval('#btn-selfstudy', el => el.offsetParent !== null);
+await page.click('#advanced-play > summary');
+await page.waitForSelector('#btn-pet', { state: 'visible' });
 
 // 寵物閣：開啟後應渲染 12 隻神獸格；已解鎖的（unlockAt 0）要有羈絆階段文字與小傳按鈕
 await page.click('#btn-pet');
@@ -73,7 +77,7 @@ const fusionCatCount = await page.$$eval('#fusion-panel-forge .fusion-cat-card',
 await page.click('#fusion-close');
 
 // 字珠寶殿仍在「更多功能」收合區，要先展開才點得到
-await page.click('.more-section > summary');
+await page.click('.more-section:not(#advanced-play) > summary');
 await page.waitForSelector('#btn-pearls', { state: 'visible' });
 
 // 字珠寶殿：開啟後顯示品階統計列（新玩家 0 顆 → 空狀態文案）
@@ -115,6 +119,7 @@ await page.evaluate(() => {
   localStorage.setItem('zz_mkt_test_force_open', '1');
 });
 await page.reload();
+await page.click('#advanced-play > summary');
 await page.click('#btn-market');
 await page.waitForSelector('#market-overlay:not([hidden])');
 await page.waitForSelector('#mkt-sell-gear-list button');
@@ -135,6 +140,7 @@ await page.evaluate(() => {
   ]));
 });
 await page.reload();
+await page.click('#advanced-play > summary');
 await page.click('#btn-market');
 await page.waitForSelector('#market-overlay:not([hidden])');
 await page.click('#mkt-tab-ever');
@@ -143,7 +149,7 @@ const mktEverText = await page.$eval('#mkt-ever', el => el.textContent);
 await page.click('#market-close');
 
 // 剛才 reload 過，「更多功能」收合區重新收起，成就總覽等工具項目要先展開才點得到
-await page.click('.more-section > summary');
+await page.click('.more-section:not(#advanced-play) > summary');
 await page.waitForSelector('#btn-achievements', { state: 'visible' });
 
 // 成就總覽：開啟後應渲染 18 個成就卡
@@ -180,6 +186,7 @@ await page.click('#ss-back');
 await page.click('#ss-close');
 
 // 文氣爭鋒：三種模式；進「獨自衝分」應出 4 選項
+await page.$eval('#advanced-play', el => { el.open = true; });
 await page.click('#btn-scoregame');
 await page.waitForSelector('#scoregame-overlay:not([hidden])');
 const sgMenuCount = await page.$$eval('#sg-menu .sg-menu-card', els => els.length);
@@ -242,6 +249,8 @@ await browser.close();
 server.close();
 
 if (!levelDefaultActive) throw new Error('預設應為國小學制（#level-elem.is-active）');
+if (!advancedInitiallyClosed) throw new Error('新手首頁的 #advanced-play 應預設收合');
+if (!selfStudyVisible) throw new Error('自學・墨池應提升為首頁直接可見入口');
 if (juniorPracticeOptionCount !== 4) throw new Error(`國中練習模式選項數應為4，實際 ${juniorPracticeOptionCount}`);
 if (petCount !== 12) throw new Error(`寵物閣應有 12 隻神獸，實際 ${petCount}`);
 if (!bondTextShown) throw new Error('已解鎖寵物卡片應顯示羈絆階段文字 .pet-card-item__bond');

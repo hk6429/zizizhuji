@@ -5,7 +5,7 @@ import {
   initSession, onPracticeAnswer, onBattleAnswer, onBattleEnd, onPracticeEnd,
 } from '../../js/meta/kernel.js';
 import { createBattleStateEx } from '../../js/meta/battle-adapter.js';
-import { setActivePet } from '../../js/meta/pet.js';
+import { setActivePet, buyEquip, installEquip, getPetBattleMods, categoryMastery } from '../../js/meta/pet.js';
 
 function createMockStorage() {
   const map = new Map();
@@ -62,6 +62,20 @@ test('practice answer: pearl + xp + purified events, persisted via store', () =>
   assert.equal(saved.xp.value >= 10, true);
   assert.deepEqual(saved.world.purified, ['zy-1']);
   assert.equal(saved.leitner['zy-1'], 2); // Leitner 持久化
+});
+
+test('戰鬥專用 freeEliminate 設備不會進入練習 context 或改變煉成精通計算', () => {
+  const { ctx } = initSession(D, BANKS, { rng: NO_ENCOUNTER });
+  ctx.meta.pearls.balance = 500;
+  setActivePet(ctx.meta, 'baize');
+  assert.equal(buyEquip(ctx.meta, 'ling').ok, true);
+  assert.equal(installEquip(ctx.meta, 'baize', 'ling').ok, true);
+  assert.equal(getPetBattleMods(ctx.meta).freeEliminate, 1, '前置確認設備確實帶有戰鬥排除效果');
+  assert.equal(ctx.battle, null, '練習尚未建立 battle context');
+
+  for (let i = 0; i < 4; i++) onPracticeAnswer(ctx, 'zy-1', true);
+  assert.equal(ctx.battle, null, '練習結算不得建立或消耗 battle context');
+  assert.equal(categoryMastery(ctx.meta, '字音'), 1, '煉成只依 collection 計算，不受戰鬥設備加成');
 });
 
 test('wrong answer still gives consolation xp, no pearls, no purify', () => {

@@ -15,6 +15,7 @@ import { buildHotseatShareText } from './meta/summary.js';
 import { rushRankName } from './meta/rank-tier.js';
 import { shouldCheckpoint } from './session-checkpoint.js';
 import { playCorrect, playWrong } from './sound.js';
+import { awardResultXp } from './result-xp.js';
 
 const CLASS_RE = /^[\w一-鿿]{1,20}$/;
 const NICK_MAX = 12;
@@ -438,7 +439,7 @@ async function results(early) {
   const humans = state.players.filter((p) => !p.ai);
   const best = humans.reduce((m, p) => Math.max(m, p.score.best), 0);
   const prevBest = state.meta.selfstudy.scoreBest[BEST_KEY] || 0;
-  if (best > prevBest) { state.meta.selfstudy.scoreBest[BEST_KEY] = best; saveMeta(state.meta); deps.onChange && deps.onChange(); }
+  if (best > prevBest) state.meta.selfstudy.scoreBest[BEST_KEY] = best;
 
   let title;
   if (state.mode === 'solo') title = early ? '衝分結束' : '衝分結束';
@@ -446,6 +447,13 @@ async function results(early) {
     const ranked = [...state.players].sort((a, b) => b.score.score - a.score.score);
     title = ranked[0].score.score === ranked[1].score.score ? '平手！' : `${ranked[0].name} 勝！`;
   }
+  const rankedForBonus = [...state.players].sort((a, b) => b.score.score - a.score.score);
+  const bestHuman = [...humans].sort((a, b) => b.score.score - a.score.score)[0];
+  const won = state.mode !== 'solo' && rankedForBonus[0] === bestHuman
+    && (!rankedForBonus[1] || rankedForBonus[0].score.score > rankedForBonus[1].score.score);
+  const xpBonus = awardResultXp(state.meta, { correct: bestHuman.score.correct, answered: bestHuman.score.answered, won });
+  saveMeta(state.meta);
+  deps.onChange && deps.onChange();
   $('sg-question').textContent = title;
 
   const panel = el('div', 'sg-result');
@@ -461,6 +469,7 @@ async function results(early) {
   const bestScore = state.meta.selfstudy.scoreBest[BEST_KEY] || 0;
   const bestLine = el('div', 'sg-result__best', `個人最佳：${bestScore} 分・${rushRankName(bestScore)}`);
   panel.appendChild(bestLine);
+  if (xpBonus) panel.appendChild(el('div', 'sg-result__best', `好表現加成：文氣 +${xpBonus}`));
   if (state.mode === 'hotseat') {
     const share = el('button', 'ss-again sg-result__share', '複製戰報');
     share.type = 'button';
