@@ -197,6 +197,14 @@ function processAnswer(ctx, id, correct, mode) {
       pearls *= 2;
       ctx.doublePearlNext = false;
     }
+    // 寵物助陣（練習）：出戰主寵對應題型的被動加珠，固定值（不被天機加成放大），讓 HUD 承諾一致。
+    if (mode === 'practice') {
+      const petAssist = pet.petPracticeBonus(meta, id);
+      if (petAssist > 0) {
+        pearls += petAssist;
+        events.push({ type: 'petAssist', payload: { name: pet.activePetName(meta), amount: petAssist }, fx: 'pet-assist' });
+      }
+    }
     grantPearls(ctx, pearls, `${mode}-answer`, events);
   }
 

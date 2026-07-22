@@ -84,6 +84,67 @@ export const PET_BOND_STAGES = [
 const PET_BY_ID = new Map(PETS.map((p) => [p.id, p]));
 const EQUIP_BY_ID = new Map(PET_EQUIP.map((e) => [e.id, e]));
 
+// 主動技能「點化」每日充能次數（跨日由 rolloverDaily 重置 meta.daily.petSkillUsed）。
+export const MAX_PET_SKILL_USES = 2;
+
+// 題目類別：zy-＝字音、cy-＝成語，其餘視為混合／其他。
+export function questionCategory(id) {
+  if (typeof id === 'string' && id.startsWith('zy-')) return '字音';
+  if (typeof id === 'string' && id.startsWith('cy-')) return '成語';
+  return '混合';
+}
+
+// 出戰主寵的顯示名（暱稱優先），無出戰寵物回 null。
+export function activePetName(meta) {
+  const s = ensurePetState(meta);
+  const petId = s.active;
+  if (!petId || !PET_BY_ID.has(petId)) return null;
+  return s.nicknames[petId] || PET_BY_ID.get(petId).name;
+}
+
+// 練習被動加珠：帶對應類別主寵、答對「該類題」時多給的字珠（隨等級 1→3 小幅成長）。
+//   混合寵＝通才，任何題固定 +1；字音／成語寵＝專精，只對同類題有加成、不符給 0。
+//   無出戰寵物或未解鎖回 0。這是「帶對寵物練對題型才有感」的核心誘因。
+export function petPracticeBonus(meta, questionId) {
+  const s = ensurePetState(meta);
+  const petId = s.active;
+  if (!petId || !isUnlocked(meta, petId)) return 0;
+  const p = PET_BY_ID.get(petId);
+  if (!p) return 0;
+  if (p.category === '混合') return 1;
+  if (p.category !== questionCategory(questionId)) return 0;
+  return 1 + Math.min(2, Math.floor(petLevel(meta, p) / 5));
+}
+
+// 練習被動加珠的一句說明，供答題畫面 HUD 常駐顯示（讓「有用」看得見）。
+export function petPracticeHint(meta) {
+  const s = ensurePetState(meta);
+  const petId = s.active;
+  if (!petId || !isUnlocked(meta, petId)) return null;
+  const p = PET_BY_ID.get(petId);
+  if (p.category === '混合') return '答對任何題 +1珠';
+  const lvBonus = 1 + Math.min(2, Math.floor(petLevel(meta, petId) / 5));
+  return `${p.category}題答對 +${lvBonus}珠`;
+}
+
+// 主動技能剩餘次數（讀 meta.daily.petSkillUsed；跨日重置由 rolloverDaily 負責）。
+export function petSkillRemaining(meta) {
+  const used = meta.daily?.petSkillUsed || 0;
+  return Math.max(0, MAX_PET_SKILL_USES - used);
+}
+
+// 使用一次主動技能：需有出戰且已解鎖的主寵、且今日還有次數。成功回 { ok:true, remaining }。
+export function usePetSkill(meta) {
+  const s = ensurePetState(meta);
+  const petId = s.active;
+  if (!petId || !isUnlocked(meta, petId)) return { ok: false, reason: 'no-pet' };
+  if (!meta.daily) return { ok: false, reason: 'no-daily' };
+  const used = meta.daily.petSkillUsed || 0;
+  if (used >= MAX_PET_SKILL_USES) return { ok: false, reason: 'no-charge' };
+  meta.daily.petSkillUsed = used + 1;
+  return { ok: true, remaining: MAX_PET_SKILL_USES - (used + 1) };
+}
+
 function ensurePetState(meta) {
   if (!meta.pet) {
     meta.pet = {

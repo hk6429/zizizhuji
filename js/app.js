@@ -24,6 +24,7 @@ import { initReportUI, attachReportButton } from './report.js';
 import { saveMeta } from './meta/store.js';
 import { recordDailyBattle } from './meta/daily.js';
 import { claimQuest } from './meta/quests.js';
+import { usePetSkill, petSkillRemaining, activePetName } from './meta/pet.js';
 import { checkWelcomeBack } from './meta/welcome-back.js';
 import { shuffle } from './shuffle.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
@@ -292,6 +293,48 @@ $('home-quests-list').addEventListener('click', (e) => {
   }
 });
 
+/* ---------- 寵物主動技能「點化」（練習模式：劃掉一個錯誤選項，每日充能） ---------- */
+let curPracticeEntry = null;   // 當前練習題（技能鎖定用）
+let petSkillUsedThisQ = false; // 本題是否已用過點化（一題最多一次）
+
+function updatePetSkillBtn() {
+  const btn = $('pet-skill-btn');
+  if (!btn) return;
+  const ctx = getCtx();
+  if (currentMode !== 'practice' || !ctx) { btn.hidden = true; return; }
+  const hasPet = !!activePetName(ctx.meta);
+  if (!hasPet) { btn.hidden = true; return; }
+  const remaining = petSkillRemaining(ctx.meta);
+  btn.hidden = false;
+  btn.disabled = remaining <= 0 || petSkillUsedThisQ;
+  btn.textContent = `🔮 點化 (${remaining})`;
+}
+
+function resetPetSkillForQuestion(entry) {
+  curPracticeEntry = entry;
+  petSkillUsedThisQ = false;
+  updatePetSkillBtn();
+}
+
+$('pet-skill-btn').addEventListener('click', () => {
+  const ctx = getCtx();
+  if (!ctx || currentMode !== 'practice' || !curPracticeEntry || petSkillUsedThisQ) return;
+  // 只在還有「可劃」的錯誤選項時才動用次數，避免白白消耗
+  const wrongs = [...$('options').children].filter(
+    (b) => !b.disabled && b.dataset.value && b.dataset.value !== curPracticeEntry.answer,
+  );
+  if (wrongs.length === 0) return;
+  const r = usePetSkill(ctx.meta);
+  if (!r.ok) { updatePetSkillBtn(); return; }
+  saveMeta(ctx.meta);
+  petSkillUsedThisQ = true;
+  const victim = wrongs[Math.floor(Math.random() * wrongs.length)];
+  victim.disabled = true;
+  victim.classList.add('is-eliminated');
+  notify(`${activePetName(ctx.meta)} 點化・劃掉一個錯選項！`, 'lantern');
+  updatePetSkillBtn();
+});
+
 /* ---------- 出題與回饋 ---------- */
 // 選項本來就用甲乙丙丁編號（css counter(opt, cjk-heavenly-stem)），數字鍵 1-4 快捷鍵要對得上，
 // 靠 aria-label 把「甲」與「快捷鍵 1」講清楚，畫面上不再疊一個衝突的「1.」數字
@@ -473,6 +516,7 @@ async function startPractice() {
     }
     const entry = byId.get(id);
     renderQuestion(entry);
+    resetPetSkillForQuestion(entry); // 新題重置點化按鈕
     bindAnswer(entry, mySession, (correct) => {
       // kernel 內部已呼叫 leitner.recordAnswer ＋持久化，此處不可再 recordAnswer
       const { events } = kernel.onPracticeAnswer(ctx, id, correct);
@@ -480,6 +524,7 @@ async function startPractice() {
       maybePlayCombo(ctx);
       syncPets(); // 精通題數可能剛跨過解鎖門檻
       updateQuizHud(); // 守燈／回合進度即時更新
+      updatePetSkillBtn(); // 用技能後充能數／答題後狀態同步
       recordRound(rs, id, correct); // 記錄本輪對錯，供錯題複習輪與不重複判定
       // 每 10 題輕量里程碑：成就閉環＋回訪守燈提示，順勢可收卷看戰報並分享
       if (ctx.session.total > 0 && ctx.session.total % 10 === 0) {

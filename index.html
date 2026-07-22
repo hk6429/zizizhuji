@@ -301,6 +301,8 @@
           <div id="quiz-hud" class="quiz-hud" hidden aria-live="polite">
             <span id="quiz-hud-lantern" class="quiz-hud__item"></span>
             <span id="quiz-hud-session" class="quiz-hud__item"></span>
+            <span id="quiz-hud-pet" class="quiz-hud__item quiz-hud__item--pet"></span>
+            <button id="pet-skill-btn" class="pet-skill-btn" type="button" hidden></button>
           </div>
           <p id="question-text"></p>
           <div id="options"></div>
@@ -456,7 +458,12 @@
         <div id="pet-equip-grid" class="pet-equip-grid"></div>
       </div>
       <div id="pet-panel-guide" class="pet-panel pet-guide" hidden role="tabpanel" aria-labelledby="pet-tab-guide">
-        <p class="pet-guide__lead">神獸的成長分成三條線，別搞混囉——只有「寵物設備」要花字珠：</p>
+        <p class="pet-guide__lead">主寵可不是擺著看的！<b>練習時</b>牠會即時幫你：</p>
+        <div class="pet-guide__item pet-guide__item--power">
+          <h3>🐾 出戰主寵：練習中真的有用</h3>
+          <p><b>被動加珠</b>：帶<b>對應類別</b>的主寵練習，答對該類題就多拿字珠（等級越高加越多，混合神獸任何題都 +1）。答題畫面上方會常駐顯示「牠幫你加多少」。<br><b>主動技能「點化」</b>：每天 2 次，答題時按一下就<b>劃掉一個錯選項</b>，卡關時救命用。換不同神獸出戰，就對不同題型有加成——<b>帶對寵、練對題，差很多。</b></p>
+        </div>
+        <p class="pet-guide__lead">而神獸的成長分成三條線，別搞混囉——只有「寵物設備」要花字珠：</p>
         <div class="pet-guide__item">
           <h3>① 神獸境界（等級）</h3>
           <p>每在<b>該神獸的類別</b>煉成 <b>20 顆字珠</b>就升 1 級，最高 <b>15 級</b>。字音神獸吃字音字形題、成語神獸吃成語題、<b>混合神獸通吃</b>（最好養）。曾經答錯、後來訂正才煉成的字珠，貢獻多算 <b>1.5 倍</b>——弱點題更值錢。<b>不用花字珠，純靠答題累積。</b></p>

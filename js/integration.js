@@ -14,7 +14,7 @@ import { playLevelUp } from './sound.js';
 import {
   createBattleContext, createBattleStateEx, takeEliminate, isOverEx,
 } from './meta/battle-adapter.js';
-import { getPetBattleMods, syncUnlocks as syncPetUnlocks, listPets } from './meta/pet.js';
+import { getPetBattleMods, syncUnlocks as syncPetUnlocks, listPets, activePetName, petPracticeHint } from './meta/pet.js';
 import { getCubBattleMods } from './meta/fusion-store.js';
 import { shouldOfferShareCard, renderShareCard, exportShareCard } from './meta/share-card.js';
 import { openOverlay, closeOverlay } from './overlay-a11y.js';
@@ -254,6 +254,13 @@ export function updateQuizHud() {
     : `🪔 守燈 今日 ${lp.todayCorrect}/${lp.goal}（還差 ${lp.remaining} 題）`;
   const s = ctx.session || {};
   $('quiz-hud-session').textContent = `本回合 答對 ${s.correct || 0}/${s.total || 0}`;
+  // 出戰寵物與其練習被動加成常駐顯示，讓「帶對寵物有差」看得見。
+  const petEl = $('quiz-hud-pet');
+  if (petEl) {
+    const petName = activePetName(ctx.meta);
+    const hint = petName ? petPracticeHint(ctx.meta) : null;
+    petEl.textContent = petName && hint ? `🐾 ${petName}・${hint}` : '';
+  }
 }
 
 // 首頁「寵物閣」入口：顯示主寵頭像、名號與境界；未選主寵則提示去挑。
@@ -388,6 +395,7 @@ export function renderEvents(events) {
     const p = e.payload || {};
     switch (e.type) {
       case 'xpGained':      floatText(`＋${p.amount} 文氣`, 'xp'); break;
+      case 'petAssist':     floatText(`${p.name} 助陣 ＋${p.amount} 珠`, 'pearl'); break;
       case 'pearlEarned':
         floatText(`＋${p.amount} 珠`, 'pearl');
         if (p.capped) toast(`今日字珠已滿 ${DAILY_EARN_CAP}，明日再煉`);

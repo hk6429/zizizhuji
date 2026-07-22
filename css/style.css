@@ -1282,6 +1282,18 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
   color: var(--gold-text);
   white-space: nowrap;
 }
+.quiz-hud__item--pet { background: rgba(46,143,138,.12); border-color: rgba(46,143,138,.4); color: var(--teal-deep); }
+/* 寵物主動技能「點化」按鈕 */
+.pet-skill-btn {
+  padding: 3px 14px; border-radius: 999px; font-family: var(--sans); font-size: .82rem; font-weight: 700;
+  border: 1px solid var(--gold); color: #2a1c05; cursor: pointer; white-space: nowrap;
+  background: linear-gradient(135deg, var(--gold-hi), var(--gold)); box-shadow: 0 1px 4px rgba(201,162,39,.3);
+}
+.pet-skill-btn:active { transform: translateY(1px); }
+.pet-skill-btn:disabled { background: rgba(201,162,39,.14); border-color: rgba(201,162,39,.3); color: var(--ink-soft); cursor: default; box-shadow: none; }
+/* 被點化劃掉的錯誤選項 */
+#options button.is-eliminated { opacity: .32; text-decoration: line-through; pointer-events: none; filter: grayscale(.6); }
+
 /* 里程碑卡的守燈提示 */
 .milestone-lantern { color: var(--gold-text); font-weight: 700; margin-top: 4px; }
 @keyframes xp-rise {
@@ -2315,6 +2327,7 @@ body.mode-battle #options button::before { background: var(--rouge-deep); }
 /* ── 寵物養成心法頁 ── */
 .pet-guide__lead { font-size: .9rem; line-height: 1.6; margin: 0 0 .7rem; color: #7d5c0f; }
 .pet-guide__item { border-left: 3px solid rgba(184,134,11,.5); padding: .1rem .1rem .1rem .7rem; margin: 0 0 .8rem; }
+.pet-guide__item--power { border-left-color: var(--teal); background: rgba(46,143,138,.07); border-radius: 0 8px 8px 0; padding: .5rem .6rem .5rem .7rem; }
 .pet-guide__item h3 { font-size: .98rem; margin: 0 0 .25rem; color: #5a3e0a; }
 .pet-guide__item p { font-size: .86rem; line-height: 1.65; margin: 0; opacity: .92; }
 .pet-guide__tip { font-size: .84rem; line-height: 1.6; margin: .4rem 0 0; padding: .55rem .65rem;

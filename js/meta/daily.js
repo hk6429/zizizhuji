@@ -139,6 +139,7 @@ export function rolloverDaily(meta, today) {
   d.todayAnswered = 0;
   d.todayBattles = 0;      // 每日任務・對弈：今日完成對戰場次
   d.questsClaimed = [];    // 每日任務：今日已領取的任務 id
+  d.petSkillUsed = 0;      // 寵物主動技能「點化」今日已使用次數（見 pet.js）
   d.boxOpened = false;
   return events;
 }
