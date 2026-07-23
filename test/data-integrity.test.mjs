@@ -244,6 +244,19 @@ test('audited zixing ambiguities are resolved by context or unambiguous distract
   assert.match(ziyinJunior.find((item) => item.id === 'zy-中-3003').question, /冰塊.*固態冰變成液態/, 'zy-中-3003: melt context is missing');
 });
 
+test('reported zixing item zy-中-2934 uses an unambiguous typo without leaking the answer', () => {
+  const entry = ziyinJunior.find((item) => item.id === 'zy-中-2934');
+  assert.equal(entry.anchor?.[0], '睏');
+  assert.equal(entry.answer, '捆');
+  assert.ok(entry.options.includes('捆'));
+  assert.match(entry.question, /捆倦/);
+  assert.doesNotMatch(entry.question, /誤寫成|應改為/);
+  assert.doesNotMatch(
+    `${entry.question}${entry.note}${entry.explain.join('')}`,
+    /「困倦」應改為「睏倦」|「困」為錯字/,
+  );
+});
+
 test('answer position within options is not skewed toward any single slot', () => {
   const banks = { ziyin, chengyu, ziyinJunior, chengyuJunior };
   for (const [name, entries] of Object.entries(banks)) {
