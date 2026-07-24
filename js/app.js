@@ -8,7 +8,7 @@ import {
   beginBattle, battleOver, applyEliminate, hideMolingBubble, showMolingLine,
   updateQuizHud, getLanternProgress, notify,
 } from './integration.js';
-import { createRoundState, nextInRound, recordRound, advanceRound } from './practice-round.js';
+import { createLearningScheduler } from './learning-group.js';
 import { initPetUI } from './pet-ui.js';
 import { initFusionUI } from './fusion-ui.js';
 import { initSelfStudy } from './selfstudy-ui.js';
@@ -507,21 +507,19 @@ async function startPractice() {
   const allIds = bank.map((e) => e.id);
   const state = ctx.leitner; // 由 kernel 供給：含上次遊玩的盒位，不再每次歸零
   const byId = new Map(bank.map((e) => [e.id, e]));
-  // 作業式回合：整池每題各出一次不重複；答錯的整輪跑完再補一輪；全對後重洗整池（見 practice-round.js）。
-  // 「哪一題先出」仍交給 Leitner 盒位＋難度排序（低盒／較易先出）。
-  const rs = createRoundState(shuffle(allIds));
+  // 每次專注 20 題：同組題目反覆升盒，煉成後才補入新題；答錯仍先走錯題複習輪。
+  // 已有第 2～4 盒進度的舊玩家會優先接續，不會因改版重練。
+  const scheduler = createLearningScheduler(allIds, state, { shuffle });
   const pick = (cands) => nextQuestionId(state, cands, byId);
 
   function nextRound() {
     if (isDailyLimitReached(ctx.meta)) { showDailyLimitOverlay(nextRound); return; }
-    let id = nextInRound(rs, pick);
-    if (id === null) { // 本輪出完，推進下一輪
+    const { id, transition } = scheduler.next(pick);
+    if (transition) {
       revealAdvancedPlayOnce($('advanced-play'));
-      const info = advanceRound(rs, allIds, shuffle);
-      notify(info.mode === 'wrong-review'
-        ? `錯題複習開始：${info.size} 題`
-        : '整池已全數答對！重新洗牌開新一輪', 'lantern');
-      id = nextInRound(rs, pick);
+      notify(transition.mode === 'wrong-review'
+        ? `錯題複習開始：${transition.size} 題`
+        : '本組修行完成！接續精熟並補入新題', 'lantern');
     }
     const entry = byId.get(id);
     renderQuestion(entry);
@@ -534,7 +532,7 @@ async function startPractice() {
       syncPets(); // 精通題數可能剛跨過解鎖門檻
       updateQuizHud(); // 守燈／回合進度即時更新
       updatePetSkillBtn(); // 用技能後充能數／答題後狀態同步
-      recordRound(rs, id, correct); // 記錄本輪對錯，供錯題複習輪與不重複判定
+      scheduler.record(id, correct); // 記錄本輪對錯，供錯題複習輪與學習組補題
       // 每 10 題輕量里程碑：成就閉環＋回訪守燈提示，順勢可收卷看戰報並分享
       if (ctx.session.total > 0 && ctx.session.total % 10 === 0) {
         revealAdvancedPlayOnce($('advanced-play'));
