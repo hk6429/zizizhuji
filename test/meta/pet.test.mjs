@@ -24,14 +24,16 @@ test('PETS: 12 隻，字音／成語／混合各 4 隻', () => {
   assert.deepEqual(byCat, { 字音: 4, 成語: 4, 混合: 4 });
 });
 
-test('categoryMastery 依 id 前綴分類計精通題數', () => {
+test('categoryMastery 將字音 zy- 與字形 zx- 都計入字音字形主線', () => {
   const meta = metaWithForged('zy-', 5);
+  meta.collection['zx-a'] = { earnedAt: 'x' };
+  meta.collection['zx-b'] = { earnedAt: 'x' };
   meta.collection['cy-a'] = { earnedAt: 'x' };
   meta.collection['cy-b'] = { earnedAt: 'x' };
   meta.collection['zy-nope'] = { earnedAt: '' }; // 未煉成不算
-  assert.equal(categoryMastery(meta, '字音'), 5);
+  assert.equal(categoryMastery(meta, '字音'), 7);
   assert.equal(categoryMastery(meta, '成語'), 2);
-  assert.equal(categoryMastery(meta, '混合'), 7);
+  assert.equal(categoryMastery(meta, '混合'), 9);
 });
 
 test('petLevel = floor(精通數 / LEVEL_STEP)，封頂 MAX_LEVEL', () => {

@@ -87,9 +87,9 @@ const EQUIP_BY_ID = new Map(PET_EQUIP.map((e) => [e.id, e]));
 // 主動技能「點化」每日充能上限；實際次數依主寵羈絆階段為初見 1／漸熟 2／知己 3。
 export const MAX_PET_SKILL_USES = 3;
 
-// 題目類別：zy-＝字音、cy-＝成語，其餘視為混合／其他。
+// 題目類別：zy-/zx-＝字音字形主線、cy-＝成語，其餘視為混合／其他。
 export function questionCategory(id) {
-  if (typeof id === 'string' && id.startsWith('zy-')) return '字音';
+  if (typeof id === 'string' && (id.startsWith('zy-') || id.startsWith('zx-'))) return '字音';
   if (typeof id === 'string' && id.startsWith('cy-')) return '成語';
   return '混合';
 }
@@ -197,7 +197,7 @@ export function categoryMastery(meta, category) {
     if (!r || !r.earnedAt) continue;
     const weight = r.wrong > 0 ? WRONG_MASTERY_WEIGHT : 1;
     if (category === '混合') { n += weight; continue; }
-    if (category === '字音' && id.startsWith('zy-')) n += weight;
+    if (category === '字音' && (id.startsWith('zy-') || id.startsWith('zx-'))) n += weight;
     else if (category === '成語' && id.startsWith('cy-')) n += weight;
   }
   return n;
