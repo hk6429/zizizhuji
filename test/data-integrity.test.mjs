@@ -257,6 +257,33 @@ test('reported zixing item zy-中-2934 uses an unambiguous typo without leaking 
   );
 });
 
+test('reported item zx-編-0281 gives 星火燎原 the correct pronunciation cue', () => {
+  const entry = ziyin.find((item) => item.id === 'zx-編-0281');
+  assert.match(entry.question, /星火ㄌㄧㄠˊ原/);
+  assert.doesNotMatch(entry.question, /星火ㄌㄧㄠˋ原/);
+  assert.equal(entry.answer, '燎');
+});
+
+test('reported item zy-中-2167 asks about 錕鋙 without leaking 錕 in the stem', () => {
+  const entry = ziyinJunior.find((item) => item.id === 'zy-中-2167');
+  assert.match(entry.question, /「○鋙」/);
+  assert.doesNotMatch(entry.question, /錕鋙/);
+  assert.equal(entry.answer, '錕');
+  assert.deepEqual(entry.options, ['昆', '混', '錕', '坤']);
+  assert.match(entry.explain[2], /也作.?昆吾/);
+});
+
+test('reported item cy-中-2063 has one clear misuse and three supported usages', () => {
+  const entry = chengyuJunior.find((item) => item.id === 'cy-中-2063');
+  assert.equal(entry.answer, entry.options[0]);
+  assert.match(entry.options[0], /重新振作.*槁木死灰/);
+  assert.match(entry.options[1], /陳季常.*河東獅子/);
+  assert.match(entry.options[2], /新居落成.*竹苞松茂/);
+  assert.match(entry.options[3], /得寵或受辱.*寵辱若驚/);
+  assert.doesNotMatch(entry.options.join(''), /悍妒善妒|同一口灶/);
+  assert.match(entry.note, /槁木死灰誤用：/);
+});
+
 test('answer position within options is not skewed toward any single slot', () => {
   const banks = { ziyin, chengyu, ziyinJunior, chengyuJunior };
   for (const [name, entries] of Object.entries(banks)) {
